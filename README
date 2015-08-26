@@ -1,0 +1,12 @@
+This repository holds notes and code for the initial implementation
+of parts of the SteamWorks system, in particular the Crank, Shaft and
+Pulley parts of that system.
+
+    docs/    Holds documentation
+    crank/   Is the crank-component implementation, standalone
+    shaft/     .. similar
+    pulley/    .. similar
+
+See LICENSE for overall licensing information, and a README in each
+subdirectory for local details.
+
