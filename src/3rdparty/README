@@ -1,0 +1,5 @@
+# 3-rd party sources
+
+picojson.h 
+  Copyright 2011-2014 Kazuho Oku, 2-clause BSD license
+  https://github.com/kazuho/picojson/blob/master/picojson.h cc130fb
