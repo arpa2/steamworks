@@ -5,6 +5,7 @@ Pulley parts of that system.
     docs/                Holds project documentation
     src/                 Project sources
     src/3rdparty         3rd-party imported sources
+    src/common           Support code, common components
 
 See LICENSE for overall licensing information, and a README in each
 subdirectory for local details.
