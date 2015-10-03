@@ -6,6 +6,7 @@ Pulley parts of that system.
     src/                 Project sources
     src/3rdparty         3rd-party imported sources
     src/common           Support code, common components
+    src/crank            Steamworks Crank component
 
 See LICENSE for overall licensing information, and a README in each
 subdirectory for local details.
