@@ -11,6 +11,7 @@ project(steamworks)
 include(MacroEnsureOutOfSourceBuild)
 MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
   "Do not build Steamworks in the source directory.")
+include(CheckCXX11Flags)
 
 
 add_subdirectory(crank)
