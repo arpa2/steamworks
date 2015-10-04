@@ -2,7 +2,4 @@ CMakeCache.txt
 CMakeFiles
 Makefile
 cmake_install.cmake
-src/crank/crank
-src/crank/crank.core
-src/crank/crank.properties
-src/crank/*.log
+build

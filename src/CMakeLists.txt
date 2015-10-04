@@ -8,4 +8,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../cmake)
 
 project(steamworks)
 
+include(MacroEnsureOutOfSourceBuild)
+MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
+  "Do not build Steamworks in the source directory.")
+
+
 add_subdirectory(crank)
