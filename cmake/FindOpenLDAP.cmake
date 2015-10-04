@@ -1,4 +1,10 @@
-# Try to find OpenLDAP client libraries
+# Copyright (c) 2014, 2015 InternetWide.org and the ARPA2.net project
+# All rights reserved. See file LICENSE for exact terms (2-clause BSD license).
+#
+# Adriaan de Groot <groot@kde.org>
+
+# Try to find OpenLDAP client libraries. Sets standard variables
+# OpenLDAP_LIBRARIES and OpenLDAP_INCLUDE_DIRS.
 #
 include(FindPackageHandleStandardArgs)
 
