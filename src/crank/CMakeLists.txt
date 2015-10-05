@@ -8,9 +8,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../../cmake)
 
 project(crank)
 
-find_package(FCGI)
-find_package(OpenLDAP)
 find_package(Log4cpp)
+find_package(FCGI REQUIRED)
+find_package(OpenLDAP REQUIRED)
 
 set(COMMON ../common)
 
