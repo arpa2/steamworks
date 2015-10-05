@@ -20,7 +20,7 @@ static int request_count = 0;
 
 namespace fcgi 
 {
-static Steamworks::Logger *logger = 0;
+static Steamworks::Logging::Logger *logger = 0;
 
 /**
  * Reads the remainer of an input stream (this seems to be needed if wrapping
@@ -207,7 +207,7 @@ int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_Par
 
 int fcgi_init_logging(const std::string& logname)
 {
-	Steamworks::Logger& log = log4cpp::Category::getInstance(logname);
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger(logname);
 	fcgi::logger = &log;
 	return 0;
 }

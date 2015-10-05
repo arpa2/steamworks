@@ -12,7 +12,7 @@ Adriaan de Groot <groot@kde.org>
 
 int main(int argc, char** argv)
 {
-	Steamworks::LoggerManager logManager("crank.properties");
+	Steamworks::Logging::Manager logManager("crank.properties");
 	
 	CrankDispatcher dispatcher;
 	fcgi_init_logging("crank.fcgi");

@@ -46,7 +46,7 @@ public:
 		}
 	}
 
-	void log(Steamworks::Logger& log, Steamworks::LogLevel level)
+	void log(Steamworks::Logging::Logger& log, Steamworks::Logging::LogLevel level)
 	{
 		log.getStream(level) << "LDAP API version " << info.ldapai_info_version;
 		log.getStream(level) << "LDAP API vendor  " << (info.ldapai_vendor_name ? info.ldapai_vendor_name : "<unknown>");
@@ -84,7 +84,7 @@ private:
 		clientctl(nullptr),
 		valid(false)
 	{
-		Steamworks::Logger& log = log4cpp::Category::getInstance("steamworks.ldap");
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 		log.debugStream() << "LDAP connect to '" << uri << "'";
 		
 		int r = 0;
@@ -115,7 +115,7 @@ private:
 					<< " but got " << info.get_version();
 				return;
 			}
-			info.log(log, Steamworks::DEBUG);
+			info.log(log, Steamworks::Logging::DEBUG);
 		}
 		
 		if (true)
