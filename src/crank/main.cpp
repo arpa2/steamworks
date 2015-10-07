@@ -10,10 +10,13 @@ Adriaan de Groot <groot@kde.org>
 
 #include "crank.h"
 
+static const char* copyright = "Copyright (C) 2014, 2015 InternetWide.org and the ARPA2.net project";
+
 int main(int argc, char** argv)
 {
 	Steamworks::Logging::Manager logManager("crank.properties");
-	
+	Steamworks::Logging::getRoot().debugStream() << "Steamworks Crank " << copyright;
+
 	CrankDispatcher dispatcher;
 	Steamworks::FCGI::init_logging("crank.fcgi");
 	Steamworks::FCGI::mainloop(&dispatcher);
