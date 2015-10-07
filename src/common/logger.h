@@ -116,7 +116,6 @@ typedef enum { DEBUG=log4cpp::Priority::DEBUG, INFO=log4cpp::Priority::INFO } Lo
 class Manager
 {
 private:
-	bool valid;
 	static int instances;
 
 public:
@@ -127,18 +126,15 @@ public:
 	 * is left unchanged (for the first manager, in whatever
 	 * default state the underlying implementation uses).
 	 */
-	Manager(const std::string& propertyfile) :
-		valid(false)
+	Manager(const std::string& propertyfile)
 	{
 		try
 		{
-			log4cpp::PropertyConfigurator::configure("crank.properties");
-			valid = true;
+			log4cpp::PropertyConfigurator::configure(propertyfile);
 		}
 		catch (log4cpp::ConfigureFailure& e)
 		{
 			// Logging disabled.
-			valid = false;
 			std::cerr << "No file " << propertyfile << ". Logging disabled.";
 		}
 		instances++;
@@ -185,9 +181,12 @@ public:
 #endif
 
 // Convenience function, use the Manager-implementation (which depends on NDEBUG).
-// This is a template because it otherwise ends up multiply-defined.
-template<typename T>
-Logger& getLogger(const T& categoryname) { return Manager::getLogger(categoryname); }
+// This is static inline because it's just forwarding.
+static inline
+Logger& getLogger(const std::string& categoryname) { return Manager::getLogger(categoryname); }
+
+static inline
+Logger& getRoot() { return Manager::getRoot(); }
 
 } // namespace Logging
 } // namespace
