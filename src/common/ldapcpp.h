@@ -9,8 +9,11 @@ Adriaan de Groot <groot@kde.org>
 
 namespace Steamworks
 {
+
+namespace LDAP
+{
 	
-class LDAPConnection
+class Connection
 {
 private:
 	class Private;
@@ -18,9 +21,10 @@ private:
 	bool valid;
 	
 public:
-	LDAPConnection(const std::string& uri);
-	~LDAPConnection();
+	Connection(const std::string& uri);
+	~Connection();
 	bool is_valid() const { return valid; }
 } ;
 	
+}  // namespace LDAP
 }  // namespace

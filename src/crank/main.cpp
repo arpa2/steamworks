@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 	Steamworks::Logging::Manager logManager("crank.properties");
 	
 	CrankDispatcher dispatcher;
-	fcgi_init_logging("crank.fcgi");
-	fcgi_mainloop(&dispatcher);
+	Steamworks::FCGI::init_logging("crank.fcgi");
+	Steamworks::FCGI::mainloop(&dispatcher);
 	return 0;
 }

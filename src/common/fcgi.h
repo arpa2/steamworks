@@ -7,5 +7,13 @@ Adriaan de Groot <groot@kde.org>
 
 #include "verb.h"
 
-int fcgi_init_logging(const std::string& logname); 
-int fcgi_mainloop(VerbDispatcher* dispatcher=0);
+namespace Steamworks
+{
+namespace FCGI
+{
+
+int init_logging(const std::string& logname); 
+int mainloop(VerbDispatcher* dispatcher=0);
+
+}  // namespace FCGI
+}  // namespace Steamworks

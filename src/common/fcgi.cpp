@@ -8,10 +8,11 @@ Adriaan de Groot <groot@kde.org>
 #include <stdlib.h>
 #include <string.h>
 
-#include "logger.h"
+#include "fcgiapp.h"
 #include "picojson.h"
 
-#include "fcgiapp.h"
+#include "fcgi.h"
+#include "logger.h"
 #include "verb.h"
 
 
@@ -205,7 +206,7 @@ int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_Par
 
 }  // namespace
 
-int fcgi_init_logging(const std::string& logname)
+int Steamworks::FCGI::init_logging(const std::string& logname)
 {
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger(logname);
 	fcgi::logger = &log;
@@ -213,7 +214,7 @@ int fcgi_init_logging(const std::string& logname)
 }
 
 // TODO: integrate with other main loops
-int fcgi_mainloop(VerbDispatcher *dispatcher)
+int Steamworks::FCGI::mainloop(VerbDispatcher *dispatcher)
 {
 	FCGX_Stream *in, *out, *err;
 	FCGX_ParamArray envp;

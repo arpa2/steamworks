@@ -63,18 +63,14 @@ public:
 	int get_version() const { return info.ldapai_info_version; }
 } ;
 
-namespace Steamworks
+class Steamworks::LDAP::Connection::Private
 {
-	
-	
-class LDAPConnection::Private
-{
-friend class LDAPConnection;
+friend class Steamworks::LDAP::Connection;
 private:
 	std::string uri;
-	LDAP* ldaphandle;
-	LDAPControl* serverctl;
-	LDAPControl* clientctl;
+	::LDAP* ldaphandle;
+	::LDAPControl* serverctl;
+	::LDAPControl* clientctl;
 	bool valid;
 	
 	Private(const std::string& uri) :
@@ -165,16 +161,15 @@ private:
 	bool is_valid() const { return valid && ldaphandle; }
 } ;
 
-LDAPConnection::LDAPConnection(const std::string& uri) :
+Steamworks::LDAP::Connection::Connection(const std::string& uri) :
 	d(new Private(uri)),
 	valid(false)
 {
 }
 
-LDAPConnection::~LDAPConnection()
+Steamworks::LDAP::Connection::~Connection()
 {
 	delete d;
 	d = nullptr;
 }
 
-}  // namespace

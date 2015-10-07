@@ -23,7 +23,7 @@ int CrankDispatcher::exec(const std::string& verb, const Values values)
 int CrankDispatcher::do_connect(const Values values)
 {
 	std::string name = values.get("uri").to_str();
-	Steamworks::LDAPConnection ldap(name);
+	Steamworks::LDAP::Connection ldap(name);
 	return 0;
 }
 
