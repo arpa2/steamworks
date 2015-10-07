@@ -14,3 +14,5 @@ start:
 stop:
 	-cat json-stop | $(CMD)
 
+search:
+	-cat json-search | $(CMD)

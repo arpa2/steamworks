@@ -8,22 +8,30 @@ Adriaan de Groot <groot@kde.org>
 #ifndef STEAMWORKS_CRANK_H
 #define STEAMWORKS_CRANK_H
 
+#include <memory>
+
 #include "verb.h"
 
 class CrankDispatcher : public VerbDispatcher
 {
+private:
+	class Private;
+	std::unique_ptr<Private> d;
+
+	typedef enum { disconnected=0, connected, stopped } State;
+	State m_state;
+
 public:
 	CrankDispatcher();
-	
+
 	virtual int exec(const std::string& verb, const Values values);
-	
+
+	State state() const { return m_state; }
+
 protected:
 	int do_connect(const Values values);
 	int do_stop(const Values values);
-	
-private:
-	typedef enum { disconnected=0, connected, stopped } State;
-	State state;
+	int do_search(const Values values);
 } ;
 
 

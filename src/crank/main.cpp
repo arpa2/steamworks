@@ -17,8 +17,8 @@ int main(int argc, char** argv)
 	Steamworks::Logging::Manager logManager("crank.properties");
 	Steamworks::Logging::getRoot().debugStream() << "Steamworks Crank " << copyright;
 
-	CrankDispatcher dispatcher;
+	CrankDispatcher* dispatcher = new CrankDispatcher();
 	Steamworks::FCGI::init_logging("crank.fcgi");
-	Steamworks::FCGI::mainloop(&dispatcher);
+	Steamworks::FCGI::mainloop(dispatcher);
 	return 0;
 }
