@@ -236,6 +236,7 @@ Steamworks::LDAP::Connection::Connection(const std::string& uri) :
 	d(new Private(uri)),
 	valid(false)
 {
+	valid = d->is_valid();
 }
 
 Steamworks::LDAP::Connection::~Connection()
