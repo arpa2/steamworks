@@ -6,7 +6,9 @@ Adriaan de Groot <groot@kde.org>
 */
 
 #include "crank.h"
+
 #include "ldapcpp.h"
+#include "logger.h"
 
 class CrankDispatcher::Private
 {
@@ -42,6 +44,10 @@ int CrankDispatcher::exec(const std::string& verb, const Values values)
 int CrankDispatcher::do_connect(const Values values)
 {
 	std::string name = values.get("uri").to_str();
+
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+	log.debugStream() << "Connecting to" << name;
+
 	d->connection.reset(new Steamworks::LDAP::Connection(name));
 	if (d->connection->is_valid())
 	{
@@ -59,13 +65,19 @@ int CrankDispatcher::do_stop(const Values values)
 
 int CrankDispatcher::do_search(const Values values)
 {
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+
 	if (m_state != connected)
 	{
+		log.debugStream() << "Search on disconnected server.";
 		return 0;
 	}
 
 	std::string base = values.get("base").to_str();
 	std::string filter = values.get("filter").to_str();
+
+	log.debugStream() << "Search for  base=" << base;
+	log.debugStream() << "Search for match=" << filter;
 
 	// TODO: check authorization for this query
 	Steamworks::LDAP::Search search(base, filter);

@@ -1,5 +1,5 @@
 { 
 "verb": "search",
 "base": "dc=example,dc=com",
-"filter": "(objectclass='device')"
+"filter": "(objectclass=device)"
 }
