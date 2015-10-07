@@ -242,6 +242,11 @@ Steamworks::LDAP::Connection::~Connection()
 {
 }
 
+void Steamworks::LDAP::Connection::execute(const Steamworks::LDAP::Search& search)
+{
+	return d->execute(search);
+}
+
 Steamworks::LDAP::Search::Search(const std::string& base, const std::string& filter) :
 	d(new Private(base, filter)),
 	valid(true)

@@ -21,6 +21,8 @@ namespace Steamworks
 namespace LDAP
 {
 
+class Search;
+
 /**
  * Connection to an LDAP server.
  */
@@ -41,6 +43,9 @@ public:
 	Connection(const std::string& uri);
 	~Connection();
 	bool is_valid() const { return valid; }
+
+
+	void execute(const Search&);
 } ;
 
 /**
