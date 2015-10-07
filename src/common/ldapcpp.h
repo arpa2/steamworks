@@ -43,5 +43,22 @@ public:
 	bool is_valid() const { return valid; }
 } ;
 
+/**
+ * (Synchronous) search. This does not actually do the search,
+ * but represents the search and hangs on to its results.
+ */
+class Search
+{
+friend class Connection;
+private:
+	class Private;
+	std::unique_ptr<Private> d;
+	bool valid;
+public:
+	Search(const std::string& base, const std::string& filter);
+	~Search();
+	bool is_valid() const { return valid; }
+} ;
+
 }  // namespace LDAP
 }  // namespace

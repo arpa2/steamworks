@@ -76,6 +76,24 @@ public:
 
 
 /**
+ * Internals of a search.
+ */
+class Steamworks::LDAP::Search::Search::Private
+{
+private:
+	std::string m_base, m_filter;
+public:
+	Private(const std::string& base, const std::string& filter) :
+		m_base(base),
+		m_filter(filter)
+	{
+	}
+
+	const std::string& base() const { return m_base; }
+	const std::string& filter() const { return m_filter; }
+} ;
+
+/**
  * Actual implementation of the connection parts.
  * Holds on to the pointers that the OpenLDAP
  * C-API uses for a connection.
@@ -177,7 +195,42 @@ public:
 	}
 
 	bool is_valid() const { return valid && ldaphandle; }
+
+	void execute(const Steamworks::LDAP::Search& s)
+	{
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+
+		// TODO: settings for timeouts?
+		struct timeval tv;
+		tv.tv_sec = 2;
+		tv.tv_usec = 0;
+
+		LDAPMessage *res;
+		int r = ldap_search_ext_s(ldaphandle,
+			s.d->base().c_str(),
+			LDAP_SCOPE_SUBTREE,
+			s.d->filter().c_str(),
+			nullptr,  // attrs
+			0,
+			&serverctl,
+			&clientctl,
+			&tv,
+			1024*1024,
+			&res);
+		log.infoStream() << "Search returned " << r << " messages count=" << ldap_count_messages(ldaphandle, res);
+		log.infoStream() << " .. entries count=" << ldap_count_entries(ldaphandle, res);
+		LDAPMessage *entry = ldap_first_entry(ldaphandle, res);
+		while (entry != nullptr)
+		{
+			log.infoStream() << " .. entry dn=" << ldap_get_dn(ldaphandle, entry);
+			entry = ldap_next_entry(ldaphandle, entry);
+		}
+
+		ldap_msgfree(res);
+	}
 } ;
+
+
 
 Steamworks::LDAP::Connection::Connection(const std::string& uri) :
 	d(new Private(uri)),
@@ -189,3 +242,12 @@ Steamworks::LDAP::Connection::~Connection()
 {
 }
 
+Steamworks::LDAP::Search::Search(const std::string& base, const std::string& filter) :
+	d(new Private(base, filter)),
+	valid(true)
+{
+}
+
+Steamworks::LDAP::Search::~Search()
+{
+}
