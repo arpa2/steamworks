@@ -218,13 +218,18 @@ public:
 			1024*1024,
 			&res);
 		log.infoStream() << "Search returned " << r << " messages count=" << ldap_count_messages(ldaphandle, res);
-		log.infoStream() << " .. entries count=" << ldap_count_entries(ldaphandle, res);
-		LDAPMessage *entry = ldap_first_entry(ldaphandle, res);
-		while (entry != nullptr)
+		auto count = ldap_count_entries(ldaphandle, res);
+		log.infoStream() << " .. entries count=" << count;
+		if (count)
 		{
-			log.infoStream() << " .. entry dn=" << ldap_get_dn(ldaphandle, entry);
-			entry = ldap_next_entry(ldaphandle, entry);
+			LDAPMessage *entry = ldap_first_entry(ldaphandle, res);
+			while (entry != nullptr)
+			{
+				log.infoStream() << " .. entry dn=" << ldap_get_dn(ldaphandle, entry);
+				entry = ldap_next_entry(ldaphandle, entry);
+			}
 		}
+		log.infoStream() << " .. search OK.";
 
 		ldap_msgfree(res);
 	}
