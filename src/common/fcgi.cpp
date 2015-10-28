@@ -119,7 +119,7 @@ void simple_output(FCGX_Stream* out, int status, const picojson::value& map)
 	FCGX_PutS(textp, out);
 }
 
-void simple_output(FCGX_Stream* out, int status, const char* message=nullptr, const int errno=0)
+void simple_output(FCGX_Stream* out, int status, const char* message=nullptr, const int err=0)
 {
 	if (logger && (status != 200))
 	{
@@ -139,7 +139,7 @@ void simple_output(FCGX_Stream* out, int status, const char* message=nullptr, co
 	}
 	if (errno)
 	{
-		picojson::value errno_v{static_cast<double>(errno)};
+		picojson::value errno_v{static_cast<double>(err)};
 		map.emplace(std::string("errno"), errno_v);
 	}
 	picojson::value v(map);
@@ -205,15 +205,6 @@ int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_Par
 			}
 			else
 			{
-				FCGX_SetExitStatus(200, out);
-				FCGX_FPrintF(out,
-				 "Content-type: text/html\r\n"
-				 "\r\n"
-				 "<html>\n"
-				 "<head><title>Crank</title></head>\n"
-				 "<body>\n"
-				 "request=%d stdin length=%d\n", request_count, content_length);
-				FCGX_FPrintF(out, "verb: %s", verb.c_str());
 				if (logger)
 				{
 					logger->debug("Got verb '%s'.", verb.c_str());
@@ -221,12 +212,10 @@ int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_Par
 				if (dispatcher)
 				{
 					r = dispatcher->exec(verb, v);
-					FCGX_FPrintF(out, "result: %d", r);
 				}
-				FCGX_FPrintF(out, "</body></html>\n");
-
 				if (r < 0)
 				{
+					simple_output(out, 500, "Bad request", -r);
 					drain_input(in);
 					return r;
 				}
