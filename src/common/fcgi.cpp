@@ -91,39 +91,54 @@ public:
 	}
 } ;
 
+const char _empty_response[] = "Content-type: text/json\r\nContent-length: 2\r\n\r\n{}";
+
+void simple_output(FCGX_Stream* out, int status, const picojson::value& map)
+{
+	std::string text = map.serialize(true);
+	if (text.empty())
+	{
+		FCGX_PutS(_empty_response, out);
+		return;
+	}
+	const char* const textp = text.c_str();
+	if (!textp)
+	{
+		FCGX_PutS(_empty_response, out);
+		return;
+	}
+	size_t len = strlen(textp);
+	if (len < 1)
+	{
+		FCGX_PutS(_empty_response, out);
+		return;
+	}
+
+	FCGX_SetExitStatus(status, out);
+	FCGX_FPrintF(out, "Content-type: text/json\r\nContent-length: %u\r\n\r\n", len);
+	FCGX_PutS(textp, out);
+}
 
 void simple_output(FCGX_Stream* out, int status, const char* message)
 {
-	FCGX_FPrintF(out, "Content-type: text/json\r\n");
-
 	if (logger && (status != 200))
 	{
 		logger->debugStream() << "HTTP status " << status << ": " << message;
 	}
-	int output_length = 0;
-	if (message)
-	{
-		output_length = strlen(message);
-	}
-	if (output_length > 0)
-	{
-		FCGX_FPrintF(out, "Content-length: %d\r\n", output_length);
-	}
-	FCGX_FPrintF(out, "\r\n");
+
 	picojson::value::object map;
 	if (status)
 	{
 		picojson::value status_v(static_cast<double>(status));
 		map.emplace(std::string("status"), status_v);
 	}
-	if ((output_length > 0) && message)
+	if (message && (strlen(message) > 0))
 	{
 		picojson::value msg_v{std::string(message)};
 		map.emplace(std::string("message"), msg_v);
 	}
 	picojson::value v(map);
-	FCGX_FPrintF(out, "%s", v.serialize(true).c_str());
-	FCGX_SetExitStatus(status, out);
+	simple_output(out, status, v);
 }
 
 static int find_verb(const picojson::value& v, std::string &out)
