@@ -33,11 +33,11 @@ CrankDispatcher::CrankDispatcher() :
 {
 }
 
-int CrankDispatcher::exec(const std::string& verb, const Values values)
+int CrankDispatcher::exec(const std::string& verb, const Values values, Object response)
 {
 	if (verb == "connect") return do_connect(values);
 	else if (verb == "stop") return do_stop(values);
-	else if (verb == "search") return do_search(values);
+	else if (verb == "search") return do_search(values, response);
 	return -1;
 }
 
@@ -63,7 +63,7 @@ int CrankDispatcher::do_stop(const Values values)
 	return -1;
 }
 
-int CrankDispatcher::do_search(const Values values)
+int CrankDispatcher::do_search(const Values values, Object response)
 {
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
 

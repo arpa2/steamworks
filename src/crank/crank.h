@@ -24,14 +24,14 @@ private:
 public:
 	CrankDispatcher();
 
-	virtual int exec(const std::string& verb, const Values values);
+	virtual int exec(const std::string& verb, const Values values, Object response);
 
 	State state() const { return m_state; }
 
 protected:
 	int do_connect(const Values values);
 	int do_stop(const Values values);
-	int do_search(const Values values);
+	int do_search(const Values values, Object response);
 } ;
 
 
