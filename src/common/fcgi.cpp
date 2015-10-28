@@ -19,7 +19,7 @@ Adriaan de Groot <groot@kde.org>
 static const int MAX_STDIN = 65535;
 static int request_count = 0;
 
-namespace fcgi 
+namespace fcgi
 {
 static Steamworks::Logging::Logger *logger = 0;
 
@@ -37,7 +37,7 @@ private:
 	FCGX_Stream* input;
 	bool eof, valid;
 	char current;
-	
+
 public:
 	FCGInputStream(FCGX_Stream* s) :
 		input(s),
@@ -52,7 +52,7 @@ public:
 		valid(false)
 	{
 	}
-	
+
 	char operator *()
 	{
 		if (valid)
@@ -70,7 +70,7 @@ public:
 		}
 		return current;
 	}
-	
+
 	bool operator==(const FCGInputStream& rhs) const
 	{
 		if (eof && rhs.eof)
@@ -82,7 +82,7 @@ public:
 			return (eof == rhs.eof) && (input == rhs.input);
 		}
 	}
-	
+
 	// Dummy prefix-++
 	FCGInputStream& operator++()
 	{
@@ -94,7 +94,7 @@ public:
 
 void simple_output(FCGX_Stream* out, int status, const char* message)
 {
-	FCGX_FPrintF(out, "Content-type: text/html\r\n");
+	FCGX_FPrintF(out, "Content-type: text/json\r\n");
 
 	int output_length = 0;
 	if (message)
@@ -106,21 +106,30 @@ void simple_output(FCGX_Stream* out, int status, const char* message)
 		FCGX_FPrintF(out, "Content-length: %d\r\n", output_length);
 	}
 	FCGX_FPrintF(out, "\r\n");
+	picojson::value::object map;
+	if (status)
+	{
+		picojson::value status_v(static_cast<double>(status));
+		map.emplace(std::string("status"), status_v);
+	}
 	if ((output_length > 0) && message)
 	{
-		FCGX_FPrintF(out, message);
+		picojson::value msg_v{std::string(message)};
+		map.emplace(std::string("message"), msg_v);
 	}
+	picojson::value v(map);
+	FCGX_FPrintF(out, "%s", v.serialize(true).c_str());
 	FCGX_SetExitStatus(status, out);
 }
 
 static int find_verb(const picojson::value& v, std::string &out)
 {
-	if (!v.is<picojson::object>()) 
+	if (!v.is<picojson::object>())
 	{
 		return -1;
 	}
 	const picojson::value::object& obj = v.get<picojson::object>();
-	for (picojson::value::object::const_iterator i = obj.begin();i != obj.end(); ++i) 
+	for (picojson::value::object::const_iterator i = obj.begin();i != obj.end(); ++i)
 	{
 		if (i->first == "verb")
 		{
@@ -130,7 +139,7 @@ static int find_verb(const picojson::value& v, std::string &out)
 	}
 	return -2;
 }
-	
+
 int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_ParamArray env, VerbDispatcher* dispatcher)
 {
 	const char* s_content_length = FCGX_GetParam("CONTENT_LENGTH", env);
@@ -140,7 +149,7 @@ int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_Par
 		drain_input(in);
 		return 0;  // Handled correctly, even though we sent an error to the client
 	}
-	
+
 	int content_length = atoi(s_content_length);
 	if (content_length < 1)
 	{
@@ -152,7 +161,7 @@ int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_Par
 	{
 		content_length = MAX_STDIN;
 	}
-	
+
 	if (content_length > 0)
 	{
 		picojson::value v;
@@ -191,7 +200,7 @@ int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_Par
 					FCGX_FPrintF(out, "result: %d", r);
 				}
 				FCGX_FPrintF(out, "</body></html>\n");
-				
+
 				if (r < 0)
 				{
 					drain_input(in);
@@ -218,12 +227,12 @@ int Steamworks::FCGI::mainloop(VerbDispatcher *dispatcher)
 {
 	FCGX_Stream *in, *out, *err;
 	FCGX_ParamArray envp;
-	
+
 	while(FCGX_Accept(&in, &out, &err, &envp) >= 0)
 	{
 		int r = fcgi::handle_request(in, out, err, envp, dispatcher);
 		if (r) return r;
-		
+
 		request_count++;
 	}
 	return 0;
