@@ -96,6 +96,10 @@ void simple_output(FCGX_Stream* out, int status, const char* message)
 {
 	FCGX_FPrintF(out, "Content-type: text/json\r\n");
 
+	if (logger && (status != 200))
+	{
+		logger->debugStream() << "HTTP status " << status << ": " << message;
+	}
 	int output_length = 0;
 	if (message)
 	{
