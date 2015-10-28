@@ -16,3 +16,6 @@ stop:
 
 search:
 	-cat json-search | $(CMD)
+
+bogus:
+	-echo "" | $(CMD)
