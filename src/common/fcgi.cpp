@@ -188,18 +188,19 @@ int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_Par
 
 	if (content_length > 0)
 	{
-		picojson::value v;
+		picojson::value request_values;
+		picojson::value::object response_values;
 		std::string error_string;
 		std::string verb;
 		int r;
-		picojson::parse(v, FCGInputStream(in), FCGInputStream(), &error_string);
+		picojson::parse(request_values, FCGInputStream(in), FCGInputStream(), &error_string);
 		if (!error_string.empty())
 		{
 			simple_output(out, 500, error_string.c_str());
 		}
 		else
 		{
-			if ((r = find_verb(v, verb)) < 0)
+			if ((r = find_verb(request_values, verb)) < 0)
 			{
 				simple_output(out, 500, "No verb.");
 			}
@@ -211,13 +212,18 @@ int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_Par
 				}
 				if (dispatcher)
 				{
-					r = dispatcher->exec(verb, v);
+					r = dispatcher->exec(verb, request_values, response_values);
 				}
 				if (r < 0)
 				{
 					simple_output(out, 500, "Bad request", -r);
 					drain_input(in);
 					return r;
+				}
+				else
+				{
+					picojson::value v(response_values);
+					simple_output(out, 200, v);
 				}
 			}
 		}

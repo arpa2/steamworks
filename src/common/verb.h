@@ -14,8 +14,9 @@ class VerbDispatcher
 {
 public:
 	typedef picojson::value& Values;
+	typedef picojson::value::object& Object;
 
-	virtual int exec(const std::string& verb, const Values values) = 0;
+	virtual int exec(const std::string& verb, const Values values, Object response) = 0;
 } ;
 
 #endif
