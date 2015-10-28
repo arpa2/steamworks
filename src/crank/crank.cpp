@@ -46,7 +46,7 @@ int CrankDispatcher::do_connect(const Values values)
 	std::string name = values.get("uri").to_str();
 
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
-	log.debugStream() << "Connecting to" << name;
+	log.debugStream() << "Connecting to " << name;
 
 	d->connection.reset(new Steamworks::LDAP::Connection(name));
 	if (d->connection->is_valid())
@@ -76,8 +76,8 @@ int CrankDispatcher::do_search(const Values values)
 	std::string base = values.get("base").to_str();
 	std::string filter = values.get("filter").to_str();
 
-	log.debugStream() << "Search for  base=" << base;
-	log.debugStream() << "Search for match=" << filter;
+	log.debugStream() << "Search parameter base=" << base;
+	log.debugStream() << "Search         filter=" << filter;
 
 	// TODO: check authorization for this query
 	Steamworks::LDAP::Search search(base, filter);
