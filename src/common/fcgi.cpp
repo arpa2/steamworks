@@ -119,7 +119,7 @@ void simple_output(FCGX_Stream* out, int status, const picojson::value& map)
 	FCGX_PutS(textp, out);
 }
 
-void simple_output(FCGX_Stream* out, int status, const char* message)
+void simple_output(FCGX_Stream* out, int status, const char* message=nullptr, const int errno=0)
 {
 	if (logger && (status != 200))
 	{
@@ -132,10 +132,15 @@ void simple_output(FCGX_Stream* out, int status, const char* message)
 		picojson::value status_v(static_cast<double>(status));
 		map.emplace(std::string("status"), status_v);
 	}
-	if (message && (strlen(message) > 0))
+	if ((message != nullptr) && (strlen(message) > 0))
 	{
 		picojson::value msg_v{std::string(message)};
 		map.emplace(std::string("message"), msg_v);
+	}
+	if (errno)
+	{
+		picojson::value errno_v{static_cast<double>(errno)};
+		map.emplace(std::string("errno"), errno_v);
 	}
 	picojson::value v(map);
 	simple_output(out, status, v);
