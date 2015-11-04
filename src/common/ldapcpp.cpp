@@ -196,7 +196,7 @@ public:
 
 	bool is_valid() const { return valid && ldaphandle; }
 
-	void execute(const Steamworks::LDAP::Search& s)
+	void execute(const Steamworks::LDAP::Search& s, picojson::value::object* results)
 	{
 		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 
@@ -225,7 +225,13 @@ public:
 			LDAPMessage *entry = ldap_first_entry(ldaphandle, res);
 			while (entry != nullptr)
 			{
-				log.infoStream() << " .. entry dn=" << ldap_get_dn(ldaphandle, entry);
+				std::string dn(ldap_get_dn(ldaphandle, entry));
+				log.infoStream() << " .. entry dn=" << dn;
+				if (results)
+				{
+					picojson::value v_dn(dn);
+					results->emplace(dn, v_dn);
+				}
 				entry = ldap_next_entry(ldaphandle, entry);
 			}
 		}
@@ -248,9 +254,9 @@ Steamworks::LDAP::Connection::~Connection()
 {
 }
 
-void Steamworks::LDAP::Connection::execute(const Steamworks::LDAP::Search& search)
+void Steamworks::LDAP::Connection::execute(const Steamworks::LDAP::Search& search, picojson::value::object* results)
 {
-	return d->execute(search);
+	return d->execute(search, results);
 }
 
 Steamworks::LDAP::Search::Search(const std::string& base, const std::string& filter) :

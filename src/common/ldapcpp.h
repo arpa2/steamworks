@@ -15,6 +15,8 @@ Adriaan de Groot <groot@kde.org>
 #include <memory>
 #include <string>
 
+#include "picojson.h"
+
 namespace Steamworks
 {
 
@@ -45,7 +47,7 @@ public:
 	bool is_valid() const { return valid; }
 
 
-	void execute(const Search&);
+	void execute(const Search&, picojson::value::object* results=nullptr);
 } ;
 
 /**

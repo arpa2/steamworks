@@ -81,6 +81,6 @@ int CrankDispatcher::do_search(const Values values, Object response)
 
 	// TODO: check authorization for this query
 	Steamworks::LDAP::Search search(base, filter);
-	d->connection->execute(search);
+	d->connection->execute(search, &response);
 	return 0;
 }
