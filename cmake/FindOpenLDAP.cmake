@@ -13,6 +13,11 @@ if (_LDAP)
   set(OpenLDAP_LIBRARIES ${_LDAP})
 endif()
 
+find_library(_LBER lber)
+if (_LBER)
+  set(OpenLDAP_BER_LIBRARIES ${_LBER})
+endif()
+
 find_path(OpenLDAP_INCLUDE_DIRS ldap.h)
 
 find_package_handle_standard_args(OpenLDAP 
