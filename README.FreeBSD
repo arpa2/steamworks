@@ -1,0 +1,8 @@
+This Steamworks software is compatible with FreeBSD and has been
+tested on FreeBSD 10-STABLE, 10.1-R and 10.2-R. In order to build
+Steamworks locally, you will need the following packages installed:
+
+	fcgi-devkit
+	log4cpp
+	openldap-client
+
