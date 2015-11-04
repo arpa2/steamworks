@@ -78,7 +78,7 @@ public:
 /**
  * Internals of a search.
  */
-class Steamworks::LDAP::Search::Search::Private
+class Steamworks::LDAP::Search::Private
 {
 private:
 	std::string m_base, m_filter;
