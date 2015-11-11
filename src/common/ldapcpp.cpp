@@ -107,6 +107,30 @@ private:
 	::LDAPControl* clientctl;
 	bool valid;
 
+	// Internal class that frees the LDAP handle unless the member variable
+	// keep is set to true before destruction.
+	class _handle_free
+	{
+	public:
+		::LDAP*& handle;
+		bool keep;
+	public:
+		_handle_free(::LDAP*& h) :
+			handle(h),
+			keep(false)
+		{
+		}
+
+		~_handle_free()
+		{
+			if (handle && !keep)
+			{
+				ldap_memfree(handle);
+				handle = nullptr;
+			}
+		}
+	} ;
+
 public:
 	Private(const std::string& uri) :
 		uri(uri),
@@ -118,16 +142,14 @@ public:
 		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 		log.debugStream() << "LDAP connect to '" << uri << "'";
 
+		_handle_free handle_disconnector(ldaphandle);
+
 		int r = 0;
 
 		r = ldap_initialize(&ldaphandle, uri.c_str());
 		if (r)
 		{
 			log.errorStream() << "Could not initialize LDAP. Error " << r;
-			if (ldaphandle)
-			{
-				ldap_memfree(ldaphandle);
-			}
 			return;
 		}
 		if (!ldaphandle)
@@ -157,10 +179,12 @@ public:
 			if (r)
 			{
 				log.errorStream() << "Could not set LDAP protocol version 3. Error" << r;
-				// TODO: close handle
 				return;
 			}
 		}
+
+		// From here on, we'll keep the LDAP connection.
+		handle_disconnector.keep = true;
 
 		if (true)
 		{
@@ -178,6 +202,7 @@ public:
 		if (r)
 		{
 			log.errorStream() << "Could not start TLS. Error" << r << ", " << ldap_err2string(r);
+			// But carry on ..
 		}
 
 		valid = true;
