@@ -215,7 +215,10 @@ public:
 			// TODO: disconnect gracefully
 			valid = false;
 		}
-		ldap_memfree(ldaphandle);
+		if (ldaphandle)
+		{
+			ldap_memfree(ldaphandle);
+		}
 		ldaphandle = nullptr;
 	}
 
