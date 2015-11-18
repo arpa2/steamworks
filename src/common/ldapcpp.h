@@ -67,5 +67,19 @@ public:
 	bool is_valid() const { return valid; }
 } ;
 
+class Update
+{
+friend class Connection;
+private:
+	class Private;
+	std::unique_ptr<Private> d;
+	bool valid;
+public:
+	using Attributes=std::map<const std::string&, const std::string>;
+	Update(const std::string& dn); // Empty update (not valid)
+	Update(const std::string& dn, const Attributes& attr); // Update one
+	Update(const picojson::value::object& json);
+} ;
+
 }  // namespace LDAP
 }  // namespace
