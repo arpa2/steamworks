@@ -1,0 +1,18 @@
+* IDE Settings
+
+This file describes which settings to use in a variety of IDEs
+for building and developing Steamworks. For generic build-from-
+source instructions, see README and the Makefile.
+
+** KDevelop
+
+To use KDevelop as IDE while working on Steamworks, do the following:
+ 1- Run make(1) once in the toplevel, to create a build/ directory
+    and do initial configuration.
+ 2- Select Open/Import an existing project.
+ 3- Select the src/ subdirectory as project directory, import from 
+    CMakeLists.txt.
+ 4- As a build directory, select the build/ subdirectory one level
+    higher. KDevelop will suggest src/build, but you've already
+    created build/ in step 1.
+
