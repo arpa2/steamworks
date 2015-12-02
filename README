@@ -9,5 +9,14 @@ Pulley parts of that system.
     src/crank            Steamworks Crank component
 
 See LICENSE for overall licensing information, and a README in each
-subdirectory for local details.
+subdirectory for local details. See README.<os> for details regarding
+SteamWorks on a particular operating system and for build dependencies.
+For a quick start (assuming the build dependencies are met; otherwise
+you will get error messages that point out what is missing), just run
+
+    make
+
+to create a build directory, configure and build the system. For example
+usage of the system, see the examples/ directories in the various
+components directories.
 
