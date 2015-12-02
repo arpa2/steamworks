@@ -6,3 +6,5 @@ Steamworks locally, you will need the following packages installed:
 	log4cpp
 	openldap-client
 
+SteamWorks builds with both clang (default on the tested FreeBSD
+versions) and gcc.
