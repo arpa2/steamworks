@@ -1,0 +1,9 @@
+{
+"verb": "update",
+"values" : [
+  {
+  "dn": "cn=nas,dc=example,dc=com",
+  "description": "Network Attached Storage"
+  }
+  ]
+}

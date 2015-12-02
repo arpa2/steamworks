@@ -17,5 +17,8 @@ stop:
 search:
 	-cat json-search | $(CMD)
 
+update:
+	-cat json-update | $(CMD)
+
 bogus:
 	-echo "" | $(CMD)
