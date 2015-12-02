@@ -84,7 +84,7 @@ public:
 	Update(const std::string& dn);  // Empty update (not valid)
 	Update(const std::string& dn, const Attributes& attr);  // Update one attribute
 	Update(const picojson::value& json);  // Update multiple attributes
-
+	~Update();
 	bool is_valid() const { return valid; }
 
 	bool add_update(const std::string& name, const std::string& value);

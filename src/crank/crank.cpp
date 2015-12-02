@@ -38,6 +38,7 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 	if (verb == "connect") return do_connect(values);
 	else if (verb == "stop") return do_stop(values);
 	else if (verb == "search") return do_search(values, response);
+	else if (verb == "update") return do_update(values, response);
 	return -1;
 }
 
@@ -82,5 +83,27 @@ int CrankDispatcher::do_search(const Values values, Object response)
 	// TODO: check authorization for this query
 	Steamworks::LDAP::Search search(base, filter);
 	d->connection->execute(search, &response);
+	return 0;
+}
+
+int CrankDispatcher::do_update(const Values values, Object response)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+
+	if (m_state != connected)
+	{
+		log.debugStream() << "Update on disconnected server.";
+		return 0;
+	}
+
+	if (!values.is<picojson::array>())
+	{
+		log.debugStream() << "Update json is not an array of updates.";
+		return 0;
+	}
+
+	picojson::value v = values.get(0);
+	Steamworks::LDAP::Update u(v);
+
 	return 0;
 }

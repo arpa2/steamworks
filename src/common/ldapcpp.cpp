@@ -60,6 +60,8 @@ public:
 	void update(const std::string& name, const std::string& value)
 	{
 		m_map.emplace<>(name, value);
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+		log.debugStream() << "Update dn=" << m_dn << " attr " << name << "=" << value;
 	}
 	void remove(const std::string& name)
 	{
@@ -94,17 +96,27 @@ Steamworks::LDAP::Update::Update(const picojson::value& json) :
 	{
 		d.reset(new Private(dn));
 	}
+	else
+	{
+		return;  // no dn? remain invalid
+	}
 	const picojson::object& o = json.get<picojson::object>();
 	if (o.size() > 1)  // "dn" plus one more
 	{
 		for (auto i: o)
 		{
-			d->update(i.first, i.second.to_str());
+			if (i.first != "dn")
+			{
+				d->update(i.first, i.second.to_str());
+			}
 		}
 		valid = true;
 	}
 }
 
+Steamworks::LDAP::Update::~Update()
+{
+}
 
 /**
  * Internal class representing the LDAP API information (version, vendor, etc.)
