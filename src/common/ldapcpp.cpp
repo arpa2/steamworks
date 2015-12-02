@@ -11,6 +11,102 @@ Adriaan de Groot <groot@kde.org>
 #include "logger.h"
 
 /**
+ * Internals of a search. A search holds a base dn for the search
+ * and a filter expression. When executed, it returns an array
+ * of objects found.
+ */
+class Steamworks::LDAP::Search::Private
+{
+private:
+	std::string m_base, m_filter;
+public:
+	Private(const std::string& base, const std::string& filter) :
+		m_base(base),
+		m_filter(filter)
+	{
+	}
+
+	const std::string& base() const { return m_base; }
+	const std::string& filter() const { return m_filter; }
+} ;
+
+Steamworks::LDAP::Search::Search(const std::string& base, const std::string& filter) :
+	d(new Private(base, filter)),
+	valid(true)
+{
+}
+
+Steamworks::LDAP::Search::~Search()
+{
+}
+
+/**
+ * Internals of an update.
+ */
+class Steamworks::LDAP::Update::Private
+{
+private:
+	std::string m_dn;
+	Steamworks::LDAP::Update::Attributes m_map;
+public:
+	Private(const std::string& dn) :
+		m_dn(dn)
+	{
+	};
+	void update(const Steamworks::LDAP::Update::Attributes& attrs)
+	{
+		m_map.insert(attrs.cbegin(), attrs.cend());
+	}
+	void update(const std::string& name, const std::string& value)
+	{
+		m_map.emplace<>(name, value);
+	}
+	void remove(const std::string& name)
+	{
+		m_map.erase(name);
+	}
+} ;
+
+Steamworks::LDAP::Update::Update(const std::string& dn) :
+	d(new Private(dn)),
+	valid(false)
+{
+
+}
+
+Steamworks::LDAP::Update::Update(const std::string& dn, const Steamworks::LDAP::Update::Attributes& attr) :
+	d(new Private(dn)),
+	valid(attr.size() > 0)
+{
+	d->update(attr);
+}
+
+Steamworks::LDAP::Update::Update(const picojson::value& json) :
+	d(nullptr),
+	valid(false)
+{
+	if (!json.is<picojson::value::object>())
+	{
+		return;
+	}
+	std::string dn = json.get("dn").to_str();
+	if (!dn.empty())
+	{
+		d.reset(new Private(dn));
+	}
+	const picojson::object& o = json.get<picojson::object>();
+	if (o.size() > 1)  // "dn" plus one more
+	{
+		for (auto i: o)
+		{
+			d->update(i.first, i.second.to_str());
+		}
+		valid = true;
+	}
+}
+
+
+/**
  * Internal class representing the LDAP API information (version, vendor, etc.)
  * retrieved with ldap_get_option(LDAP_OPT_API_INFO). Creating an object of
  * this type retrieves the information; it is freed on destruction. Ownership
@@ -74,24 +170,6 @@ public:
 	int get_version() const { return is_valid() ? info.ldapai_info_version : -1; }
 } ;
 
-
-/**
- * Internals of a search.
- */
-class Steamworks::LDAP::Search::Private
-{
-private:
-	std::string m_base, m_filter;
-public:
-	Private(const std::string& base, const std::string& filter) :
-		m_base(base),
-		m_filter(filter)
-	{
-	}
-
-	const std::string& base() const { return m_base; }
-	const std::string& filter() const { return m_filter; }
-} ;
 
 /**
  * Actual implementation of the connection parts.
@@ -321,8 +399,6 @@ public:
 	}
 } ;
 
-
-
 Steamworks::LDAP::Connection::Connection(const std::string& uri) :
 	d(new Private(uri)),
 	valid(false)
@@ -339,12 +415,3 @@ void Steamworks::LDAP::Connection::execute(const Steamworks::LDAP::Search& searc
 	return d->execute(search, results);
 }
 
-Steamworks::LDAP::Search::Search(const std::string& base, const std::string& filter) :
-	d(new Private(base, filter)),
-	valid(true)
-{
-}
-
-Steamworks::LDAP::Search::~Search()
-{
-}
