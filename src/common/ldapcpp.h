@@ -22,33 +22,7 @@ namespace Steamworks
 
 namespace LDAP
 {
-
-class Search;
-
-/**
- * Connection to an LDAP server.
- */
-class Connection
-{
-private:
-	class Private;
-	std::unique_ptr<Private> d;
-	bool valid;
-
-public:
-	/**
-	 * Connect to an LDAP server given by the URI.
-	 * All connections use TLS, regardless of the protocol
-	 * in the URI, so it is preferable to use "ldap:" URIs
-	 * over other methods.
-	 */
-	Connection(const std::string& uri);
-	~Connection();
-	bool is_valid() const { return valid; }
-
-
-	void execute(const Search&, picojson::value::object* results=nullptr);
-} ;
+class Connection;
 
 /**
  * (Synchronous) search. This does not actually do the search,
@@ -88,6 +62,32 @@ public:
 	bool is_valid() const { return valid; }
 
 	bool add_update(const std::string& name, const std::string& value);
+} ;
+
+/**
+ * Connection to an LDAP server.
+ */
+class Connection
+{
+private:
+	class Private;
+	std::unique_ptr<Private> d;
+	bool valid;
+
+public:
+	/**
+	 * Connect to an LDAP server given by the URI.
+	 * All connections use TLS, regardless of the protocol
+	 * in the URI, so it is preferable to use "ldap:" URIs
+	 * over other methods.
+	 */
+	Connection(const std::string& uri);
+	~Connection();
+	bool is_valid() const { return valid; }
+
+
+	void execute(const Search&, picojson::value::object* results=nullptr);
+	void execute(const Update&, picojson::value::object* results=nullptr);
 } ;
 
 }  // namespace LDAP

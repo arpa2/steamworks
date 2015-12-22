@@ -97,14 +97,26 @@ int CrankDispatcher::do_update(const Values values, Object response)
 	}
 
 	picojson::value v = values.get("values");
-
 	if (!v.is<picojson::array>())
 	{
 		log.debugStream() << "Update json is not an array of updates.";
 		return 0;
 	}
 
-	Steamworks::LDAP::Update u(v.get(0));
+	for (unsigned int count = 0; ; count++)
+	{
+		log.debugStream() << "Updating #" << count;
+
+		Steamworks::LDAP::Update u(v.get(count));
+		if (u.is_valid())
+		{
+			d->connection->execute(u, &response);
+		}
+		else
+		{
+			break;
+		}
+	}
 
 	return 0;
 }

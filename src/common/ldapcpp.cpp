@@ -367,6 +367,19 @@ public:
 		ldap_msgfree(res);
 	}
 
+	void execute(const Steamworks::LDAP::Update& u, picojson::value::object* results)
+	{
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+
+		// TODO: settings for timeouts?
+		struct timeval tv;
+		tv.tv_sec = 2;
+		tv.tv_usec = 0;
+
+		log.infoStream() << " .. update ignored.";
+	}
+
+protected:
 	void copy_entry(LDAPMessage* entry, picojson::value::object& map)
 	{
 		// TODO: guard against memory leaks
@@ -427,3 +440,7 @@ void Steamworks::LDAP::Connection::execute(const Steamworks::LDAP::Search& searc
 	return d->execute(search, results);
 }
 
+void Steamworks::LDAP::Connection::execute(const Steamworks::LDAP::Update& search, picojson::value::object* results)
+{
+	return d->execute(search, results);
+}
