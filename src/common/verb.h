@@ -5,8 +5,8 @@ All rights reserved. See file LICENSE for exact terms (2-clause BSD license).
 Adriaan de Groot <groot@kde.org>
 */
 
-#ifndef STEAMWORKS_VERB_H
-#define STEAMWORKS_VERB_H
+#ifndef STEAMWORKS_COMMON_VERB_H
+#define STEAMWORKS_COMMON_VERB_H
 
 #include "picojson.h"
 

@@ -27,6 +27,9 @@ Adriaan de Groot <groot@kde.org>
  * if log4cpp is still maintained.
  */
 
+#ifndef STEAMWORKS_COMMON_LOGGER_H
+#define STEAMWORKS_COMMON_LOGGER_H
+
 #ifndef NDEBUG
 #include <log4cpp/Category.hh>
 #include <log4cpp/PropertyConfigurator.hh>
@@ -190,3 +193,5 @@ Logger& getRoot() { return Manager::getRoot(); }
 
 } // namespace Logging
 } // namespace
+
+#endif
