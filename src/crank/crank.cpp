@@ -7,7 +7,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "crank.h"
 
-#include "ldapcpp.h"
+#include "swldap/ldapcpp.h"
 #include "logger.h"
 
 class CrankDispatcher::Private

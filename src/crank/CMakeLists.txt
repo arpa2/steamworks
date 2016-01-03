@@ -21,9 +21,8 @@ set(CRANK_SRC
   crank.cpp
   ${COMMON}/fcgi.cpp
   ${COMMON}/logger.cpp
-  ${COMMON}/ldapcpp.cpp
   )
 
 add_executable(crank ${CRANK_SRC})
-target_link_libraries(crank ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES})
+target_link_libraries(crank ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES} swldap)
 
