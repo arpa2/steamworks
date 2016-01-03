@@ -1,7 +1,4 @@
-Common libraries and header files. These are simply #included
+Common libraries and headers for LDAP actions. These are simply #included
 by other Steamworks components or the cpp files are added as 
 sources, which is why there's no CMakeLists here: this is
 not a directory that builds anything.
-
-The subdirectory swldap/ (SteamWorks LDAP) contains a bunch
-of files all LDAP-related.
