@@ -7,8 +7,10 @@ Adriaan de Groot <groot@kde.org>
 
 #include <ldap.h>
 
+#include "../logger.h"
+
 #include "ldapcpp.h"
-#include "logger.h"
+#include "serverinfo.h"
 
 /**
  * Internals of a search. A search holds a base dn for the search
@@ -119,71 +121,6 @@ Steamworks::LDAP::Update::~Update()
 }
 
 /**
- * Internal class representing the LDAP API information (version, vendor, etc.)
- * retrieved with ldap_get_option(LDAP_OPT_API_INFO). Creating an object of
- * this type retrieves the information; it is freed on destruction. Ownership
- * of any pointers in the info-structure remains with the _APIInfo object.
- */
-class _APIInfo
-{
-private:
-	LDAPAPIInfo info;
-	bool valid;
-
-public:
-	/** Get the API information from the given @p ldaphandle */
-	_APIInfo(LDAP* ldaphandle) :
-		valid(false)
-	{
-		info.ldapai_info_version = LDAP_API_INFO_VERSION;
-		int r = ldap_get_option(ldaphandle, LDAP_OPT_API_INFO, &info);
-		if (r) return;
-		valid = true;
-	}
-
-	~_APIInfo()
-	{
-		if (!valid) return;
-
-		ldap_memfree(info.ldapai_vendor_name);
-		if (info.ldapai_extensions)
-		{
-			for (char **s = info.ldapai_extensions; *s; s++)
-			{
-				ldap_memfree(*s);
-			}
-			ldap_memfree(info.ldapai_extensions);
-		}
-	}
-
-	/**
-	 * Log interesting fields to the given @p log at @p level (e.g. DEBUG).
-	 */
-	void log(Steamworks::Logging::Logger& log, Steamworks::Logging::LogLevel level) const
-	{
-		if (!valid)
-		{
-			log.getStream(level) << "LDAP API invalid";
-			return;
-		}
-		log.getStream(level) << "LDAP API version " << info.ldapai_info_version;
-		log.getStream(level) << "LDAP API vendor  " << (info.ldapai_vendor_name ? info.ldapai_vendor_name : "<unknown>");
-		if (info.ldapai_extensions)
-		{
-			for (char **s = info.ldapai_extensions; *s; s++)
-			{
-				log.getStream(level) << "LDAP extension   " << *s;
-			}
-		}
-	}
-
-	bool is_valid() const { return valid; }
-	/// Gets the API version number (usually 3), or -1 on error.
-	int get_version() const { return is_valid() ? info.ldapai_info_version : -1; }
-} ;
-
-
-/**
  * Actual implementation of the connection parts.
  * Holds on to the pointers that the OpenLDAP
  * C-API uses for a connection.
@@ -251,7 +188,7 @@ public:
 		// Here and following, if (true) is just a marker for a block scope
 		if (true)
 		{
-			_APIInfo info(ldaphandle);
+			APIInfo info(ldaphandle);
 			if (!info.is_valid())
 			{
 				log.errorStream() << "Could not get LDAP API info."
