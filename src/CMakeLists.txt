@@ -14,4 +14,5 @@ MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
 include(CheckCXX11Flags)
 
 
+add_subdirectory(common)
 add_subdirectory(crank)
