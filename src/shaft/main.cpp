@@ -7,7 +7,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "logger.h"
 
-static const char* copyright = "Copyright (C) 2014, 2015 InternetWide.org and the ARPA2.net project";
+static const char* copyright = "Copyright (C) 2014-2016 InternetWide.org and the ARPA2.net project";
 
 int main(int argc, char** argv)
 {
