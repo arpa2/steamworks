@@ -18,9 +18,11 @@ include_directories(${FCGI_INCLUDE_DIRS} ${COMMON} ../3rdparty)
 
 set(SHAFT_SRC
   main.cpp
+  shaft.cpp
   ${COMMON}/logger.cpp
+  ${COMMON}/fcgi.cpp
   )
 
 add_executable(shaft ${SHAFT_SRC})
-target_link_libraries(shaft ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${LOG4CPP_LIBRARIES} swldap)
+target_link_libraries(shaft ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES} swldap)
 
