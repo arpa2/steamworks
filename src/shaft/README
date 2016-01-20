@@ -1,0 +1,6 @@
+This directory contains the documentation and sources for the
+shaft-component of SteamWorks. See http://steamworks.arpa2.net/shaft.html
+for a general description.
+
+The shaft copies and transforms one or more upstream LDAP DITs to a
+single downstream. Currently, it is in a very experimental state.

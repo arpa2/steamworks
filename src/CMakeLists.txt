@@ -16,3 +16,4 @@ include(CheckCXX11Flags)
 
 add_subdirectory(common)
 add_subdirectory(crank)
+add_subdirectory(shaft)
