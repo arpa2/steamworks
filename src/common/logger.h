@@ -138,7 +138,7 @@ public:
 		catch (log4cpp::ConfigureFailure& e)
 		{
 			// Logging disabled.
-			std::cerr << "No file " << propertyfile << ". Logging disabled.";
+			std::cerr << "No file " << propertyfile << ". Logging disabled.\n";
 		}
 		instances++;
 		getRoot().debugStream() << "LoggerManager created, #" << instances;
