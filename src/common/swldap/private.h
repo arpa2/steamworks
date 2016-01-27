@@ -25,7 +25,8 @@ namespace Steamworks
 namespace LDAP
 {
 
-void copy_entry(::LDAP* ldaphandle, ::LDAPMessage* entry, Result map);
+void copy_entry(::LDAP* ldaphandle, ::LDAPMessage* entry, Result results);
+void copy_search_result(::LDAP* ldaphandle, ::LDAPMessage* res, Result results, Logging::Logger& log);
 
 }  // namespace LDAP
 }  // namespace Steamworks

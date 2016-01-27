@@ -5,7 +5,7 @@ All rights reserved. See file LICENSE for exact terms (2-clause BSD license).
 Adriaan de Groot <groot@kde.org>
 */
 
-#include "connection.h"
+#include "private.h"
 
 namespace Steamworks
 {
@@ -59,6 +59,41 @@ void copy_entry(::LDAP* ldaphandle, ::LDAPMessage* entry, Result map)
 	{
 		ber_free(berp, 0);
 	}
+}
+
+void copy_search_result(::LDAP* ldaphandle, ::LDAPMessage* res, Result results, Steamworks::Logging::Logger& log)
+{
+	log.infoStream() << "Search message count=" << ldap_count_messages(ldaphandle, res);
+
+	auto count = ldap_count_entries(ldaphandle, res);
+	log.infoStream() << " .. entries count=" << count;
+	if (count)
+	{
+		LDAPMessage *entry = ldap_first_entry(ldaphandle, res);
+		while (entry != nullptr)
+		{
+			std::string dn(ldap_get_dn(ldaphandle, entry));
+			log.infoStream() << " .. entry dn=" << dn;
+
+			if (results)
+			{
+				picojson::value::object object;
+				picojson::value v_object(object);
+				results->emplace(dn, v_object);
+
+				picojson::value& placed_obj = results->at(dn);
+				picojson::value::object& placed_map = placed_obj.get<picojson::value::object>();
+
+				picojson::value v(dn);
+				placed_map.emplace(std::string("dn"), v);
+
+				copy_entry(ldaphandle, entry, &placed_map);
+			}
+
+			entry = ldap_next_entry(ldaphandle, entry);
+		}
+	}
+	log.infoStream() << " .. search OK.";
 }
 
 }  // namespace LDAP

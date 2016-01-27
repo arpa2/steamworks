@@ -51,7 +51,7 @@ void Steamworks::LDAP::Search::execute(Connection& conn, Result results)
 	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 
-	LDAPMessage *res;
+	LDAPMessage* res;
 	int r = ldap_search_ext_s(ldaphandle,
 		d->base().c_str(),
 		LDAP_SCOPE_SUBTREE,
@@ -63,40 +63,21 @@ void Steamworks::LDAP::Search::execute(Connection& conn, Result results)
 		&tv,
 		1024*1024,
 		&res);
-	log.infoStream() << "Search returned " << r << " messages count=" << ldap_count_messages(ldaphandle, res);
-
-	auto count = ldap_count_entries(ldaphandle, res);
-	log.infoStream() << " .. entries count=" << count;
-	if (count)
+	if (r)
 	{
-		LDAPMessage *entry = ldap_first_entry(ldaphandle, res);
-		while (entry != nullptr)
-		{
-			std::string dn(ldap_get_dn(ldaphandle, entry));
-			log.infoStream() << " .. entry dn=" << dn;
-
-			if (results)
-			{
-				picojson::value::object object;
-				picojson::value v_object(object);
-				results->emplace(dn, v_object);
-
-				picojson::value& placed_obj = results->at(dn);
-				picojson::value::object& placed_map = placed_obj.get<picojson::value::object>();
-
-				picojson::value v(dn);
-				placed_map.emplace(std::string("dn"), v);
-
-				copy_entry(ldaphandle, entry, &placed_map);
-			}
-
-			entry = ldap_next_entry(ldaphandle, entry);
-		}
+		log.errorStream() << "Search result " << r << " " << ldap_err2string(r);
+		// TODO: does res need freeing here?
+		return;
 	}
-	log.infoStream() << " .. search OK.";
+	else
+	{
+	}
+
+	copy_search_result(ldaphandle, res, results, log);
 
 	ldap_msgfree(res);
 }
+
 
 
 
