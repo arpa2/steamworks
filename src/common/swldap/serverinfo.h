@@ -8,6 +8,8 @@ Adriaan de Groot <groot@kde.org>
 #ifndef SWLDAP_SERVERINFO_H
 #define SWLDAP_SERVERINFO_H
 
+#include <string>
+
 #include "../logger.h"
 #include "connection.h"
 
