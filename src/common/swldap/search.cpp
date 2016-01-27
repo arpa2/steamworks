@@ -82,8 +82,9 @@ Steamworks::LDAP::Search::~Search()
 {
 }
 
-void Steamworks::LDAP::Search::execute(::LDAP* ldaphandle)
+void Steamworks::LDAP::Search::execute(Connection& conn)
 {
+	::LDAP* ldaphandle = handle(conn);
 	picojson::value::object* results = nullptr;
 
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
@@ -100,8 +101,8 @@ void Steamworks::LDAP::Search::execute(::LDAP* ldaphandle)
 		d->filter().c_str(),
 		nullptr,  // attrs
 		0,
-		&serverctl,
-		&clientctl,
+		server_controls(conn),
+		client_controls(conn),
 		&tv,
 		1024*1024,
 		&res);

@@ -32,7 +32,10 @@ public:
 	APIInfo();
 	~APIInfo();
 
-	virtual void execute(::LDAP*);
+	virtual void execute(Connection&);
+	// Special case: when the connection is being constructed and
+	//  we already have a handle, but not a complete Connection object.
+	void execute(::LDAP*);
 
 	/**
 	 * Log interesting fields to the given @p log at @p level (e.g. DEBUG).
@@ -55,7 +58,7 @@ public:
 	ServerControlInfo(const std::string& oid);
 	~ServerControlInfo();
 
-	virtual void execute(::LDAP*);
+	virtual void execute(Connection&);
 
 	/// TODO: logging?
 

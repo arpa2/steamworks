@@ -44,7 +44,7 @@ public:
 	Search(const std::string& base, const std::string& filter);
 	~Search();
 
-	virtual void execute(::LDAP*);
+	virtual void execute(Connection&);
 } ;
 
 #if 0

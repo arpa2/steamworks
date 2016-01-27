@@ -42,6 +42,8 @@ private:
 
 protected:
 	::LDAP* handle() const;
+	::LDAPControl** client_controls() const;
+	::LDAPControl** server_controls() const;
 
 public:
 	/**
@@ -69,6 +71,9 @@ protected:
 	{
 	}
 
+	::LDAP* handle(Connection& conn) const { return conn.handle(); }
+	::LDAPControl** client_controls(Connection& conn) const { return conn.client_controls(); }
+	::LDAPControl** server_controls(Connection& conn) const { return conn.server_controls(); }
 
 public:
 	Action() : m_valid(false)
@@ -77,12 +82,7 @@ public:
 
 	bool is_valid() const { return m_valid; }
 
-	void execute(Connection& c)  // FIXME: results? arguments?
-	{
-		return execute(c.handle());
-	}
-
-	virtual void execute(::LDAP*) = 0;  // FIXME: results? arguments?
+	virtual void execute(Connection&) = 0;  // FIXME: results? arguments?
 } ;
 
 
