@@ -12,35 +12,42 @@ Adriaan de Groot <groot@kde.org>
  * to an LDAP server. The connection may be invalid. Connections are
  * explicitly disconnected when destroyed.
  */
-#include <memory>
+
+#ifndef SWLDAP_SEARCH_H
+#define SWLDAP_SEARCH_H
+
 #include <string>
 
+#include "../logger.h"
 #include "picojson.h"
+
+#include "connection.h"
 
 namespace Steamworks
 {
 
 namespace LDAP
 {
-class Connection;
+void copy_entry(::LDAP* ldaphandle, ::LDAPMessage* entry, picojson::value::object& map);
+
 
 /**
  * (Synchronous) search. This does not actually do the search,
  * but represents the search and hangs on to its results.
  */
-class Search
+class Search : public Action
 {
-friend class Connection;
 private:
 	class Private;
 	std::unique_ptr<Private> d;
-	bool valid;
 public:
 	Search(const std::string& base, const std::string& filter);
 	~Search();
-	bool is_valid() const { return valid; }
+
+	virtual void execute(::LDAP*);
 } ;
 
+#if 0
 /**
  * (Synchronous) update. This does not actually do an update,
  * but represents the change to be made. Updates change zero
@@ -63,32 +70,9 @@ public:
 
 	bool add_update(const std::string& name, const std::string& value);
 } ;
-
-/**
- * Connection to an LDAP server.
- */
-class Connection
-{
-private:
-	class Private;
-	std::unique_ptr<Private> d;
-	bool valid;
-
-public:
-	/**
-	 * Connect to an LDAP server given by the URI.
-	 * All connections use TLS, regardless of the protocol
-	 * in the URI, so it is preferable to use "ldap:" URIs
-	 * over other methods.
-	 */
-	Connection(const std::string& uri);
-	~Connection();
-	bool is_valid() const { return valid; }
-
-
-	void execute(const Search&, picojson::value::object* results=nullptr);
-	void execute(const Update&, picojson::value::object* results=nullptr);
-} ;
+#endif
 
 }  // namespace LDAP
 }  // namespace
+
+#endif

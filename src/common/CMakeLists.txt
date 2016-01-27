@@ -17,6 +17,7 @@ include_directories(${FCGI_INCLUDE_DIRS} ../3rdparty)
 set(SWLDAP_SRC
   swldap/connection.cpp
   swldap/serverinfo.cpp
+  swldap/search.cpp
   )
 
 add_library(swldap STATIC ${SWLDAP_SRC})

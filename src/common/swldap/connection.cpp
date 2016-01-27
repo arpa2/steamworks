@@ -151,49 +151,6 @@ public:
 	}
 
 	bool is_valid() const { return valid && ldaphandle; }
-
-	void copy_entry(LDAPMessage* entry, picojson::value::object& map)
-	{
-		// TODO: guard against memory leaks
-		BerElement* berp(nullptr);
-		char *attr = ldap_first_attribute(ldaphandle, entry, &berp);
-
-		while (attr != nullptr)
-		{
-			berval** values = ldap_get_values_len(ldaphandle, entry, attr);
-			auto values_len = ldap_count_values_len(values);
-			if (values_len == 0)
-			{
-				// TODO: can this happen?
-				picojson::value v_attr;
-				map.emplace(attr, v_attr);  // null
-			}
-			else if (values_len > 1)
-			{
-				// FIXME: decode ber-values
-				picojson::value::array v_array;
-				v_array.reserve(values_len);
-				for (decltype(values_len) i=0; i<values_len; i++)
-				{
-					picojson::value v_attr(values[i]->bv_val);
-					v_array.emplace_back(v_attr);
-				}
-			}
-			else
-			{
-				// FIXME: decode ber-values
-				picojson::value v_attr(values[0]->bv_val);
-				map.emplace(attr, v_attr);
-			}
-			ldap_value_free_len(values);
-			attr = ldap_next_attribute(ldaphandle, entry, berp);
-		}
-
-		if (berp)
-		{
-			ber_free(berp, 0);
-		}
-	}
 } ;
 
 Steamworks::LDAP::Connection::Connection(const std::string& uri) :
