@@ -1,0 +1,4 @@
+{ 
+"verb": "connect",
+"uri": "ldap://db/"
+}
