@@ -11,8 +11,11 @@ Adriaan de Groot <groot@kde.org>
 #include "serverinfo.h"
 
 
-Steamworks::LDAP::APIInfo::APIInfo(::LDAP* ldaphandle) :
-	m_valid(false)
+Steamworks::LDAP::APIInfo::APIInfo()
+{
+}
+
+void Steamworks::LDAP::APIInfo::execute(::LDAP* ldaphandle)
 {
 	m_info.ldapai_info_version = LDAP_API_INFO_VERSION;
 	int r = ldap_get_option(ldaphandle, LDAP_OPT_API_INFO, &m_info);
@@ -35,6 +38,7 @@ Steamworks::LDAP::APIInfo::~APIInfo()
 	}
 }
 
+
 void Steamworks::LDAP::APIInfo::log(Steamworks::Logging::Logger& log, Steamworks::Logging::LogLevel level) const
 {
 	if (!m_valid)
@@ -53,12 +57,14 @@ void Steamworks::LDAP::APIInfo::log(Steamworks::Logging::Logger& log, Steamworks
 	}
 }
 
-Steamworks::LDAP::ServerControlInfo::ServerControlInfo(::LDAP* ldaphandle, const std::string& oid) :
-	m_valid(false),
+Steamworks::LDAP::ServerControlInfo::ServerControlInfo(const std::string& oid) :
 	m_available(false),
 	m_oid(oid)
 {
+}
 
+void Steamworks::LDAP::ServerControlInfo::execute(::LDAP* ldaphandle)
+{
 	// TODO: search root DSE
 }
 

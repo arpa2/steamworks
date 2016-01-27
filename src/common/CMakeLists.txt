@@ -15,7 +15,7 @@ find_package(OpenLDAP REQUIRED)
 include_directories(${FCGI_INCLUDE_DIRS} ../3rdparty)
 
 set(SWLDAP_SRC
-  swldap/ldapcpp.cpp
+  swldap/connection.cpp
   swldap/serverinfo.cpp
   )
 
