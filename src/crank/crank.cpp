@@ -8,6 +8,8 @@ Adriaan de Groot <groot@kde.org>
 #include "crank.h"
 
 #include "swldap/search.h"
+#include "swldap/serverinfo.h"
+
 #include "logger.h"
 
 class CrankDispatcher::Private
@@ -39,6 +41,7 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 	else if (verb == "stop") return do_stop(values);
 	else if (verb == "search") return do_search(values, response);
 	else if (verb == "update") return do_update(values, response);
+	else if (verb == "serverinfo") return do_serverinfo(values, response);
 	return -1;
 }
 
@@ -120,5 +123,21 @@ int CrankDispatcher::do_update(const Values values, Object response)
 		}
 	}
 #endif
+	return 0;
+}
+
+int CrankDispatcher::do_serverinfo(const Values values, Object response)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+
+	if (m_state != connected)
+	{
+		log.debugStream() << "ServerInfo on disconnected server.";
+		return 0;
+	}
+
+	Steamworks::LDAP::ServerControlInfo info("");
+	info.execute(*d->connection, &response);
+
 	return 0;
 }
