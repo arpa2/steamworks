@@ -80,12 +80,14 @@ void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn, Result resul
 	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 
+	const char *attrs[] = {LDAP_ALL_OPERATIONAL_ATTRIBUTES, nullptr};
+
 	LDAPMessage* res;
 	int r = ldap_search_ext_s(ldaphandle,
 		"",
 		LDAP_SCOPE_BASE,
 		"(objectclass=*)",
-		nullptr,  // attrs
+		const_cast<char **>(attrs),
 		0,
 		server_controls(conn),
 		client_controls(conn),
