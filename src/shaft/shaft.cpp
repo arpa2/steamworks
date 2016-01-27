@@ -7,7 +7,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "shaft.h"
 
-#include "swldap/ldapcpp.h"
+#include "swldap/connection.h"
 #include "logger.h"
 
 class ShaftDispatcher::Private
