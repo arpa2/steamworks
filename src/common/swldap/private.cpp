@@ -44,6 +44,8 @@ void copy_entry(::LDAP* ldaphandle, ::LDAPMessage* entry, Result map)
 				picojson::value v_attr(values[i]->bv_val);
 				v_array.emplace_back(v_attr);
 			}
+			picojson::value v_attr(v_array);
+			map->emplace(attr, v_attr);
 		}
 		else
 		{
