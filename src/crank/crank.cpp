@@ -7,7 +7,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "crank.h"
 
-#include "swldap/ldapcpp.h"
+#include "swldap/search.h"
 #include "logger.h"
 
 class CrankDispatcher::Private
@@ -82,12 +82,14 @@ int CrankDispatcher::do_search(const Values values, Object response)
 
 	// TODO: check authorization for this query
 	Steamworks::LDAP::Search search(base, filter);
-	d->connection->execute(search, &response);
+	search.execute(*d->connection, &response);
 	return 0;
 }
 
+
 int CrankDispatcher::do_update(const Values values, Object response)
 {
+#if 0
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
 
 	if (m_state != connected)
@@ -117,6 +119,6 @@ int CrankDispatcher::do_update(const Values values, Object response)
 			break;
 		}
 	}
-
+#endif
 	return 0;
 }
