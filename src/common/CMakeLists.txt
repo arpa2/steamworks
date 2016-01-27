@@ -20,6 +20,10 @@ set(SWLDAP_SRC
   swldap/search.cpp
   )
 
-add_library(swldap STATIC ${SWLDAP_SRC})
+set(SWLDAP_PRIVATE
+  swldap/private.cpp
+  )
+
+add_library(swldap STATIC ${SWLDAP_SRC} ${SWLDAP_PRIVATE})
 target_link_libraries(swldap ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${LOG4CPP_LIBRARIES})
 
