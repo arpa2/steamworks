@@ -5,11 +5,9 @@ All rights reserved. See file LICENSE for exact terms (2-clause BSD license).
 Adriaan de Groot <groot@kde.org>
 */
 
-#include <ldap.h>
-
-#include "../logger.h"
 #include "serverinfo.h"
 
+#include "private.h"
 
 Steamworks::LDAP::APIInfo::APIInfo()
 {
@@ -71,7 +69,43 @@ Steamworks::LDAP::ServerControlInfo::ServerControlInfo(const std::string& oid) :
 
 void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn, Result result)
 {
-	// TODO: search root DSE
+	::LDAP* ldaphandle = handle(conn);
+
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+
+	log.debugStream() << "Check for server control " << m_oid;
+
+	// TODO: settings for timeouts?
+	struct timeval tv;
+	tv.tv_sec = 2;
+	tv.tv_usec = 0;
+
+	LDAPMessage* res;
+	int r = ldap_search_ext_s(ldaphandle,
+		"",
+		LDAP_SCOPE_BASE,
+		"(objectclass=*)",
+		nullptr,  // attrs
+		0,
+		server_controls(conn),
+		client_controls(conn),
+		&tv,
+		1024*1024,
+		&res);
+	if (r)
+	{
+		log.errorStream() << "Search result " << r << " " << ldap_err2string(r);
+		// TODO: does res need freeing here?
+		return;
+	}
+	else
+	{
+	}
+
+	copy_search_result(ldaphandle, res, result, log);
+
+	ldap_msgfree(res);
+
 }
 
 Steamworks::LDAP::ServerControlInfo::~ServerControlInfo()
