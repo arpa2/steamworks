@@ -44,7 +44,7 @@ public:
 	Search(const std::string& base, const std::string& filter);
 	~Search();
 
-	virtual void execute(Connection&);
+	virtual void execute(Connection&, Result result=nullptr);
 } ;
 
 #if 0

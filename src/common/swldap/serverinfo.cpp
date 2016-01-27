@@ -23,7 +23,7 @@ void Steamworks::LDAP::APIInfo::execute(::LDAP* ldaphandle)
 	m_valid = true;
 }
 
-void Steamworks::LDAP::APIInfo::execute(Steamworks::LDAP::Connection& conn)
+void Steamworks::LDAP::APIInfo::execute(Steamworks::LDAP::Connection& conn, Result _)
 {
 	execute(handle(conn));
 }
@@ -69,7 +69,7 @@ Steamworks::LDAP::ServerControlInfo::ServerControlInfo(const std::string& oid) :
 {
 }
 
-void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn)
+void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn, Result result)
 {
 	// TODO: search root DSE
 }

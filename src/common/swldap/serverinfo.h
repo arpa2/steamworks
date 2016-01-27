@@ -32,7 +32,7 @@ public:
 	APIInfo();
 	~APIInfo();
 
-	virtual void execute(Connection&);
+	virtual void execute(Connection&, Result result=nullptr);
 	// Special case: when the connection is being constructed and
 	//  we already have a handle, but not a complete Connection object.
 	void execute(::LDAP*);
@@ -58,7 +58,7 @@ public:
 	ServerControlInfo(const std::string& oid);
 	~ServerControlInfo();
 
-	virtual void execute(Connection&);
+	virtual void execute(Connection&, Result result=nullptr);
 
 	/// TODO: logging?
 

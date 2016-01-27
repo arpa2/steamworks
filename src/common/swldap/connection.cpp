@@ -56,6 +56,8 @@ private:
 
 protected:
 	::LDAP* handle() const { return ldaphandle; }
+	::LDAPControl** client_controls() { return &clientctl; }
+	::LDAPControl** server_controls() { return &serverctl; }
 
 public:
 	Private(const std::string& uri) :
@@ -164,7 +166,6 @@ Steamworks::LDAP::Connection::~Connection()
 {
 }
 
-LDAP* Steamworks::LDAP::Connection::handle() const
-{
-	return d->handle();
-}
+::LDAP* Steamworks::LDAP::Connection::handle() const { return d->handle(); }
+::LDAPControl** Steamworks::LDAP::Connection::client_controls() const { return d->client_controls(); }
+::LDAPControl** Steamworks::LDAP::Connection::server_controls() const { return d->server_controls(); }

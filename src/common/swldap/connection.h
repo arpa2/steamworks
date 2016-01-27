@@ -21,12 +21,16 @@ Adriaan de Groot <groot@kde.org>
 #include <memory>
 #include <string>
 
+#include "picojson.h"
+
 namespace Steamworks
 {
 
 namespace LDAP
 {
 class Action;
+
+using Result = picojson::value::object*;
 
 /**
  * Connection to an LDAP server.
@@ -82,7 +86,7 @@ public:
 
 	bool is_valid() const { return m_valid; }
 
-	virtual void execute(Connection&) = 0;  // FIXME: results? arguments?
+	virtual void execute(Connection& conn, Result result=nullptr) = 0;
 } ;
 
 
