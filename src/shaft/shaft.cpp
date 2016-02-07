@@ -8,6 +8,7 @@ Adriaan de Groot <groot@kde.org>
 #include "shaft.h"
 
 #include "swldap/connection.h"
+#include "swldap/serverinfo.h"
 #include "logger.h"
 
 class ShaftDispatcher::Private
@@ -51,6 +52,8 @@ int ShaftDispatcher::do_connect(const Values values)
 	if (d->connection->is_valid())
 	{
 		m_state = connected;
+		Steamworks::LDAP::ServerControlInfo info;
+		info.execute(*d->connection);
 	}
 	return 0;
 }

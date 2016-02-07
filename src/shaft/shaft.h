@@ -29,6 +29,8 @@ public:
 	State state() const { return m_state; }
 
 protected:
+	/** Connect to the downstream (e.g. destination) LDAP server.
+	 *  This is where the shaft is going to write to. */
 	int do_connect(const Values values);
 	int do_stop(const Values values);
 } ;
