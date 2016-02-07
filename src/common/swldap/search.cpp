@@ -69,9 +69,6 @@ void Steamworks::LDAP::Search::execute(Connection& conn, Result results)
 		// TODO: does res need freeing here?
 		return;
 	}
-	else
-	{
-	}
 
 	copy_search_result(ldaphandle, res, results, log);
 
@@ -81,7 +78,6 @@ void Steamworks::LDAP::Search::execute(Connection& conn, Result results)
 
 
 
-#if 0
 /**
  * Internals of an update.
  */
@@ -90,6 +86,7 @@ class Steamworks::LDAP::Update::Private
 private:
 	std::string m_dn;
 	Steamworks::LDAP::Update::Attributes m_map;
+
 public:
 	Private(const std::string& dn) :
 		m_dn(dn)
@@ -112,27 +109,28 @@ public:
 } ;
 
 Steamworks::LDAP::Update::Update(const std::string& dn) :
-	d(new Private(dn)),
-	valid(false)
+	Action(false),
+	d(new Private(dn))
 {
 
 }
 
 Steamworks::LDAP::Update::Update(const std::string& dn, const Steamworks::LDAP::Update::Attributes& attr) :
-	d(new Private(dn)),
-	valid(attr.size() > 0)
+	Action(attr.size() > 0),
+	d(new Private(dn))
 {
 	d->update(attr);
 }
 
 Steamworks::LDAP::Update::Update(const picojson::value& json) :
-	d(nullptr),
-	valid(false)
+	Action(false),  // For now
+	d(nullptr)
 {
 	if (!json.is<picojson::value::object>())
 	{
 		return;
 	}
+
 	std::string dn = json.get("dn").to_str();
 	if (!dn.empty())
 	{
@@ -142,6 +140,7 @@ Steamworks::LDAP::Update::Update(const picojson::value& json) :
 	{
 		return;  // no dn? remain invalid
 	}
+
 	const picojson::object& o = json.get<picojson::object>();
 	if (o.size() > 1)  // "dn" plus one more
 	{
@@ -152,11 +151,15 @@ Steamworks::LDAP::Update::Update(const picojson::value& json) :
 				d->update(i.first, i.second.to_str());
 			}
 		}
-		valid = true;
+		m_valid = true;
 	}
 }
 
 Steamworks::LDAP::Update::~Update()
 {
 }
-#endif
+
+void Steamworks::LDAP::Update::execute(Connection&, Result result)
+{
+	// TODO: actually do an update
+}

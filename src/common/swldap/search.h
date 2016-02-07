@@ -47,30 +47,26 @@ public:
 	virtual void execute(Connection&, Result result=nullptr);
 } ;
 
-#if 0
 /**
- * (Synchronous) update. This does not actually do an update,
- * but represents the change to be made. Updates change zero
+ * (Synchronous) update. Updates change zero
  * or more attributes of a given dn.
  */
-class Update
+class Update : public Action
 {
 friend class Connection;
 private:
 	class Private;
 	std::unique_ptr<Private> d;
-	bool valid;
 public:
 	using Attributes=std::map<const std::string, const std::string>;
+
 	Update(const std::string& dn);  // Empty update (not valid)
 	Update(const std::string& dn, const Attributes& attr);  // Update one attribute
 	Update(const picojson::value& json);  // Update multiple attributes
 	~Update();
-	bool is_valid() const { return valid; }
 
-	bool add_update(const std::string& name, const std::string& value);
+	virtual void execute(Connection&, Result result=nullptr);
 } ;
-#endif
 
 }  // namespace LDAP
 }  // namespace
