@@ -136,7 +136,7 @@ int CrankDispatcher::do_serverinfo(const Values values, Object response)
 		return 0;
 	}
 
-	Steamworks::LDAP::ServerControlInfo info("");
+	Steamworks::LDAP::ServerControlInfo info;
 	info.execute(*d->connection, &response);
 
 	return 0;
