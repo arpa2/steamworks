@@ -48,24 +48,23 @@ public:
 	int get_version() const { return is_valid() ? m_info.ldapai_info_version : -1; }
 } ;
 
+/**
+ * Class representing Server controls (which ones are available).
+ * This information is only filled in after an execute() is done.
+ */
 class ServerControlInfo : public Action
 {
 private:
-	std::string m_oid;
-	bool m_available;
+	class Private;
+	std::unique_ptr<Private> d;
 
 public:
-	ServerControlInfo(const std::string& oid);
+	ServerControlInfo();
 	~ServerControlInfo();
 
 	virtual void execute(Connection&, Result result=nullptr);
 
 	/// TODO: logging?
-
-	/// Is the OID for this ServerControlInfo available on the server?
-	int is_available() const { return m_available; }
-	/// Gets the OID that this ServerControlInfo checked for.
-	std::string oid() const { return m_oid; }
 } ;
 
 } // namespace LDAP

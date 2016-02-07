@@ -61,9 +61,22 @@ void Steamworks::LDAP::APIInfo::log(Steamworks::Logging::Logger& log, Steamworks
 	}
 }
 
-Steamworks::LDAP::ServerControlInfo::ServerControlInfo(const std::string& oid) :
-	m_available(false),
-	m_oid(oid)
+class Steamworks::LDAP::ServerControlInfo::Private
+{
+private:
+	using OIDSet = std::set<std::string>;
+
+	OIDSet m_available_oids;
+
+public:
+	bool is_available(const std::string& oid) const { return m_available_oids.count(oid); }
+
+	void add(const std::string& oid) { m_available_oids.insert(oid); }
+	void clear() { m_available_oids.clear(); }
+} ;
+
+Steamworks::LDAP::ServerControlInfo::ServerControlInfo() :
+	d(new Private())
 {
 }
 
@@ -73,7 +86,7 @@ void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn, Result resul
 
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 
-	log.debugStream() << "Check for server control " << m_oid;
+	log.debugStream() << "Check for server controls.";
 
 	// TODO: settings for timeouts?
 	struct timeval tv;
@@ -102,12 +115,12 @@ void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn, Result resul
 	}
 	else
 	{
+		d->clear();
 	}
 
-	copy_search_result(ldaphandle, res, result, log);
+	copy_search_result(ldaphandle, res, result, log);  // Not our primary purpose ..
 
 	ldap_msgfree(res);
-
 }
 
 Steamworks::LDAP::ServerControlInfo::~ServerControlInfo()
