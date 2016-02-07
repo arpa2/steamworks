@@ -30,7 +30,8 @@ namespace LDAP
 {
 class Action;
 
-using Result = picojson::value::object*;
+using Result_t = picojson::value::object;
+using Result = Result_t*;
 
 /**
  * Connection to an LDAP server.

@@ -65,6 +65,7 @@ public:
 	virtual void execute(Connection&, Result result=nullptr);
 
 	/// TODO: logging?
+	bool is_available(const std::string& oid) const;
 } ;
 
 } // namespace LDAP

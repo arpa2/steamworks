@@ -73,7 +73,29 @@ public:
 
 	void add(const std::string& oid) { m_available_oids.insert(oid); }
 	void clear() { m_available_oids.clear(); }
+	void extract_controls(Result_t& r);
 } ;
+
+void Steamworks::LDAP::ServerControlInfo::Private::extract_controls(Result_t& result)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+
+	picojson::value a = result.at("").get("supportedControl");
+	if (!a.is<picojson::array>())
+	{
+		return;
+	}
+
+	const picojson::array& arr = a.get<picojson::array>();
+	for (auto i = arr.begin(); i != arr.end(); ++i)
+	{
+		std::string s(i->to_str());
+		log.debugStream() << "Found supported server control " << s;
+		m_available_oids.emplace(s);
+	}
+}
+
+
 
 Steamworks::LDAP::ServerControlInfo::ServerControlInfo() :
 	d(new Private())
@@ -118,11 +140,26 @@ void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn, Result resul
 		d->clear();
 	}
 
-	copy_search_result(ldaphandle, res, result, log);  // Not our primary purpose ..
+	if (result)
+	{
+		copy_search_result(ldaphandle, res, result, log);
+		d->extract_controls(*result);
+	}
+	else
+	{
+		std::unique_ptr<Result_t> _result(new Result_t);
+		copy_search_result(ldaphandle, res, _result.get(), log);
+		d->extract_controls(*_result);
+	}
 
 	ldap_msgfree(res);
 }
 
 Steamworks::LDAP::ServerControlInfo::~ServerControlInfo()
 {
+}
+
+bool Steamworks::LDAP::ServerControlInfo::is_available(const std::string& oid) const
+{
+	return d->is_available(oid);
 }
