@@ -38,6 +38,7 @@ int ShaftDispatcher::exec(const std::string& verb, const Values values, Object r
 {
 	if (verb == "connect") return do_connect(values);
 	else if (verb == "stop") return do_stop(values);
+	else if (verb == "serverinfo") return do_serverinfo(values, response);
 	return -1;
 }
 
@@ -63,4 +64,20 @@ int ShaftDispatcher::do_stop(const Values values)
 	m_state = stopped;
 	d->connection.reset(nullptr);
 	return -1;
+}
+
+int ShaftDispatcher::do_serverinfo(const Values values, Object response)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.shaft");
+
+	if (m_state != connected)
+	{
+		log.debugStream() << "ServerInfo on disconnected server.";
+		return 0;
+	}
+
+	Steamworks::LDAP::ServerControlInfo info;
+	info.execute(*d->connection, &response);
+
+	return 0;
 }
