@@ -8,9 +8,9 @@ Adriaan de Groot <groot@kde.org>
 /**
  * LDAP operations in a C++ jacket.
  *
- * The primary class here is Connection, which represents a connection
- * to an LDAP server. The connection may be invalid. Connections are
- * explicitly disconnected when destroyed.
+ * Search and Update on an LDAP server. Both actions may be kept around and
+ * execute()d one of more times (each time will run the search or query,
+ * returning current results as needed).
  */
 
 #ifndef SWLDAP_SEARCH_H
@@ -32,8 +32,8 @@ void copy_entry(::LDAP* ldaphandle, ::LDAPMessage* entry, picojson::value::objec
 
 
 /**
- * (Synchronous) search. This does not actually do the search,
- * but represents the search and hangs on to its results.
+ * (Synchronous) search. The search places results in the result parameter of
+ * execute(), in JSON form.
  */
 class Search : public Action
 {
