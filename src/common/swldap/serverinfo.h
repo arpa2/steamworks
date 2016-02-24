@@ -66,6 +66,8 @@ public:
 
 	/// TODO: logging?
 	bool is_available(const std::string& oid) const;
+
+	static const char SC_SYNC_REQUEST[]; // 1.3.6.1.4.1.4203.1.9.1.1         RFC4533  Sync Request Control
 } ;
 
 } // namespace LDAP

@@ -147,6 +147,7 @@ void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn, Result resul
 	}
 	else
 	{
+		// One to throw away.
 		std::unique_ptr<Result_t> _result(new Result_t);
 		copy_search_result(ldaphandle, res, _result.get(), log);
 		d->extract_controls(*_result);
@@ -163,3 +164,5 @@ bool Steamworks::LDAP::ServerControlInfo::is_available(const std::string& oid) c
 {
 	return d->is_available(oid);
 }
+
+const char Steamworks::LDAP::ServerControlInfo::SC_SYNC_REQUEST[] = "1.3.6.1.4.1.4203.1.9.1.1";
