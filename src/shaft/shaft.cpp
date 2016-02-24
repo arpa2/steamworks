@@ -55,6 +55,15 @@ int ShaftDispatcher::do_connect(const Values values)
 		m_state = connected;
 		Steamworks::LDAP::ServerControlInfo info;
 		info.execute(*d->connection);
+
+		if (!info.is_available(info.SC_SYNC_REQUEST))
+		{
+			m_state = disconnected;
+			d->connection.reset(nullptr);
+			log.warnStream() << "Server at " << name << " does not support SyncRepl.";
+			// TODO: also return something in JSON
+			return 0;
+		}
 	}
 	return 0;
 }
