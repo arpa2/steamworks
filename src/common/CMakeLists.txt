@@ -18,12 +18,18 @@ set(SWLDAP_SRC
   swldap/connection.cpp
   swldap/serverinfo.cpp
   swldap/search.cpp
-  )
-
-set(SWLDAP_PRIVATE
   swldap/private.cpp
   )
 
-add_library(swldap STATIC ${SWLDAP_SRC} ${SWLDAP_PRIVATE})
+add_library(swldap STATIC ${SWLDAP_SRC})
 target_link_libraries(swldap ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${LOG4CPP_LIBRARIES})
+
+set(SWCOMMON_SRC
+  fcgi.cpp
+  jsonresponse.cpp
+  logger.cpp
+  )
+
+add_library(swcommon STATIC ${SWCOMMON_SRC})
+target_link_libraries(swcommon ${LOG4CPP_LIBRARIES} ${FCGI_LIBRARIES})
 
