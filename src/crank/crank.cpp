@@ -51,6 +51,12 @@ int CrankDispatcher::do_connect(const Values values, Object response)
 	std::string name = values.get("uri").to_str();
 
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+	if (name.empty())
+	{
+		log.warnStream() << "No Server URI given to connect.";
+		Steamworks::JSON::simple_output(response, 400, "No server given", LDAP_OPERATIONS_ERROR);
+		return 0;
+	}
 	log.debugStream() << "Connecting to " << name;
 
 	d->connection.reset(new Steamworks::LDAP::Connection(name));
