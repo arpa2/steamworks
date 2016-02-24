@@ -10,6 +10,7 @@ Adriaan de Groot <groot@kde.org>
 #include "swldap/search.h"
 #include "swldap/serverinfo.h"
 
+#include "jsonresponse.h"
 #include "logger.h"
 
 class CrankDispatcher::Private
@@ -37,7 +38,7 @@ CrankDispatcher::CrankDispatcher() :
 
 int CrankDispatcher::exec(const std::string& verb, const Values values, Object response)
 {
-	if (verb == "connect") return do_connect(values);
+	if (verb == "connect") return do_connect(values, response);
 	else if (verb == "stop") return do_stop(values);
 	else if (verb == "search") return do_search(values, response);
 	else if (verb == "update") return do_update(values, response);
@@ -45,7 +46,7 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 	return -1;
 }
 
-int CrankDispatcher::do_connect(const Values values)
+int CrankDispatcher::do_connect(const Values values, Object response)
 {
 	std::string name = values.get("uri").to_str();
 
@@ -56,6 +57,13 @@ int CrankDispatcher::do_connect(const Values values)
 	if (d->connection->is_valid())
 	{
 		m_state = connected;
+	}
+	else
+	{
+		log.warnStream() << "Could not connect to " << name;
+		// Still return 0 because we don't want the FCGI to stop.
+		Steamworks::JSON::simple_output(response, 404, "Could not connect to server", LDAP_OPERATIONS_ERROR);
+		return 0;
 	}
 	return 0;
 }

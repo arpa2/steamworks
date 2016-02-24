@@ -9,6 +9,8 @@ Adriaan de Groot <groot@kde.org>
 
 #include "swldap/connection.h"
 #include "swldap/serverinfo.h"
+
+#include "jsonresponse.h"
 #include "logger.h"
 
 class ShaftDispatcher::Private
@@ -36,13 +38,13 @@ ShaftDispatcher::ShaftDispatcher() :
 
 int ShaftDispatcher::exec(const std::string& verb, const Values values, Object response)
 {
-	if (verb == "connect") return do_connect(values);
+	if (verb == "connect") return do_connect(values, response);
 	else if (verb == "stop") return do_stop(values);
 	else if (verb == "serverinfo") return do_serverinfo(values, response);
 	return -1;
 }
 
-int ShaftDispatcher::do_connect(const Values values)
+int ShaftDispatcher::do_connect(const Values values, Object response)
 {
 	std::string name = values.get("uri").to_str();
 
@@ -61,9 +63,16 @@ int ShaftDispatcher::do_connect(const Values values)
 			m_state = disconnected;
 			d->connection.reset(nullptr);
 			log.warnStream() << "Server at " << name << " does not support SyncRepl.";
-			// TODO: also return something in JSON
+			Steamworks::JSON::simple_output(response, 501, "Server does not support SyncRepl", LDAP_UNAVAILABLE_CRITICAL_EXTENSION);
 			return 0;
 		}
+	}
+	else
+	{
+		log.warnStream() << "Could not connect to " << name;
+		// Still return 0 because we don't want the FCGI to stop.
+		Steamworks::JSON::simple_output(response, 404, "Could not connect to server", LDAP_OPERATIONS_ERROR);
+		return 0;
 	}
 	return 0;
 }
