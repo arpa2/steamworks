@@ -41,6 +41,7 @@ int ShaftDispatcher::exec(const std::string& verb, const Values values, Object r
 	if (verb == "connect") return do_connect(values, response);
 	else if (verb == "stop") return do_stop(values);
 	else if (verb == "serverinfo") return do_serverinfo(values, response);
+	else if (verb == "downstream") return do_downstream(values, response);
 	return -1;
 }
 
@@ -102,6 +103,22 @@ int ShaftDispatcher::do_serverinfo(const Values values, Object response)
 
 	Steamworks::LDAP::ServerControlInfo info;
 	info.execute(*d->connection, &response);
+
+	return 0;
+}
+
+int ShaftDispatcher::do_downstream(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+{
+	std::string name = values.get("uri").to_str();
+
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.");
+	if (name.empty())
+	{
+		log.warnStream() << "No downstream Server URI given to connect.";
+		Steamworks::JSON::simple_output(response, 400, "No downstream server given", LDAP_OPERATIONS_ERROR);
+		return 0;
+	}
+	log.debugStream() << "Connecting to downstream " << name;
 
 	return 0;
 }
