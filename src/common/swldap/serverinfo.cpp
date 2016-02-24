@@ -165,4 +165,6 @@ bool Steamworks::LDAP::ServerControlInfo::is_available(const std::string& oid) c
 	return d->is_available(oid);
 }
 
-const char Steamworks::LDAP::ServerControlInfo::SC_SYNC_REQUEST[] = "1.3.6.1.4.1.4203.1.9.1.1";
+const char Steamworks::LDAP::ServerControlInfo::SC_SYNC[] = LDAP_CONTROL_SYNC;
+const char Steamworks::LDAP::ServerControlInfo::SC_SORTREQUEST[] = LDAP_CONTROL_SORTREQUEST;
+const char Steamworks::LDAP::ServerControlInfo::SC_SORTRESPONSE[] = LDAP_CONTROL_SORTRESPONSE;
