@@ -9,6 +9,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "swldap/connection.h"
 #include "swldap/serverinfo.h"
+#include "swldap/sync.h"
 
 #include "jsonresponse.h"
 #include "logger.h"
@@ -128,7 +129,7 @@ int ShaftDispatcher::do_downstream(const VerbDispatcher::Values values, VerbDisp
 	}
 	log.debugStream() << "Connecting to downstream " << name;
 
-	std::string dn(values.get("dn").to_str());
+	std::string dn(values.get("base").to_str());
 	if (dn.empty())
 	{
 		log.warnStream() << "No upstream DN to follow.";
@@ -145,6 +146,7 @@ int ShaftDispatcher::do_downstream(const VerbDispatcher::Values values, VerbDisp
 	}
 
 	// TODO: actually do something with the downstream
-
+	Steamworks::LDAP::SyncRepl r(dn, "(objectclass=device)");
+	r.execute(*d->connection, &response);
 	return 0;
 }
