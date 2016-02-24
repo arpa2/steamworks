@@ -16,8 +16,9 @@ include_directories(${FCGI_INCLUDE_DIRS} ../3rdparty)
 
 set(SWLDAP_SRC
   swldap/connection.cpp
-  swldap/serverinfo.cpp
   swldap/search.cpp
+  swldap/serverinfo.cpp
+  swldap/sync.cpp
   swldap/private.cpp
   )
 
