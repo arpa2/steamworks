@@ -1,0 +1,5 @@
+{ 
+"verb": "downstream",
+"uri": "ldap://db/",
+"base": "dc=example,dc=com"
+}

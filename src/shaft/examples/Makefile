@@ -18,5 +18,8 @@ stop:
 serverinfo:
 	-cat json-serverinfo | $(CMD)
 
+downstream:
+	-cat json-downstream | $(CMD)
+
 bogus:
 	-echo "" | $(CMD)
