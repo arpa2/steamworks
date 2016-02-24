@@ -113,9 +113,6 @@ public:
 			}
 		}
 
-		// From here on, we'll keep the LDAP connection.
-		handle_disconnector.keep = true;
-
 		if (true)
 		{
 			int tls_require_cert = LDAP_OPT_X_TLS_NEVER;
@@ -138,6 +135,8 @@ public:
 			return;
 		}
 
+		// From here on, we'll keep the LDAP connection.
+		handle_disconnector.keep = true;
 		valid = true;
 	}
 
