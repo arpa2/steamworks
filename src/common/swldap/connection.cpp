@@ -132,7 +132,10 @@ public:
 		if (r)
 		{
 			log.errorStream() << "Could not start TLS. Error" << r << ", " << ldap_err2string(r);
-			// But carry on ..
+		}
+		if (r<0)
+		{
+			return;
 		}
 
 		valid = true;
