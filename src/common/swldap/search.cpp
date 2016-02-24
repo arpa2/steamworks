@@ -66,7 +66,7 @@ void Steamworks::LDAP::Search::execute(Connection& conn, Result results)
 	if (r)
 	{
 		log.errorStream() << "Search result " << r << " " << ldap_err2string(r);
-		// TODO: does res need freeing here?
+		ldap_msgfree(res);  // Should be freed regardless of the return value
 		return;
 	}
 

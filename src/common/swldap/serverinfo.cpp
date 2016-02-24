@@ -132,7 +132,7 @@ void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn, Result resul
 	if (r)
 	{
 		log.errorStream() << "Search result " << r << " " << ldap_err2string(r);
-		// TODO: does res need freeing here?
+		ldap_msgfree(res);
 		return;
 	}
 	else
