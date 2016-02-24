@@ -17,7 +17,9 @@ class ShaftDispatcher::Private
 {
 friend class ShaftDispatcher;
 private:
-	std::unique_ptr<Steamworks::LDAP::Connection> connection;
+	using ConnectionUPtr = std::unique_ptr<Steamworks::LDAP::Connection>;
+	ConnectionUPtr connection;
+	std::vector<ConnectionUPtr> downstream;
 
 public:
 	Private() :
@@ -109,9 +111,15 @@ int ShaftDispatcher::do_serverinfo(const Values values, Object response)
 
 int ShaftDispatcher::do_downstream(const VerbDispatcher::Values values, VerbDispatcher::Object response)
 {
-	std::string name = values.get("uri").to_str();
-
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.");
+
+	if (m_state != connected)
+	{
+		log.debugStream() << "ServerInfo on disconnected server.";
+		return 0;
+	}
+
+	std::string name(values.get("uri").to_str());
 	if (name.empty())
 	{
 		log.warnStream() << "No downstream Server URI given to connect.";
@@ -119,6 +127,24 @@ int ShaftDispatcher::do_downstream(const VerbDispatcher::Values values, VerbDisp
 		return 0;
 	}
 	log.debugStream() << "Connecting to downstream " << name;
+
+	std::string dn(values.get("dn").to_str());
+	if (dn.empty())
+	{
+		log.warnStream() << "No upstream DN to follow.";
+		Steamworks::JSON::simple_output(response, 400, "No upstream DN given", LDAP_OPERATIONS_ERROR);
+		return 0;
+	}
+
+	d->downstream.emplace_back(new Steamworks::LDAP::Connection(name));
+	if (!d->downstream.back()->is_valid())
+	{
+		log.warnStream() << "Could not connect to downstream " << name;
+		d->downstream.pop_back();
+		return 0;
+	}
+
+	// TODO: actually do something with the downstream
 
 	return 0;
 }
