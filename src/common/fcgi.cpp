@@ -12,6 +12,7 @@ Adriaan de Groot <groot@kde.org>
 #include "picojson.h"
 
 #include "fcgi.h"
+#include "jsonresponse.h"
 #include "logger.h"
 #include "verb.h"
 
@@ -127,23 +128,8 @@ void simple_output(FCGX_Stream* out, int status, const char* message=nullptr, co
 	}
 
 	picojson::value::object map;
-	if (status)
-	{
-		picojson::value status_v(static_cast<double>(status));
-		map.emplace(std::string("status"), status_v);
-	}
-	if ((message != nullptr) && (strlen(message) > 0))
-	{
-		picojson::value msg_v{std::string(message)};
-		map.emplace(std::string("message"), msg_v);
-	}
-	if (errno)
-	{
-		picojson::value errno_v{static_cast<double>(err)};
-		map.emplace(std::string("errno"), errno_v);
-	}
-	picojson::value v(map);
-	simple_output(out, status, v);
+	Steamworks::JSON::simple_output(map, status, message, err);
+	simple_output(out, status, picojson::value(map));
 }
 
 static int find_verb(const picojson::value& v, std::string &out)
