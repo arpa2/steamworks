@@ -12,17 +12,13 @@ find_package(Log4cpp)
 find_package(FCGI REQUIRED)
 find_package(OpenLDAP REQUIRED)
 
-set(COMMON ../common)
-
-include_directories(${FCGI_INCLUDE_DIRS} ${COMMON} ../3rdparty)
+include_directories(${FCGI_INCLUDE_DIRS} ../common ../3rdparty)
 
 set(CRANK_SRC
   main.cpp
   crank.cpp
-  ${COMMON}/fcgi.cpp
-  ${COMMON}/logger.cpp
   )
 
 add_executable(crank ${CRANK_SRC})
-target_link_libraries(crank ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES} swldap)
+target_link_libraries(crank ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES} swldap swcommon)
 
