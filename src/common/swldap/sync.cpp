@@ -62,47 +62,19 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 
-
-	::LDAPControl** ctl = server_controls(conn);
-	unsigned int ctl_count = _count_controls(log, ctl, "Server (1)");
-
-	// TODO: check if syncrepl is already enabled
-
-	// Allocate room for an extra ptr (+2 because of the NULL ptr at the end which wasn't counted).
-	::LDAPControl** qctl = (::LDAPControl**)calloc(ctl_count+2, sizeof(::LDAPControl*));
-
-	// Copy controls and double-null-terminate
-	::LDAPControl** qctl_i = qctl;
-	::LDAPControl** ctl_i = ctl;
-	while (*ctl_i)
-	{
-		*qctl_i++ = *ctl_i++;
-	}
-	*qctl_i = NULL;  // This is where we'll add the new control
-	*(qctl_i+1) = NULL;
-
-	int r = ldap_control_create(ServerControlInfo::SC_SYNC, 1, NULL, 0, qctl_i);
-	if (r)
-	{
-		log.errorStream() << "Control result " << r << " " << ldap_err2string(r);
-		// ignore
-	}
-
-	(void) _count_controls(log, qctl, "Server (2)");
-
 	// TODO: settings for timeouts?
 	struct timeval tv;
 	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 
 	LDAPMessage* res;
-	r = ldap_search_ext_s(ldaphandle,
+	int r = ldap_search_ext_s(ldaphandle,
 		d->base().c_str(),
 		LDAP_SCOPE_SUBTREE,
 		d->filter().c_str(),
 		nullptr,  // attrs
 		0,
-		qctl,
+		server_controls(conn),
 		client_controls(conn),
 		&tv,
 		1024*1024,
