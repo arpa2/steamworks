@@ -145,8 +145,10 @@ int ShaftDispatcher::do_downstream(const VerbDispatcher::Values values, VerbDisp
 		return 0;
 	}
 
+	std::string filter(values.get("filter").to_str());
+
 	// TODO: actually do something with the downstream
-	Steamworks::LDAP::SyncRepl r(dn, "(objectclass=device)");
+	Steamworks::LDAP::SyncRepl r(dn, filter);
 	r.execute(*d->connection, &response);
 	return 0;
 }
