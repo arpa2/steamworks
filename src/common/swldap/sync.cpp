@@ -56,6 +56,46 @@ static unsigned int _count_controls(Steamworks::Logging::Logger& log, ::LDAPCont
 	return ctl_count;
 }
 
+static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+
+	log.debugStream() << "Entry: " << ldap_get_dn(ls->ls_ld, msg);
+	return 0;
+}
+
+static int search_reference_f(        ldap_sync_t                     *ls,
+        LDAPMessage                     *msg )
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+
+	log.debugStream() << "Reference: " << ldap_get_dn(ls->ls_ld, msg);
+	return 0;
+}
+
+static int search_intermediate_f(        ldap_sync_t                     *ls,
+        LDAPMessage                     *msg,
+        BerVarray                       syncUUIDs,
+        ldap_sync_refresh_t             phase )
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+
+	log.debugStream() << "Intermediate: " << ldap_get_dn(ls->ls_ld, msg);
+	return 0;
+}
+
+static int search_result_f(        ldap_sync_t                     *ls,
+        LDAPMessage                     *msg,
+        int                             refreshDeletes )
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+
+	log.debugStream() << "Result: " << ldap_get_dn(ls->ls_ld, msg);
+	return 0;
+}
+
+
+
 void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 {
 	::LDAP* ldaphandle = handle(conn);
@@ -67,24 +107,36 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 
-	LDAPMessage* res;
-	int r = ldap_search_ext_s(ldaphandle,
-		d->base().c_str(),
-		LDAP_SCOPE_SUBTREE,
-		d->filter().c_str(),
-		nullptr,  // attrs
-		0,
-		server_controls(conn),
-		client_controls(conn),
-		&tv,
-		1024*1024,
-		&res);
+	::ldap_sync_t syncrepl;
+	ldap_sync_initialize(&syncrepl);
+	syncrepl.ls_base = const_cast<char *>(d->base().c_str());
+	syncrepl.ls_scope = LDAP_SCOPE_SUBTREE;
+	syncrepl.ls_filter = const_cast<char *>(d->filter().c_str());
+	syncrepl.ls_attrs = nullptr;  // All
+	syncrepl.ls_timelimit = 0;  // No limit
+	syncrepl.ls_sizelimit = 0;  // No limit
+	syncrepl.ls_timeout = 2;  // Non-blocking on ldap_sync_poll()
+	syncrepl.ls_search_entry = search_entry_f;
+	syncrepl.ls_search_reference = search_reference_f;
+	syncrepl.ls_intermediate = search_intermediate_f;
+	syncrepl.ls_search_result = search_result_f;
+	syncrepl.ls_private = nullptr;  // Private data for this sync
+	syncrepl.ls_ld = ldaphandle;
+
+	int r = ldap_sync_init_refresh_and_persist(&syncrepl);
 	if (r)
 	{
-		log.errorStream() << "Search result " << r << " " << ldap_err2string(r);
-		ldap_msgfree(res);  // Should be freed regardless of the return value
+		log.errorStream() << "Sync setup result " << r << " " << ldap_err2string(r);
 		return;
 	}
 
-	ldap_msgfree(res);
+	for (unsigned int i=0; i<10; i++)
+	{
+		r = ldap_sync_poll(&syncrepl);
+		if (r)
+		{
+			log.errorStream() << "Sync poll result " << r << " " << ldap_err2string(r);
+			break;
+		}
+	}
 }
