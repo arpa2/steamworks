@@ -40,23 +40,31 @@ Steamworks::LDAP::SyncRepl::~SyncRepl()
 {
 }
 
+// Side-effect: log the controls
+static unsigned int _count_controls(Steamworks::Logging::Logger& log, ::LDAPControl** ctls, const char *message)
+{
+	log.debugStream() << message << " controls are set:";
+
+	unsigned int ctl_count = 0;
+	while (*ctls)
+	{
+		log.debugStream() << " .. control " << (void *)*ctls << " " << (*ctls)->ldctl_oid;
+		ctls++;
+		ctl_count++;
+	}
+
+	return ctl_count;
+}
+
 void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 {
 	::LDAP* ldaphandle = handle(conn);
 
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 
-	log.debugStream() << "Server controls are set:";
-	::LDAPControl** ctl = server_controls(conn);
-	::LDAPControl** ctl_i = ctl;
 
-	unsigned int ctl_count = 0;
-	while (*ctl_i)
-	{
-		log.debugStream() << " .. control " << (void *)*ctl_i << " " << (*ctl_i)->ldctl_oid;
-		ctl_i++;
-		ctl_count++;
-	}
+	::LDAPControl** ctl = server_controls(conn);
+	unsigned int ctl_count = _count_controls(log, ctl, "Server (1)");
 
 	// TODO: check if syncrepl is already enabled
 
@@ -65,7 +73,7 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 
 	// Copy controls and double-null-terminate
 	::LDAPControl** qctl_i = qctl;
-	ctl_i = ctl;
+	::LDAPControl** ctl_i = ctl;
 	while (*ctl_i)
 	{
 		*qctl_i++ = *ctl_i++;
@@ -80,6 +88,7 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 		// ignore
 	}
 
+	(void) _count_controls(log, qctl, "Server (2)");
 
 	// TODO: settings for timeouts?
 	struct timeval tv;
