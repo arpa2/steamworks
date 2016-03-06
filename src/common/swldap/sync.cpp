@@ -99,13 +99,14 @@ static unsigned int _count_controls(Steamworks::Logging::Logger& log, ::LDAPCont
 	unsigned int ctl_count = 0;
 	while (*ctls)
 	{
-		log.debugStream() << " .. control " << (void *)*ctls << " " << (*ctls)->ldctl_oid;
+		log.debugStream() << " .. control " << (void *)*ctls << " " << ((*ctls)->ldctl_oid ? (*ctls)->ldctl_oid : "null");
 		ctls++;
 		ctl_count++;
 	}
 
 	return ctl_count;
 }
+
 
 void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 {
@@ -120,7 +121,7 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 
 	::ldap_sync_t* syncrepl = d->sync();
 	syncrepl->ls_ld = ldaphandle;
-	int r = ldap_sync_init_refresh_and_persist(syncrepl);
+	int r = ldap_sync_init(syncrepl, LDAP_SYNC_REFRESH_AND_PERSIST);
 	if (r)
 	{
 		log.errorStream() << "Sync setup result " << r << " " << ldap_err2string(r);
