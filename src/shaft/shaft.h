@@ -34,7 +34,7 @@ protected:
 	int do_connect(const Values values, Object response);
 	int do_stop(const Values values);
 	int do_serverinfo(const Values values, Object response);
-	int do_downstream(const Values values, Object response);
+	int do_upstream(const Values values, Object response);
 } ;
 
 

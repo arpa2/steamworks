@@ -44,7 +44,7 @@ int ShaftDispatcher::exec(const std::string& verb, const Values values, Object r
 	if (verb == "connect") return do_connect(values, response);
 	else if (verb == "stop") return do_stop(values);
 	else if (verb == "serverinfo") return do_serverinfo(values, response);
-	else if (verb == "downstream") return do_downstream(values, response);
+	else if (verb == "upstream") return do_upstream(values, response);
 	return -1;
 }
 
@@ -110,7 +110,7 @@ int ShaftDispatcher::do_serverinfo(const Values values, Object response)
 	return 0;
 }
 
-int ShaftDispatcher::do_downstream(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+int ShaftDispatcher::do_upstream(const VerbDispatcher::Values values, VerbDispatcher::Object response)
 {
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.");
 
@@ -123,11 +123,11 @@ int ShaftDispatcher::do_downstream(const VerbDispatcher::Values values, VerbDisp
 	std::string name(values.get("uri").to_str());
 	if (name.empty())
 	{
-		log.warnStream() << "No downstream Server URI given to connect.";
-		Steamworks::JSON::simple_output(response, 400, "No downstream server given", LDAP_OPERATIONS_ERROR);
+		log.warnStream() << "No upstream Server URI given to connect.";
+		Steamworks::JSON::simple_output(response, 400, "No upstream server given", LDAP_OPERATIONS_ERROR);
 		return 0;
 	}
-	log.debugStream() << "Connecting to downstream " << name;
+	log.debugStream() << "Connecting to upstream " << name;
 
 	std::string dn(values.get("base").to_str());
 	if (dn.empty())
@@ -140,14 +140,14 @@ int ShaftDispatcher::do_downstream(const VerbDispatcher::Values values, VerbDisp
 	d->downstream.emplace_back(new Steamworks::LDAP::Connection(name));
 	if (!d->downstream.back()->is_valid())
 	{
-		log.warnStream() << "Could not connect to downstream " << name;
+		log.warnStream() << "Could not connect to upstream " << name;
 		d->downstream.pop_back();
 		return 0;
 	}
 
 	std::string filter(values.get("filter").to_str());
 
-	// TODO: actually do something with the downstream
+	// TODO: actually do something with the upstream
 	Steamworks::LDAP::SyncRepl r(dn, filter);
 	r.execute(*d->connection, &response);
 	return 0;

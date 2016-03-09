@@ -1,5 +1,5 @@
 { 
-"verb": "downstream",
+"verb": "upstream",
 "uri": "ldap://db/",
 "base": "dc=example,dc=com",
 "filter": "(objectclass=device)"
