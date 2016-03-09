@@ -52,7 +52,7 @@ int ShaftDispatcher::do_connect(const Values values, Object response)
 {
 	std::string name = values.get("uri").to_str();
 
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.");
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.shaft");
 	if (name.empty())
 	{
 		log.warnStream() << "No Server URI given to connect.";
@@ -112,7 +112,7 @@ int ShaftDispatcher::do_serverinfo(const Values values, Object response)
 
 int ShaftDispatcher::do_upstream(const VerbDispatcher::Values values, VerbDispatcher::Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.");
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.shaft");
 
 	if (m_state != connected)
 	{
