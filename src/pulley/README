@@ -1,0 +1,7 @@
+This directory contains the documentation and sources for the
+pulley-component of SteamWorks. See http://steamworks.arpa2.net/pulley.html
+for a general description.
+
+The pulley copies and transforms one upstream LDAP DIT to a
+configuration for a single machine (e.g. produces configuration
+files). Currently, it is in a very experimental state.
