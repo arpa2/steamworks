@@ -149,17 +149,25 @@ public:
 		m_mods = nullptr;
 	}
 
-	void add(const std::string& arg1, std::string arg2)
+	void replace(const std::string& attr, const std::string& val)
 	{
 		::ldapmod* mod;
 
 		if (m_count < m_size)
 		{
+			// TODO: check for allocation failures
 			mod = m_mods[m_count++] = (::ldapmod*)malloc(sizeof(::ldapmod));
 			mod->mod_op = LDAP_MOD_REPLACE;
-			mod->mod_type = nullptr;  // TODO: is this the attribute name?
-			mod->mod_vals.modv_strvals = nullptr;
+			mod->mod_type = const_cast<char *>(attr.c_str());
+			mod->mod_vals.modv_strvals = (char**)calloc(2, sizeof(char *));
+			mod->mod_vals.modv_strvals[0] = const_cast<char *>(val.c_str());
+			mod->mod_vals.modv_strvals[1] = nullptr;
 		}
+	}
+
+	::ldapmod** c_ptr() const
+	{
+		return m_mods;
 	}
 } ;
 
@@ -214,7 +222,7 @@ Steamworks::LDAP::Update::~Update()
 {
 }
 
-void Steamworks::LDAP::Update::execute(Connection&, Result result)
+void Steamworks::LDAP::Update::execute(Connection& conn, Result result)
 {
 	// TODO: actually do an update
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
@@ -226,6 +234,15 @@ void Steamworks::LDAP::Update::execute(Connection&, Result result)
 	for (auto i = d->begin(); i != d->end(); ++i)
 	{
 		log.debugStream() << "  A=" << i->first << " V=" << i->second;
-		mods.add(i->first, i->second);
+		mods.replace(i->first, i->second);
 	}
+
+	int r = ldap_modify_ext_s(
+		handle(conn),
+		d->name().c_str(),
+		mods.c_ptr(),
+		server_controls(conn),
+		client_controls(conn)
+		);
+	log.debugStream() << "Result " << r << " " << (r ? ldap_err2string(r) : "OK");
 }
