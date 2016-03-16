@@ -128,6 +128,42 @@ public:
 	}
 } ;
 
+class LDAPMods
+{
+private:
+	::ldapmod** m_mods;
+	size_t m_size;
+	unsigned int m_count;
+
+public:
+	LDAPMods(size_t n) :
+		m_mods(calloc(n, sizeof(::ldapmod*))),
+		m_size(n),
+		m_count(0)
+	{
+	}
+
+	~LDAPMods()
+	{
+		ldap_mods_free(m_mods);
+		m_mods = nullptr;
+	}
+
+	void add(const std::string& arg1, std::string arg2)
+	{
+		::ldapmod* mod;
+
+		if (m_count < m_size)
+		{
+			mod = m_mods[m_count++] = malloc(sizeof(::ldapmod));
+			mod->mod_op = LDAP_MOD_REPLACE;
+			mod->mod_type = nullptr;  // TODO: is this the attribute name?
+			mod->modv_strvals = nullptr;
+			mod->mod_next = nullptr;  // Server only
+		}
+	}
+} ;
+
 Steamworks::LDAP::Update::Update(const std::string& dn) :
 	Action(false),
 	d(new Private(dn))
@@ -185,4 +221,11 @@ void Steamworks::LDAP::Update::execute(Connection&, Result result)
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 
 	log.debugStream() << "Update execute:" << d->name() << " #changes:" << d->size();
+
+	// TODO: here we assume each JSON-change maps to  one LDAP modification
+	LDAPMods mods(d->size());
+	for (auto i = d->begin(); i != d->end(); ++i)
+	{
+		mods.add(i.first, i.second.to_str());
+	}
 }
