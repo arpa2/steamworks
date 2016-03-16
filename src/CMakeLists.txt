@@ -14,6 +14,24 @@ MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
 include(CheckCXX11Flags)
 
 
+find_package(FCGI)
+if(NOT FCGI_FOUND)
+  message("   Using bundled libfcgi ...")
+  add_subdirectory(3rdparty/fcgi-2.4.0)
+  set(FCGI_LIBRARIES fcgi)
+  set(FCGI_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/fcgi-2.4.0/include)
+  set(FCGI_FOUND TRUE)
+endif()
+
+find_package(Log4cpp)
+if(NOT LOG4CPP_FOUND)
+  message("   Disable logging ...")
+  add_definitions(-DNDEBUG)
+  set(LOG4CPP_LIBRARIES "")
+  set(LOG4CPP_INCLUDE_DIRS "")
+  set(LOG4CPP_FOUND TRUE)
+endif()
+
 add_subdirectory(common)
 add_subdirectory(crank)
 add_subdirectory(shaft)

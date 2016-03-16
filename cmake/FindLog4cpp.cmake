@@ -9,6 +9,10 @@
 # this module where log4cpp is installed; it will look in
 # lib/ and include/ subdirectories of that prefix.
 #
+if(LOG4CPP_FOUND)
+  return()
+endif()
+
 include(FindPackageHandleStandardArgs)
 
 find_library(_L4CPP log4cpp

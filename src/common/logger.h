@@ -72,6 +72,11 @@ public:
 	// TODO: other levels of streams.
 	LoggerStream& debugStream() { return stream; }
 	LoggerStream& infoStream() { return stream; }
+	LoggerStream& warnStream() { return stream; }
+	LoggerStream& errorStream() { return stream; }
+	LoggerStream& getStream(int level) { return stream; }
+
+	void debug(...) {}
 } ;
 
 // Bogus level numbers; I don't know if these are compatible with

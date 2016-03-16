@@ -6,8 +6,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../../cmake)
 
-project(common)
-
 find_package(Log4cpp)
 find_package(FCGI REQUIRED)
 find_package(OpenLDAP REQUIRED)
