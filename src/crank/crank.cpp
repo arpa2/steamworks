@@ -106,7 +106,6 @@ int CrankDispatcher::do_search(const Values values, Object response)
 
 int CrankDispatcher::do_update(const Values values, Object response)
 {
-#if 0
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
 
 	if (m_state != connected)
@@ -129,14 +128,13 @@ int CrankDispatcher::do_update(const Values values, Object response)
 		Steamworks::LDAP::Update u(v.get(count));
 		if (u.is_valid())
 		{
-			d->connection->execute(u, &response);
+			u.execute(*d->connection, &response);
 		}
 		else
 		{
 			break;
 		}
 	}
-#endif
 	return 0;
 }
 
