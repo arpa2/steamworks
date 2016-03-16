@@ -9,6 +9,8 @@ Adriaan de Groot <groot@kde.org>
 
 #include "private.h"
 
+#include <unordered_set>
+
 Steamworks::LDAP::APIInfo::APIInfo()
 {
 }
@@ -64,7 +66,7 @@ void Steamworks::LDAP::APIInfo::log(Steamworks::Logging::Logger& log, Steamworks
 class Steamworks::LDAP::ServerControlInfo::Private
 {
 private:
-	using OIDSet = std::set<std::string>;
+	using OIDSet = std::unordered_set<std::string>;
 
 	OIDSet m_available_oids;
 
