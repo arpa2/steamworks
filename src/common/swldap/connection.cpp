@@ -4,8 +4,10 @@ All rights reserved. See file LICENSE for exact terms (2-clause BSD license).
 
 Adriaan de Groot <groot@kde.org>
 */
-
+#define LDAP_DEPRECATED 1
+// TODO: use ldap_bind_sasl_s instead of ldap_simple_bind_s.
 #include <ldap.h>
+#undef LDAP_DEPRECATED
 
 #include "picojson.h"
 
@@ -24,7 +26,9 @@ class Steamworks::LDAP::Connection::Private
 friend class Steamworks::LDAP::Connection;
 
 private:
-	std::string uri;
+	std::string m_uri;
+	std::string m_user, m_pass;
+
 	::LDAP* ldaphandle;
 	::LDAPControl* serverctl;
 	::LDAPControl* clientctl;
@@ -48,6 +52,7 @@ private:
 		{
 			if (handle && !keep)
 			{
+				ldap_unbind_ext(handle, nullptr, nullptr);
 				ldap_memfree(handle);
 				handle = nullptr;
 			}
@@ -60,8 +65,10 @@ protected:
 	::LDAPControl** server_controls() { return &serverctl; }
 
 public:
-	Private(const std::string& uri) :
-		uri(uri),
+	Private(const std::string& uri, const std::string& user=std::string(), const std::string& pass=std::string()) :
+		m_uri(uri),
+		m_user(user),
+		m_pass(pass),
 		ldaphandle(nullptr),
 		serverctl(nullptr),
 		clientctl(nullptr),
@@ -108,7 +115,7 @@ public:
 			r = ldap_set_option(ldaphandle, LDAP_OPT_PROTOCOL_VERSION, &protocol_version);
 			if (r)
 			{
-				log.errorStream() << "Could not set LDAP protocol version 3. Error" << r;
+				log.errorStream() << "Could not set LDAP protocol version 3. Error " << r;
 				return;
 			}
 		}
@@ -119,7 +126,7 @@ public:
 			r = ldap_set_option(ldaphandle, LDAP_OPT_X_TLS_REQUIRE_CERT, &tls_require_cert);
 			if (r)
 			{
-				log.warnStream() << "Could not ignore TLS certificate. Error" << r;
+				log.warnStream() << "Could not ignore TLS certificate. Error " << r << ", " << ldap_err2string(r);
 			}
 			// But carry on ..
 		}
@@ -128,11 +135,22 @@ public:
 		r = ldap_start_tls_s(ldaphandle, &serverctl, &clientctl);
 		if (r)
 		{
-			log.errorStream() << "Could not start TLS. Error" << r << ", " << ldap_err2string(r);
+			log.errorStream() << "Could not start TLS. Error " << r << ", " << ldap_err2string(r);
 		}
 		if (r<0)
 		{
 			return;
+		}
+
+		if (!m_user.empty())
+		{
+			r = ldap_simple_bind_s(ldaphandle, m_user.c_str(), m_pass.c_str());
+			if (r)
+			{
+				log.errorStream() << "Could not bind to server with username " << (m_user.empty() ? "<empty>" : m_user);
+				log.errorStream() << "Error " << r << ", " << ldap_err2string(r);
+				return;
+			}
 		}
 
 		// From here on, we'll keep the LDAP connection.
