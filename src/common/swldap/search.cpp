@@ -106,6 +106,26 @@ public:
 	{
 		m_map.erase(name);
 	}
+
+	size_t size() const
+	{
+		return m_map.size();
+	}
+
+	const std::string& name() const
+	{
+		return m_dn;
+	}
+
+	Steamworks::LDAP::Update::Attributes::const_iterator begin() const
+	{
+		return m_map.begin();
+	}
+
+	Steamworks::LDAP::Update::Attributes::const_iterator end() const
+	{
+		return m_map.end();
+	}
 } ;
 
 Steamworks::LDAP::Update::Update(const std::string& dn) :
@@ -162,4 +182,7 @@ Steamworks::LDAP::Update::~Update()
 void Steamworks::LDAP::Update::execute(Connection&, Result result)
 {
 	// TODO: actually do an update
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+
+	log.debugStream() << "Update execute:" << d->name() << " #changes:" << d->size();
 }
