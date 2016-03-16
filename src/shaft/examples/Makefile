@@ -23,3 +23,6 @@ upstream:
 
 bogus:
 	-echo "" | $(CMD)
+
+build:
+	( cd ../../../build && $(MAKE) )

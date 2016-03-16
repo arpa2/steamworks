@@ -1,8 +1,8 @@
 SERVER_NAME = bogus.bionicmutton.org
 CONTENT_LENGTH = 18  # Irrelevant with JSON-parsing
-BIN_DIR = ../../../build/crank
-BIN_NAME = crank
-CGI_SOCKET = /tmp/crank
+BIN_DIR = ../../../build/pulley
+BIN_NAME = pulley
+CGI_SOCKET = /tmp/pulley
 
 check-bin:
 	@test -d $(BIN_DIR) && test -x $(BIN_DIR)/$(BIN_NAME)
@@ -17,12 +17,6 @@ stop:
 
 serverinfo:
 	-cat json-serverinfo | $(CMD)
-
-search:
-	-cat json-search | $(CMD)
-
-update:
-	-cat json-update | $(CMD)
 
 bogus:
 	-echo "" | $(CMD)
