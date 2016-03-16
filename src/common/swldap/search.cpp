@@ -137,7 +137,7 @@ private:
 
 public:
 	LDAPMods(size_t n) :
-		m_mods(calloc(n, sizeof(::ldapmod*))),
+		m_mods((::ldapmod**)calloc(n, sizeof(::ldapmod*))),
 		m_size(n),
 		m_count(0)
 	{
@@ -145,7 +145,7 @@ public:
 
 	~LDAPMods()
 	{
-		ldap_mods_free(m_mods);
+		ldap_mods_free(m_mods, 1);
 		m_mods = nullptr;
 	}
 
@@ -155,11 +155,10 @@ public:
 
 		if (m_count < m_size)
 		{
-			mod = m_mods[m_count++] = malloc(sizeof(::ldapmod));
+			mod = m_mods[m_count++] = (::ldapmod*)malloc(sizeof(::ldapmod));
 			mod->mod_op = LDAP_MOD_REPLACE;
 			mod->mod_type = nullptr;  // TODO: is this the attribute name?
-			mod->modv_strvals = nullptr;
-			mod->mod_next = nullptr;  // Server only
+			mod->mod_vals.modv_strvals = nullptr;
 		}
 	}
 } ;
@@ -226,6 +225,7 @@ void Steamworks::LDAP::Update::execute(Connection&, Result result)
 	LDAPMods mods(d->size());
 	for (auto i = d->begin(); i != d->end(); ++i)
 	{
-		mods.add(i.first, i.second.to_str());
+		log.debugStream() << "  A=" << i->first << " V=" << i->second;
+		mods.add(i->first, i->second);
 	}
 }
