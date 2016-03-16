@@ -145,7 +145,12 @@ public:
 
 	~LDAPMods()
 	{
-		ldap_mods_free(m_mods, 1);
+		for (unsigned int i=0; i<m_count; i++)
+		{
+			free(m_mods[i]->mod_vals.modv_strvals);
+			free(m_mods[i]);
+		}
+		free(m_mods);
 		m_mods = nullptr;
 	}
 
@@ -226,6 +231,11 @@ void Steamworks::LDAP::Update::execute(Connection& conn, Result result)
 {
 	// TODO: actually do an update
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	if (!m_valid)
+	{
+		log.warnStream() << "Can't execute invalid update.";
+		return;
+	}
 
 	log.debugStream() << "Update execute:" << d->name() << " #changes:" << d->size();
 
