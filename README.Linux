@@ -1,4 +1,4 @@
-This Steamworks software is compatible with Linux and has been
+This SteamWorks software is compatible with Linux and has been
 tested on OpenSUSE OpenSUSE 13.2. In order to build SteamWorks,
 you will need to install the following packages:
 
@@ -6,8 +6,10 @@ you will need to install the following packages:
    - Packages (use zypper install)
      - gcc-c++
      - openldap-client, openldap-client-devel
-   - From sourse:
+   - From source:
      - fcgi-devkit, see http://www.fastcgi.com/devkit/doc/fcgi-devel-kit.htm .
        Needs a patch to add #include <stdio.h> to libfcgi/fcgio.cpp .
+       This is optional.
      - log4cpp, see http://log4cpp.sourceforge.net/ .
 
+SteamWorks can build a bundled copy of FCGI if needed.
