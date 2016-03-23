@@ -3,3 +3,9 @@
 picojson.h 
   Copyright 2011-2014 Kazuho Oku, 2-clause BSD license
   https://github.com/kazuho/picojson/blob/master/picojson.h cc130fb
+
+fcgi-2.4.0/
+  This FastCGI application library source and object code (the
+  "Software") and its documentation (the "Documentation") are
+  copyrighted by Open Market, Inc ("Open Market").
+
