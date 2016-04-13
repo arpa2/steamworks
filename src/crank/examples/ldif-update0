@@ -1,0 +1,4 @@
+dn: cn=nas,dc=example,dc=com
+changetype: modify
+replace: description
+description: Network Attached Storage

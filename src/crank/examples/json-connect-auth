@@ -1,0 +1,6 @@
+{ 
+"verb": "connect",
+"uri": "ldap://db/",
+"user": "cn=Manager,dc=example,dc=com",
+"password": "secret"
+}
