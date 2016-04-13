@@ -6,6 +6,7 @@ Adriaan de Groot <groot@kde.org>
 */
 
 #ifndef STEAMWORKS_COMMON_JSONRESPONSE_H
+#define STEAMWORKS_COMMON_JSONRESPONSE_H
 
 #include "picojson.h"
 
