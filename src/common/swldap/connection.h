@@ -60,6 +60,11 @@ public:
 	 * over other methods.
 	 */
 	Connection(const std::string& uri);
+	/**
+	 * As Connection(uri) above, but also set username and password
+	 * for simple authentication.
+	 */
+	Connection(const std::string& uri, const std::string& user, const std::string& password);
 	~Connection();
 	bool is_valid() const;
 	std::string get_uri() const;
@@ -73,6 +78,11 @@ using ConnectionUPtr = std::unique_ptr<Steamworks::LDAP::Connection>;
  * returns false and a response-code and -explanation in @p response.
  */
 bool do_connect(ConnectionUPtr& connection, const std::string& uri, JSON::Object response, Logging::Logger& log);
+/**
+ * As above, but take connection information from the @p values,
+ * which may contain keys "uri", "user" and "password".
+ */
+bool do_connect(ConnectionUPtr& connection, JSON::Values values, JSON::Object response, Logging::Logger& log);
 
 /**
  * Base class for actions that are created (once) and executed (possibly more than once)

@@ -144,6 +144,7 @@ public:
 
 		if (!m_user.empty())
 		{
+			log.debugStream() << "Binding to LDAP server as user " << m_user;
 			r = ldap_simple_bind_s(ldaphandle, m_user.c_str(), m_pass.c_str());
 			if (r)
 			{
@@ -182,6 +183,11 @@ Steamworks::LDAP::Connection::Connection(const std::string& uri) :
 {
 }
 
+Steamworks::LDAP::Connection::Connection(const std::string& uri, const std::string& user, const std::string& password) :
+	d(new Private(uri, user, password))
+{
+}
+
 Steamworks::LDAP::Connection::~Connection()
 {
 }
@@ -192,25 +198,46 @@ Steamworks::LDAP::Connection::~Connection()
 bool Steamworks::LDAP::Connection::is_valid() const { return d->is_valid(); }
 std::string Steamworks::LDAP::Connection::get_uri() const { return d->get_uri(); }
 
-bool Steamworks::LDAP::do_connect(ConnectionUPtr& connection, const std::string& uri, JSON::Object response, Logging::Logger& log)
+static bool _do_connect(Steamworks::LDAP::ConnectionUPtr& connection, const std::string& uri, const std::string& user, const std::string& password, Steamworks::JSON::Object response, Steamworks::Logging::Logger& log)
 {
 	if (uri.empty())
 	{
 		log.warnStream() << "No Server URI given to connect.";
-		JSON::simple_output(response, 400, "No server given", LDAP_OPERATIONS_ERROR);
+		Steamworks::JSON::simple_output(response, 400, "No server given", LDAP_OPERATIONS_ERROR);
 		return false;
 	}
 	log.debugStream() << "Connecting to " << uri;
 
-	connection.reset(new Steamworks::LDAP::Connection(uri));
+	if (!(user.empty() || password.empty()))
+	{
+		log.debugStream() << "Authenticating to " << uri << " as " << user;
+		connection.reset(new Steamworks::LDAP::Connection(uri, user, password));
+	}
+	else
+	{
+		log.debugStream() << "Using no authentication.";
+		connection.reset(new Steamworks::LDAP::Connection(uri));
+	}
 	if (!connection->is_valid())
 	{
 		log.warnStream() << "Could not connect to " << uri;
 		// Still return 0 because we don't want the FCGI to stop.
-		JSON::simple_output(response, 404, "Could not connect to server", LDAP_OPERATIONS_ERROR);
+		Steamworks::JSON::simple_output(response, 404, "Could not connect to server", LDAP_OPERATIONS_ERROR);
 		return false;
 	}
 
 	return true;
 }
 
+bool Steamworks::LDAP::do_connect(Steamworks::LDAP::ConnectionUPtr& connection, Steamworks::JSON::Values values, Steamworks::JSON::Object response, Steamworks::Logging::Logger& log)
+{
+	std::string uri = values.get("uri").to_str();
+	std::string user = values.get("user").to_str();
+	std::string password = values.get("password").to_str();
+	return _do_connect(connection, uri, user, password, response, log);
+}
+
+bool Steamworks::LDAP::do_connect(Steamworks::LDAP::ConnectionUPtr& connection, const std::string& uri, Steamworks::JSON::Object response, Steamworks::Logging::Logger& log)
+{
+	return _do_connect(connection, uri, std::string(), std::string(), response, log);
+}
