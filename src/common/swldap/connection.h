@@ -62,6 +62,7 @@ public:
 	bool is_valid() const { return valid; }
 } ;
 
+using ConnectionUPtr = std::unique_ptr<Steamworks::LDAP::Connection>;
 
 /**
  * Base class for actions that are created (once) and executed (possibly more than once)
