@@ -14,13 +14,21 @@ Adriaan de Groot <groot@kde.org>
 #include "jsonresponse.h"
 #include "logger.h"
 
+/**
+ * Private data for the shaft.
+ *
+ * A shaft has one downstream -- where it writes data -- which is the usual
+ * connection for a SteamWorks component. There may be zero or more upstreams,
+ * which the shaft monitors via SyncRepl for changes. These changes are written
+ * (possibly after a renaming) to the downstream.
+ */
 class ShaftDispatcher::Private
 {
 friend class ShaftDispatcher;
 private:
 	using ConnectionUPtr = std::unique_ptr<Steamworks::LDAP::Connection>;
 	ConnectionUPtr connection;
-	std::vector<ConnectionUPtr> downstream;
+	std::vector<ConnectionUPtr> upstream;
 
 public:
 	Private() :
@@ -137,11 +145,11 @@ int ShaftDispatcher::do_upstream(const VerbDispatcher::Values values, VerbDispat
 		return 0;
 	}
 
-	d->downstream.emplace_back(new Steamworks::LDAP::Connection(name));
-	if (!d->downstream.back()->is_valid())
+	d->upstream.emplace_back(new Steamworks::LDAP::Connection(name));
+	if (!d->upstream.back()->is_valid())
 	{
 		log.warnStream() << "Could not connect to upstream " << name;
-		d->downstream.pop_back();
+		d->upstream.pop_back();
 		return 0;
 	}
 
