@@ -192,3 +192,26 @@ Steamworks::LDAP::Connection::~Connection()
 ::LDAPControl** Steamworks::LDAP::Connection::client_controls() const { return d->client_controls(); }
 ::LDAPControl** Steamworks::LDAP::Connection::server_controls() const { return d->server_controls(); }
 std::string Steamworks::LDAP::Connection::get_uri() const { return d->get_uri(); }
+
+bool Steamworks::LDAP::do_connect(ConnectionUPtr& connection, const std::string& uri, JSON::Object response, Logging::Logger& log)
+{
+	if (uri.empty())
+	{
+		log.warnStream() << "No Server URI given to connect.";
+		JSON::simple_output(response, 400, "No server given", LDAP_OPERATIONS_ERROR);
+		return false;
+	}
+	log.debugStream() << "Connecting to " << uri;
+
+	connection.reset(new Steamworks::LDAP::Connection(uri));
+	if (!connection->is_valid())
+	{
+		log.warnStream() << "Could not connect to " << uri;
+		// Still return 0 because we don't want the FCGI to stop.
+		JSON::simple_output(response, 404, "Could not connect to server", LDAP_OPERATIONS_ERROR);
+		return false;
+	}
+
+	return true;
+}
+

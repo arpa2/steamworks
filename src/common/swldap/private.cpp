@@ -7,6 +7,8 @@ Adriaan de Groot <groot@kde.org>
 
 #include "private.h"
 
+#include "serverinfo.h"
+
 namespace Steamworks
 {
 

@@ -11,6 +11,7 @@ Adriaan de Groot <groot@kde.org>
 #include <string>
 
 #include "../logger.h"
+#include "../jsonresponse.h"
 #include "connection.h"
 
 namespace Steamworks {
@@ -71,6 +72,17 @@ public:
 	static const char SC_SORTREQUEST[];     // 1.2.840.113556.1.4.473           RFC2891  Sorting
 	static const char SC_SORTRESPONSE[];    // 1.2.840.113556.1.4.474           RFC2891  Sorting
 } ;
+
+/**
+ * Check that a given @p connection supports the given server control @p control
+ * (an OID string). Returns true if it does; otherwise, false and an explanation
+ * is given in @p response.
+ */
+bool require_server_control(ConnectionUPtr& connection, const char *control, JSON::Object response, Logging::Logger& log);
+/**
+ * Convenience-function for require_server_control(..., SC_SYNC, ...)
+ */
+bool require_syncrepl(ConnectionUPtr& connection, JSON::Object response, Logging::Logger& log);
 
 } // namespace LDAP
 } // namespace Steamworks

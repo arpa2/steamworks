@@ -170,3 +170,24 @@ bool Steamworks::LDAP::ServerControlInfo::is_available(const std::string& oid) c
 const char Steamworks::LDAP::ServerControlInfo::SC_SYNC[] = LDAP_CONTROL_SYNC;
 const char Steamworks::LDAP::ServerControlInfo::SC_SORTREQUEST[] = LDAP_CONTROL_SORTREQUEST;
 const char Steamworks::LDAP::ServerControlInfo::SC_SORTRESPONSE[] = LDAP_CONTROL_SORTRESPONSE;
+
+bool Steamworks::LDAP::require_server_control(ConnectionUPtr& connection, const char *control, JSON::Object response, Logging::Logger& log)
+{
+	Steamworks::LDAP::ServerControlInfo info;
+	info.execute(*connection);
+
+	if (!info.is_available(control))
+	{
+		connection.reset(nullptr);
+		log.warnStream() << "Server at " << connection->get_uri() << " does not support SyncRepl.";
+		Steamworks::JSON::simple_output(response, 501, "Server does not support SyncRepl", LDAP_UNAVAILABLE_CRITICAL_EXTENSION);
+		return false;
+	}
+
+	return true;
+}
+
+bool Steamworks::LDAP::require_syncrepl(Steamworks::LDAP::ConnectionUPtr& connection, Steamworks::JSON::Object response, Steamworks::Logging::Logger& log)
+{
+	return require_server_control(connection, ServerControlInfo::SC_SYNC, response, log);
+}

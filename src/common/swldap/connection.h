@@ -23,6 +23,9 @@ Adriaan de Groot <groot@kde.org>
 
 #include "picojson.h"
 
+#include "../logger.h"
+#include "../jsonresponse.h"
+
 namespace Steamworks
 {
 
@@ -64,6 +67,13 @@ public:
 } ;
 
 using ConnectionUPtr = std::unique_ptr<Steamworks::LDAP::Connection>;
+
+/**
+ * Try to connect to an LDAP server at the given URI.
+ * The @p connection is reset regardless; if connection fails,
+ * returns false and a response-code and -explanation in @p response.
+ */
+bool do_connect(ConnectionUPtr& connection, const std::string& uri, JSON::Object response, Logging::Logger& log);
 
 /**
  * Base class for actions that are created (once) and executed (possibly more than once)
