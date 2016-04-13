@@ -49,9 +49,7 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 int CrankDispatcher::do_connect(const Values values, Object response)
 {
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
-	std::string name = values.get("uri").to_str();
-
-	if (Steamworks::LDAP::do_connect(d->connection, name, response, log))
+	if (Steamworks::LDAP::do_connect(d->connection, values, response, log))
 	{
 		m_state = connected;
 	}
