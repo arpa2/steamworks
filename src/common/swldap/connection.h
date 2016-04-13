@@ -60,6 +60,7 @@ public:
 	Connection(const std::string& uri);
 	~Connection();
 	bool is_valid() const { return valid; }
+	std::string get_uri() const;
 } ;
 
 using ConnectionUPtr = std::unique_ptr<Steamworks::LDAP::Connection>;

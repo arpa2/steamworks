@@ -173,6 +173,8 @@ public:
 	}
 
 	bool is_valid() const { return valid && ldaphandle; }
+
+	std::string get_uri() const { return m_uri; }
 } ;
 
 Steamworks::LDAP::Connection::Connection(const std::string& uri) :
@@ -189,3 +191,4 @@ Steamworks::LDAP::Connection::~Connection()
 ::LDAP* Steamworks::LDAP::Connection::handle() const { return d->handle(); }
 ::LDAPControl** Steamworks::LDAP::Connection::client_controls() const { return d->client_controls(); }
 ::LDAPControl** Steamworks::LDAP::Connection::server_controls() const { return d->server_controls(); }
+std::string Steamworks::LDAP::Connection::get_uri() const { return d->get_uri(); }
