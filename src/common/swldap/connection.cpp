@@ -178,10 +178,8 @@ public:
 } ;
 
 Steamworks::LDAP::Connection::Connection(const std::string& uri) :
-	d(new Private(uri)),
-	valid(false)
+	d(new Private(uri))
 {
-	valid = d->is_valid();
 }
 
 Steamworks::LDAP::Connection::~Connection()
@@ -191,6 +189,7 @@ Steamworks::LDAP::Connection::~Connection()
 ::LDAP* Steamworks::LDAP::Connection::handle() const { return d->handle(); }
 ::LDAPControl** Steamworks::LDAP::Connection::client_controls() const { return d->client_controls(); }
 ::LDAPControl** Steamworks::LDAP::Connection::server_controls() const { return d->server_controls(); }
+bool Steamworks::LDAP::Connection::is_valid() const { return d->is_valid(); }
 std::string Steamworks::LDAP::Connection::get_uri() const { return d->get_uri(); }
 
 bool Steamworks::LDAP::do_connect(ConnectionUPtr& connection, const std::string& uri, JSON::Object response, Logging::Logger& log)

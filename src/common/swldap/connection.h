@@ -46,7 +46,6 @@ friend class Action;
 private:
 	class Private;
 	std::unique_ptr<Private> d;
-	bool valid;
 
 protected:
 	::LDAP* handle() const;
@@ -62,7 +61,7 @@ public:
 	 */
 	Connection(const std::string& uri);
 	~Connection();
-	bool is_valid() const { return valid; }
+	bool is_valid() const;
 	std::string get_uri() const;
 } ;
 
