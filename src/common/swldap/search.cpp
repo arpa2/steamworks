@@ -137,7 +137,7 @@ private:
 
 public:
 	LDAPMods(size_t n) :
-		m_mods((::ldapmod**)calloc(n, sizeof(::ldapmod*))),
+		m_mods((::ldapmod**)calloc(n+1, sizeof(::ldapmod*))),
 		m_size(n),
 		m_count(0)
 	{

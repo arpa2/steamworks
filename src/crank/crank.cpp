@@ -114,6 +114,7 @@ int CrankDispatcher::do_update(const Values values, Object response)
 		if (u.is_valid())
 		{
 			u.execute(*d->connection, &response);
+			log.debugStream() << "Completed #" << count;
 		}
 		else
 		{
