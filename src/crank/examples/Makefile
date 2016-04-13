@@ -21,8 +21,13 @@ serverinfo:
 search:
 	-cat json-search | $(CMD)
 
-update:
-	-cat json-update | $(CMD)
+update: update0 update1
+
+update0:
+	-cat json-update0 | $(CMD)
+
+update1:
+	-cat json-update1 | $(CMD)
 
 bogus:
 	-echo "" | $(CMD)
