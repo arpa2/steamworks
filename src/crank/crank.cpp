@@ -48,29 +48,14 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 
 int CrankDispatcher::do_connect(const Values values, Object response)
 {
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
 	std::string name = values.get("uri").to_str();
 
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
-	if (name.empty())
-	{
-		log.warnStream() << "No Server URI given to connect.";
-		Steamworks::JSON::simple_output(response, 400, "No server given", LDAP_OPERATIONS_ERROR);
-		return 0;
-	}
-	log.debugStream() << "Connecting to " << name;
-
-	d->connection.reset(new Steamworks::LDAP::Connection(name));
-	if (d->connection->is_valid())
+	if (Steamworks::LDAP::do_connect(d->connection, name, response, log))
 	{
 		m_state = connected;
 	}
-	else
-	{
-		log.warnStream() << "Could not connect to " << name;
-		// Still return 0 because we don't want the FCGI to stop.
-		Steamworks::JSON::simple_output(response, 404, "Could not connect to server", LDAP_OPERATIONS_ERROR);
-		return 0;
-	}
+	// Always return 0 because we don't want the FCGI to stop.
 	return 0;
 }
 
