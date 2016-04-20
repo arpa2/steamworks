@@ -28,9 +28,6 @@ namespace Steamworks
 
 namespace LDAP
 {
-void copy_entry(::LDAP* ldaphandle, ::LDAPMessage* entry, picojson::value::object& map);
-
-
 /**
  * (Synchronous) search. The search places results in the result parameter of
  * execute(), in JSON form.
