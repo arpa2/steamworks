@@ -84,6 +84,26 @@ bool require_server_control(ConnectionUPtr& connection, const char *control, JSO
  */
 bool require_syncrepl(ConnectionUPtr& connection, JSON::Object response, Logging::Logger& log);
 
+
+/**
+ * Class representing a query for type information related to all
+ * objectclasses. Returns the complete subschema-definition, which
+ * isn't all that useful because it needs parsing to find out what
+ * types apply to what attributes.
+ */
+class TypeInfo : public Action
+{
+private:
+	class Private;
+	std::unique_ptr<Private> d;
+
+public:
+	TypeInfo();
+	~TypeInfo();
+
+	virtual void execute(Connection&, Result result=nullptr);
+} ;
+
 } // namespace LDAP
 } // namespace Steamworks
 

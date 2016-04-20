@@ -191,3 +191,68 @@ bool Steamworks::LDAP::require_syncrepl(Steamworks::LDAP::ConnectionUPtr& connec
 {
 	return require_server_control(connection, ServerControlInfo::SC_SYNC, response, log);
 }
+
+
+class Steamworks::LDAP::TypeInfo::Private
+{
+private:
+	std::string m_objectclass;
+
+public:
+	Private()
+	{
+	}
+} ;
+
+Steamworks::LDAP::TypeInfo::TypeInfo() :
+	Action(true),
+	d(new Private())
+{
+}
+
+Steamworks::LDAP::TypeInfo::~TypeInfo()
+{
+}
+
+void Steamworks::LDAP::TypeInfo::execute(Connection& conn, Result result)
+{
+	::LDAP* ldaphandle = handle(conn);
+
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+
+	log.debugStream() << "Check for typeinfo.";
+
+	// TODO: settings for timeouts?
+	struct timeval tv;
+	tv.tv_sec = 2;
+	tv.tv_usec = 0;
+
+	const char *attrs[] = {LDAP_ALL_OPERATIONAL_ATTRIBUTES, nullptr};
+
+	// TODO: cn=Subschema is OpenLDAP-specific and specifically warned-against
+	//       at http://www.openldap.org/faq/data/cache/1366.html
+	LDAPMessage* res;
+	int r = ldap_search_ext_s(ldaphandle,
+		"cn=Subschema",
+		LDAP_SCOPE_BASE,
+		"(objectclass=*)",
+		const_cast<char **>(attrs),
+		0,
+		server_controls(conn),
+		client_controls(conn),
+		&tv,
+		1024*1024,
+		&res);
+	if (r)
+	{
+		log.errorStream() << "Typeinfo result " << r << " " << ldap_err2string(r);
+		ldap_msgfree(res);
+		return;
+	}
+
+	if (result)
+	{
+		copy_search_result(ldaphandle, res, result, log);
+	}
+	ldap_msgfree(res);
+}
