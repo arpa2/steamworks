@@ -229,11 +229,22 @@ static bool _do_connect(Steamworks::LDAP::ConnectionUPtr& connection, const std:
 	return true;
 }
 
+static inline std::string _get_parameter(Steamworks::JSON::Values values, const char* key)
+{
+	auto v = values.get(key);
+	if (v.is<picojson::null>())
+	{
+		return std::string();
+	}
+	return v.to_str();
+}
+
 bool Steamworks::LDAP::do_connect(Steamworks::LDAP::ConnectionUPtr& connection, Steamworks::JSON::Values values, Steamworks::JSON::Object response, Steamworks::Logging::Logger& log)
 {
-	std::string uri = values.get("uri").to_str();
-	std::string user = values.get("user").to_str();
-	std::string password = values.get("password").to_str();
+	std::string uri = _get_parameter(values, "uri");
+	std::string user = _get_parameter(values, "user");
+	std::string password = _get_parameter(values, "password");
+
 	return _do_connect(connection, uri, user, password, response, log);
 }
 
