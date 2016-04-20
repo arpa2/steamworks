@@ -32,6 +32,7 @@ protected:
 	int do_connect(const Values values, Object response);
 	int do_stop(const Values values);
 	int do_search(const Values values, Object response);
+	int do_typeinfo(const Values values, Object response);
 	int do_update(const Values values, Object response);
 	int do_serverinfo(const Values values, Object response);
 } ;

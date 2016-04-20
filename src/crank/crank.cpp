@@ -41,6 +41,7 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 	if (verb == "connect") return do_connect(values, response);
 	else if (verb == "stop") return do_stop(values);
 	else if (verb == "search") return do_search(values, response);
+	else if (verb == "typeinfo") return do_typeinfo(values, response);
 	else if (verb == "update") return do_update(values, response);
 	else if (verb == "serverinfo") return do_serverinfo(values, response);
 	return -1;
@@ -85,6 +86,22 @@ int CrankDispatcher::do_search(const Values values, Object response)
 	search.execute(*d->connection, &response);
 	return 0;
 }
+
+int CrankDispatcher::do_typeinfo(const Values values, Object response)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+
+	if (m_state != connected)
+	{
+		log.debugStream() << "Typeinfo on disconnected server.";
+		return 0;
+	}
+
+	Steamworks::LDAP::TypeInfo search;
+	search.execute(*d->connection, &response);
+	return 0;
+}
+
 
 
 int CrankDispatcher::do_update(const Values values, Object response)

@@ -24,6 +24,9 @@ serverinfo:
 search:
 	-cat json-search | $(CMD)
 
+typeinfo:
+	-cat json-typeinfo | $(CMD)
+
 update: update0 update1
 
 update0:

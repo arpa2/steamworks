@@ -40,7 +40,7 @@ private:
 	class Private;
 	std::unique_ptr<Private> d;
 public:
-	Search(const std::string& base, const std::string& filter, LDAPScope scope = ScopeSubtree);
+	Search(const std::string& base, const std::string& filter, LDAPScope scope=ScopeSubtree);
 	~Search();
 
 	virtual void execute(Connection&, Result result=nullptr);
