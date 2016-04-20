@@ -227,7 +227,7 @@ void Steamworks::LDAP::TypeInfo::execute(Connection& conn, Result result)
 	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 
-	const char *attrs[] = {LDAP_ALL_OPERATIONAL_ATTRIBUTES, nullptr};
+	const char *attrs[] = {"objectClasses", nullptr};
 
 	// TODO: cn=Subschema is OpenLDAP-specific and specifically warned-against
 	//       at http://www.openldap.org/faq/data/cache/1366.html
