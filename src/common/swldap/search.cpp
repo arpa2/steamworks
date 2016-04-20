@@ -19,20 +19,24 @@ class Steamworks::LDAP::Search::Private
 {
 private:
 	std::string m_base, m_filter;
+	LDAPScope m_scope;
+
 public:
-	Private(const std::string& base, const std::string& filter) :
+	Private(const std::string& base, const std::string& filter, LDAPScope scope) :
 		m_base(base),
-		m_filter(filter)
+		m_filter(filter),
+		m_scope(scope)
 	{
 	}
 
 	const std::string& base() const { return m_base; }
 	const std::string& filter() const { return m_filter; }
+	LDAPScope scope() const { return m_scope; }
 } ;
 
-Steamworks::LDAP::Search::Search(const std::string& base, const std::string& filter) :
+Steamworks::LDAP::Search::Search(const std::string& base, const std::string& filter, LDAPScope scope) :
 	Action(true),
-	d(new Private(base, filter))
+	d(new Private(base, filter, scope))
 {
 }
 
@@ -54,7 +58,7 @@ void Steamworks::LDAP::Search::execute(Connection& conn, Result results)
 	LDAPMessage* res;
 	int r = ldap_search_ext_s(ldaphandle,
 		d->base().c_str(),
-		LDAP_SCOPE_SUBTREE,
+		d->scope(),
 		d->filter().c_str(),
 		nullptr,  // attrs
 		0,

@@ -28,6 +28,8 @@ namespace Steamworks
 
 namespace LDAP
 {
+using LDAPScope = decltype(LDAP_SCOPE_SUBTREE);  // Probably int
+
 /**
  * (Synchronous) search. The search places results in the result parameter of
  * execute(), in JSON form.
@@ -38,10 +40,15 @@ private:
 	class Private;
 	std::unique_ptr<Private> d;
 public:
-	Search(const std::string& base, const std::string& filter);
+	Search(const std::string& base, const std::string& filter, LDAPScope scope = ScopeSubtree);
 	~Search();
 
 	virtual void execute(Connection&, Result result=nullptr);
+
+	typedef enum {
+		ScopeSubtree = LDAP_SCOPE_SUBTREE,
+		ScopeBase = LDAP_SCOPE_BASE
+	} LDAPScope_e;
 } ;
 
 /**
