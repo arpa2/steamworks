@@ -19,6 +19,15 @@ serverinfo:
 	-cat json-serverinfo | $(CMD)
 
 
+follow:
+	-cat json-follow0 | $(CMD)
+
+follow-all:
+	-cat json-follow1 | $(CMD)
+
+unfollow:
+	-cat json-unfollow | $(CMD)
+
 ### Test edge cases (not actual commands)
 #
 #
