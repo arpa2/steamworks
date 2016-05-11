@@ -18,8 +18,23 @@ stop:
 serverinfo:
 	-cat json-serverinfo | $(CMD)
 
-bogus:
+
+### Test edge cases (not actual commands)
+#
+#
+empty:
 	-echo "" | $(CMD)
 
+bogus:
+	-echo '{"verb":"flabberghast"}' | $(CMD)
+
+broken:
+	-echo '{{"' | $(CMD)
+
+
+
+### Convenience targets
+#
+#
 build:
 	( cd ../../../build && $(MAKE) )

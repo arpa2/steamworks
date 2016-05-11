@@ -24,6 +24,9 @@ serverinfo:
 search:
 	-cat json-search | $(CMD)
 
+search-all:
+	-cat json-search-all | $(CMD)
+
 typeinfo:
 	-cat json-typeinfo | $(CMD)
 
@@ -35,8 +38,22 @@ update0:
 update1:
 	-cat json-update1 | $(CMD)
 
-bogus:
+### Test edge cases (not actual commands)
+#
+#
+empty:
 	-echo "" | $(CMD)
 
+bogus:
+	-echo '{"verb":"flabberghast"}' | $(CMD)
+
+broken:
+	-echo '{{"' | $(CMD)
+
+
+
+### Convenience targets
+#
+#
 build:
 	( cd ../../../build && $(MAKE) )
