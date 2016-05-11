@@ -40,6 +40,18 @@ bogus:
 broken:
 	-echo '{{"' | $(CMD)
 
+### Larger-scale tests
+#
+# 
+# This sets up a pulley following a particular subtree,
+# and in parallel runs two updates via the crank (which,
+# in the examples provided, connects to the same LDAP
+# server which is upstream to the pulley). This should
+# show two updates showing up in the pulley after the
+# initial sync.
+#
+sync-update:
+	$(MAKE) start follow & ( cd ../../crank/examples && $(MAKE) start auth && sleep 1 && $(MAKE) update0 && sleep 1 && $(MAKE) update1 stop )
 
 
 ### Convenience targets
