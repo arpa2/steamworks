@@ -130,13 +130,9 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 		return;
 	}
 
-	for (unsigned int i=0; i<10; i++)
+	r = ldap_sync_poll(syncrepl);
+	if (r)
 	{
-		r = ldap_sync_poll(syncrepl);
-		if (r)
-		{
-			log.errorStream() << "Sync poll result " << r << " " << ldap_err2string(r);
-			break;
-		}
+		log.errorStream() << "Sync poll result " << r << " " << ldap_err2string(r);
 	}
 }
