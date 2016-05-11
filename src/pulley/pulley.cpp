@@ -20,7 +20,9 @@ friend class PulleyDispatcher;
 private:
 	using ConnectionUPtr = std::unique_ptr<Steamworks::LDAP::Connection>;
 	ConnectionUPtr connection;
-	std::vector<ConnectionUPtr> downstream;
+
+	using SyncReplUPtr = std::unique_ptr<Steamworks::LDAP::SyncRepl>;
+	std::vector<SyncReplUPtr> following;
 
 public:
 	Private() :
@@ -30,6 +32,13 @@ public:
 
 	~Private()
 	{
+	}
+
+	int add_follower(const std::string& base, const std::string& filter, Object response)
+	{
+		following.emplace_back(new Steamworks::LDAP::SyncRepl(base, filter));
+		following.back()->execute(*connection, &response);
+		return 0;
 	}
 } ;
 
@@ -116,10 +125,7 @@ int PulleyDispatcher::do_follow(const VerbDispatcher::Values values, VerbDispatc
 		return 0;
 	}
 
-	Steamworks::LDAP::SyncRepl sync(base, filter);
-	sync.execute(*d->connection, &response);
-
-	return 0;
+	return d->add_follower(base, filter, response);
 }
 
 int PulleyDispatcher::do_unfollow(const VerbDispatcher::Values values, VerbDispatcher::Object response)
