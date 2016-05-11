@@ -44,6 +44,8 @@ int PulleyDispatcher::exec(const std::string& verb, const Values values, Object 
 	if (verb == "connect") return do_connect(values, response);
 	else if (verb == "stop") return do_stop(values);
 	else if (verb == "serverinfo") return do_serverinfo(values, response);
+	else if (verb == "follow") return do_follow(values, response);
+	else if (verb == "unfollow") return do_unfollow(values, response);
 	return -1;
 }
 
@@ -81,6 +83,32 @@ int PulleyDispatcher::do_serverinfo(const Values values, Object response)
 
 	Steamworks::LDAP::ServerControlInfo info;
 	info.execute(*d->connection, &response);
+
+	return 0;
+}
+
+int PulleyDispatcher::do_follow(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.pulley");
+
+	if (m_state != connected)
+	{
+		log.debugStream() << "Follow on disconnected server.";
+		return 0;
+	}
+
+	return 0;
+}
+
+int PulleyDispatcher::do_unfollow(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.pulley");
+
+	if (m_state != connected)
+	{
+		log.debugStream() << "UnFollow on disconnected server.";
+		return 0;
+	}
 
 	return 0;
 }

@@ -34,6 +34,13 @@ protected:
 	int do_connect(const Values values, Object response);
 	int do_stop(const Values values);
 	int do_serverinfo(const Values values, Object response);
+
+	/** Start following a (subtree-) DIT. This starts up SyncRepl
+	 *  for that DIT. */
+	int do_follow(const Values values, Object response);
+	/** Stop following a previously followed DIT. This terminates
+	 *  SyncRepl for that DIT. */
+	int do_unfollow(const Values values, Object response);
 } ;
 
 
