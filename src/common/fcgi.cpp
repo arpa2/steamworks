@@ -250,6 +250,7 @@ int Steamworks::FCGI::mainloop(VerbDispatcher *dispatcher)
 		FD_ZERO(&rfds);
 		if (FCGX_FD_SET(&rfds))
 		{
+			dispatcher->fd_set(&rfds); // Ignore return, there's at least one to watch already
 			if (fcgi::logger)
 			{
 				fcgi::logger->debugStream() << "Doing select() for FCGI";
