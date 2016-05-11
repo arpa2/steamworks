@@ -233,12 +233,35 @@ int Steamworks::FCGI::mainloop(VerbDispatcher *dispatcher)
 	FCGX_Stream *in, *out, *err;
 	FCGX_ParamArray envp;
 
-	while(FCGX_Accept(&in, &out, &err, &envp) >= 0)
+	int r;
+	fd_set rfds;
+
+	do
 	{
-		int r = fcgi::handle_request(in, out, err, envp, dispatcher);
+		r = FCGX_Accept(&in, &out, &err, &envp);
+		if (r < 0) return r;
+
+		r = fcgi::handle_request(in, out, err, envp, dispatcher);
 		if (r) return r;
 
 		request_count++;
+		FCGX_Finish();
+
+		FD_ZERO(&rfds);
+		if (FCGX_FD_SET(&rfds))
+		{
+			if (fcgi::logger)
+			{
+				fcgi::logger->debugStream() << "Doing select() for FCGI";
+			}
+			r = select(FD_SETSIZE, &rfds, nullptr, nullptr, nullptr);
+			if (fcgi::logger)
+			{
+				fcgi::logger->debugStream() << "select() returned " << r << (FCGX_HasRequest(&rfds) ? " for FCGI" : " for other");
+			}
+		}
 	}
+	while (r>=0);
+
 	return 0;
 }
