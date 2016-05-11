@@ -20,10 +20,10 @@ serverinfo:
 
 
 follow:
-	-cat json-follow0 | $(CMD)
+	-cat json-follow1 | $(CMD)
 
 follow-all:
-	-cat json-follow1 | $(CMD)
+	-cat json-follow0 | $(CMD)
 
 unfollow:
 	-cat json-unfollow | $(CMD)
