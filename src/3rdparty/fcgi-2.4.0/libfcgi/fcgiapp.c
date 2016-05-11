@@ -9,6 +9,8 @@
  * See the file "LICENSE.TERMS" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
+ * Copyright (c) 2016 InternetWide.org and the ARPA2.net project
+ *     - added FCGX_FD_SET and FCGX_HasRequest
  */
 #ifndef lint
 static const char rcsid[] = "$Id: fcgiapp.c,v 1.34 2001/12/12 22:54:10 robs Exp $";
@@ -610,7 +612,7 @@ int FCGX_VFPrintF(FCGX_Stream *stream, const char *format, va_list arg)
                                 break;
                             case 'L':
                                 lDoubleArg = va_arg(arg, LONG_DOUBLE);
-                                /* XXX Need to check for the presence of 
+                                /* XXX Need to check for the presence of
                                  * frexpl() and use it if available */
 				                frexp((double) lDoubleArg, &exp);
                                 break;
@@ -947,7 +949,7 @@ static void SetError(FCGX_Stream *stream, int FCGI_errno)
     if(stream->FCGI_errno == 0) {
         stream->FCGI_errno = FCGI_errno;
     }
-  
+
     stream->isClosed = TRUE;
 }
 
@@ -2022,7 +2024,7 @@ void FCGX_Finish_r(FCGX_Request *reqDataPtr)
 
 void FCGX_Free(FCGX_Request * request, int close)
 {
-    if (request == NULL) 
+    if (request == NULL)
         return;
 
     FCGX_FreeStream(&request->in);
@@ -2305,5 +2307,27 @@ void FCGX_SetExitStatus(int status, FCGX_Stream *stream)
 {
     FCGX_Stream_Data *data = (FCGX_Stream_Data *)stream->data;
     data->reqDataPtr->appStatus = status;
+}
+
+/**
+ * Support for doing select() in an FCGI program.
+ */
+int FCGX_FD_SET(fd_set* readfds)
+{
+	if (the_request.listen_sock >= 0)
+	{
+		FD_SET(the_request.listen_sock, readfds);
+		return 1;
+	}
+	return 0;
+}
+
+int FCGX_HasRequest(fd_set* readfds)
+{
+	if (the_request.listen_sock >= 0)
+	{
+		return FD_ISSET(the_request.listen_sock, readfds);
+	}
+	return 0;
 }
 

@@ -10,6 +10,9 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
  * $Id: fcgiapp.h,v 1.12 2001/11/21 21:10:11 robs Exp $
+ *
+ * Copyright (c) 2016 InternetWide.org and the ARPA2.net project
+ *     - added FCGX_FD_SET and FCGX_HasRequest
  */
 
 #ifndef _FCGIAPP_H
@@ -108,7 +111,7 @@ typedef struct FCGX_Request {
 	int listen_sock;
 } FCGX_Request;
 
-
+
 /*
  *======================================================================
  * Control
@@ -232,7 +235,7 @@ DLLAPI void FCGX_Finish_r(FCGX_Request *request);
  *
  * FCGX_Free --
  *
- *      Free the memory and, if close is true, 
+ *      Free the memory and, if close is true,
  *	    IPC FD associated with the request (multi-thread safe).
  *
  *----------------------------------------------------------------------
@@ -326,7 +329,7 @@ DLLAPI int FCGX_StartFilterData(FCGX_Stream *stream);
  *----------------------------------------------------------------------
  */
 DLLAPI void FCGX_SetExitStatus(int status, FCGX_Stream *stream);
-
+
 /*
  *======================================================================
  * Parameters
@@ -347,7 +350,7 @@ DLLAPI void FCGX_SetExitStatus(int status, FCGX_Stream *stream);
  *----------------------------------------------------------------------
  */
 DLLAPI char *FCGX_GetParam(const char *name, FCGX_ParamArray envp);
-
+
 /*
  *======================================================================
  * Readers
@@ -440,7 +443,7 @@ DLLAPI char *FCGX_GetLine(char *str, int n, FCGX_Stream *stream);
  */
 
 DLLAPI  int FCGX_HasSeenEOF(FCGX_Stream *stream);
-
+
 /*
  *======================================================================
  * Writers
@@ -529,7 +532,7 @@ DLLAPI int FCGX_VFPrintF(FCGX_Stream *stream, const char *format, va_list arg);
  *----------------------------------------------------------------------
  */
 DLLAPI int FCGX_FFlush(FCGX_Stream *stream);
-
+
 /*
  *======================================================================
  * Both Readers and Writers
@@ -584,7 +587,7 @@ DLLAPI void FCGX_ClearError(FCGX_Stream *stream);
  *
  * FCGX_CreateWriter --
  *
- *      Create a FCGX_Stream (used by cgi-fcgi).  This shouldn't 
+ *      Create a FCGX_Stream (used by cgi-fcgi).  This shouldn't
  *      be needed by a FastCGI applictaion.
  *
  *----------------------------------------------------------------------
@@ -600,7 +603,7 @@ DLLAPI FCGX_Stream *FCGX_CreateWriter(
  *
  * FCGX_FreeStream --
  *
- *      Free a FCGX_Stream (used by cgi-fcgi).  This shouldn't 
+ *      Free a FCGX_Stream (used by cgi-fcgi).  This shouldn't
  *      be needed by a FastCGI applictaion.
  *
  *----------------------------------------------------------------------
@@ -614,6 +617,19 @@ DLLAPI void FCGX_FreeStream(FCGX_Stream **stream);
  * ----------------------------------------------------------------------
  */
 DLLAPI void FCGX_ShutdownPending(void);
+
+/* Support for select() with an FCGI loop. */
+struct fd_set;
+/** Fills @p readfds with the file-descriptors that need to be
+ *  select()ed upon for FCGI events. Returns 0 if there are
+ *  no applicable file-descriptors.
+ */
+DLLAPI int FCGX_FD_SET(fd_set* readfds);
+/** Checks @p readfds for any file-descripts set that are
+ *  owned by FCGI, and returns 1 if there are any (in which
+ *  case, call FCGI_Accept() or similar).
+ */
+DLLAPI int FCGX_HasRequest(fd_set* readfds);
 
 #if defined (__cplusplus) || defined (c_plusplus)
 } /* terminate extern "C" { */
