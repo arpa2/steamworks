@@ -87,6 +87,16 @@ int PulleyDispatcher::do_serverinfo(const Values values, Object response)
 	return 0;
 }
 
+static inline std::string _get_parameter(Steamworks::JSON::Values values, const char* key)
+{
+	auto v = values.get(key);
+	if (v.is<picojson::null>())
+	{
+		return std::string();
+	}
+	return v.to_str();
+}
+
 int PulleyDispatcher::do_follow(const VerbDispatcher::Values values, VerbDispatcher::Object response)
 {
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.pulley");
@@ -96,6 +106,18 @@ int PulleyDispatcher::do_follow(const VerbDispatcher::Values values, VerbDispatc
 		log.debugStream() << "Follow on disconnected server.";
 		return 0;
 	}
+
+	std::string base = _get_parameter(values, "base");
+	std::string filter = _get_parameter(values, "filter");
+
+	if (base.empty())
+	{
+		log.warnStream() << "No base given for follow.";
+		return 0;
+	}
+
+	Steamworks::LDAP::SyncRepl sync(base, filter);
+	sync.execute(*d->connection, &response);
 
 	return 0;
 }

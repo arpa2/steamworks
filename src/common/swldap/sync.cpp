@@ -119,6 +119,8 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 	tv.tv_sec = 2;
 	tv.tv_usec = 0;
 
+	log.debugStream() << "SyncRepl setup for base='" << d->base() << "' filter='" << d->filter() << "'";
+
 	::ldap_sync_t* syncrepl = d->sync();
 	syncrepl->ls_ld = ldaphandle;
 	int r = ldap_sync_init(syncrepl, LDAP_SYNC_REFRESH_AND_PERSIST);
