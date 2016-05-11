@@ -29,8 +29,8 @@ public:
 	State state() const { return m_state; }
 
 protected:
-	/** Connect to the downstream (e.g. destination) LDAP server.
-	 *  This is where the shaft is going to write to. */
+	/** Connect to the upstream (e.g. source) LDAP server.
+	 *  This is where the pulley gets its information. */
 	int do_connect(const Values values, Object response);
 	int do_stop(const Values values);
 	int do_serverinfo(const Values values, Object response);
