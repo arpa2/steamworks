@@ -10,13 +10,24 @@ Adriaan de Groot <groot@kde.org>
 
 #include "picojson.h"
 
+struct fd_set;
+
 class VerbDispatcher
 {
 public:
 	typedef picojson::value& Values;
 	typedef picojson::value::object& Object;
 
+
 	virtual int exec(const std::string& verb, const Values values, Object response) = 0;
+
+	/**
+	 * If this dispatcher is watching any file-descriptors,
+	 * set them in @p readfds. Returns true if there are
+	 * any file-descriptos to watch. The default implementation
+	 * sets no file-descriptors and returns false.
+	 */
+	virtual bool fd_set(::fd_set* readfds);
 } ;
 
 #endif

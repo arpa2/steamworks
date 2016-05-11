@@ -27,6 +27,7 @@ set(SWCOMMON_SRC
   fcgi.cpp
   jsonresponse.cpp
   logger.cpp
+  verb.cpp
   )
 
 add_library(swcommon STATIC ${SWCOMMON_SRC})
