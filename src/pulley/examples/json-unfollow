@@ -1,0 +1,4 @@
+{ 
+"verb": "unfollow",
+"base": "dc=example,dc=com"
+}

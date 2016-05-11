@@ -1,0 +1,5 @@
+{ 
+"verb": "follow",
+"base": "dc=example,dc=com",
+"filter": "(objectclass=device)"
+}
