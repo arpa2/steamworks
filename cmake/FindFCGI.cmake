@@ -5,6 +5,6 @@
 
 # Use bundled FCGI
 set(FCGI_LIBRARIES fcgi)
-set(FCGI_INCLUDE_DIRS ${CMAKE_TOP_SOURCE_DIR}/3rdparty/fcgi-2.4.0/include)
+set(FCGI_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/3rdparty/fcgi-2.4.0/include)
 set(FCGI_FOUND TRUE)
 
