@@ -14,14 +14,9 @@ MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
 include(CheckCXX11Flags)
 
 
+message("   Using bundled libfcgi ...")
+add_subdirectory(3rdparty/fcgi-2.4.0)
 find_package(FCGI)
-if(NOT FCGI_FOUND)
-  message("   Using bundled libfcgi ...")
-  add_subdirectory(3rdparty/fcgi-2.4.0)
-  set(FCGI_LIBRARIES fcgi)
-  set(FCGI_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/fcgi-2.4.0/include)
-  set(FCGI_FOUND TRUE)
-endif()
 
 find_package(Log4cpp)
 if(NOT LOG4CPP_FOUND)
