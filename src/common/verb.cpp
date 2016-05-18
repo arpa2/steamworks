@@ -14,3 +14,8 @@ bool VerbDispatcher::fd_set(::fd_set* readfds)
 	return false;
 }
 
+bool VerbDispatcher::poll()
+{
+	return false;
+}
+
