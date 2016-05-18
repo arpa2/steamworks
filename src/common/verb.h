@@ -28,6 +28,15 @@ public:
 	 * sets no file-descriptors and returns false.
 	 */
 	virtual bool fd_set(::fd_set* readfds);
+
+	/**
+	 * If this dispatcher has anything to poll (regardless of
+	 * select() on the file-descriptors it might be watching)
+	 * then poll that.
+	 *
+	 * The default implementation does nothing and returns false.
+	 */
+	virtual bool poll();
 } ;
 
 #endif
