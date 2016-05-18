@@ -1,0 +1,139 @@
+Pulley parser README
+====================
+
+Lexer:	pulley.lex
+Parser:	pulley.yacc
+
+The lexer hashes what it delivers, so that a checksum can be derived.
+The checksum is calculated per line, and then combined into a *set* of lines
+through an associative and commutative operation.  This means that the
+checksum over a total Pulley script can handle lines arriving out of order.
+This is useful when they are retrieved from LDAP, or perhaps from various
+sources that can be composed in various orders.
+
+The checksum used is CRC-32; this is not a secure hash, but we don't really
+need it.  Furthermore, a 1-out-of-4294967296 chance of error seems good
+enough.  The CRC-32 function has sufficient diversification to not fall for
+trivial things such as XOR'ing two lines with the same character in the
+same position.  The one exception is when this is applied to two identical
+lines, which would be a silly construction and not probable to occur in the
+code of someone seriously interested in a stable system.
+
+The combining function for lines that are independently checksummed is XOR.
+This function fulfils the requirements of being associative and commutative,
+which is a requirement to feel no impact from re-ordering.
+
+As an added facility, the combination of various lines is idempotent.  This
+is implicitly true for the CRC-32 check which returns 0 on empty lines, but
+other checksums could also be used, by resetting the state at the beginning
+of each line and checking whether it has changed at the invocation of the
+end-of-line function; if no change has been made, then the checksum is simply
+not included into the combined checksum for the set of lines.
+
+If we decided that CRC-32 had too many clashes, which is not probably at this
+moment, then MD4 could take over.  It could simply be built into the lexhash
+module and reveal no changes on the external interface because everything is
+done through hashbuf_t and hash_t types.  Processing should use sizeof() and
+memcmp() to compare hash values, and memcpy() to move it around.
+
+
+Parser administration
+---------------------
+
+Scanner and parser are re-entrant.  This means that they do not rely on global
+variables, but on variables allocated on the stack or heap.  As part of the
+analysis, semantical structures are built up in the form of bitsets.
+
+Bitsets are typed sets; that is, aside from resulting in numbers of indexes
+there is some knowledge about the universe from which these numbers are pulled;
+we refer to those universes as types; the indexes point into an array of
+similarly structured values that are allocated as an array; the array grows
+while analysing the syntax, so usually a structure is described as a table
+(or the type) and the index in that table.
+
+This reasoning applies to anything that ends up in bitsets, because this is
+how the semantics are being described and computed.  It therefore applies to
+variables, conditions, generators and output drivers.
+
+
+Analysis phase
+--------------
+
+**All variables must be generated.**
+A variable that is not used in any generator is considered a violation,
+because it is not (or may not) get values delivered.  We do not consider
+conditions a good source of variable values, not even when they are equated
+to other variables.
+
+The function `vartab_analyse_cheapest_generators()` performs a global analysis
+where the lowest-cost generators for all variables are found.  During this
+analysis, the check is made whether such generators exist for all variables.
+In case one or more variables is lacking a generator, the function returns
+`false` and compilation should be abandoned.  It is now possible to iterate
+over all variables and use `var_get_cheapest_generator()` to see which of
+the variables lack a generator, because that function returns `false` for
+individual variables that lack one.  Note that the analysis phase is completed
+even in the presence of such problems, so it is possible to generate a complete
+list of all variables lacking a generator.
+
+
+Outline of the compilation and semantics harvesting process
+-----------------------------------------------------------
+
+Setup parser structures:
+ + vartab_new()
+ + gentab_new()
+ + cndtab_new()
+ + drvtab_new()
+ + link them with ???tab_set_*_type()
+
+While parsing:
+ + var_used_in_generator() / gen_bind_var()
+ + var_used_in_condition() / cnd_needvar()
+ + var_used_in_driverout() / drv_output_var() / _const() / _list()
+ + gen_new()
+ + cnd_new()
+ + drv_new()
+ + gen_set_weight()
+ + cnd_set_weight()
+ + drv_set_weight()
+ + gen_add_guardvar() / gen_set_weight()
+ + cnd_add_guardvar() / cnd_set_weight()
+ + drv_add_guardvar() / drv_set_weight()
+
+Structural analysis:
+ + cndtab_drive_partitions()
+ + vartab_collect_varpartitions() => var_vars2partitions() / _partitions2vars()
+ + drvtab_collect_varpartitions()
+ + drvtab_collect_generators()
+ + drvtab_collect_conditions()
+ + drvtab_collect_variables()
+ + drvtab_collect_guards()
+ X gen_push_driverout() => gen_share_driverouts()
+ X gen_push_condition() => gen_share_conditions()
+ X gen_push_generator() => gen_share_generators()
+
+Verify structure:
+ + "must have at least one generator binding each variable"
+ + "must have at least one variable in each condition"
+ + "must have at least one variable in each driverout"
+
+Preparing for analysis:
+ X ?
+
+Verify semantics:
+ X ?
+
+Analysis:
+ - vartab_analyse_cheapest_generators() enables various others:
+	-> var_get_cheapest_generator()
+	-> cnd_estimate_total_cost()
+
+Generation (may be deferred to runtime):
+ - path_have()		[driver-pull counterpart?]
+
+Running
+ - path_run()		[driver-pull counterpart?]
+ - "something to make a generator iterate over its stored values"
+ - "something to send lists of variables (and guards) to a driver"
+

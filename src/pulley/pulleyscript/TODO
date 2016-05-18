@@ -1,0 +1,12 @@
++ Turn conditions into indexed tables
++ Store driver structures (in tables)
++ Make lexer and parser re-entrant, and use a global script semantics structure
++ Parser should insert values into storage structures
++ Output pretty prints of intermediate states of various structures
++ Perform semantic analysis, by calculating the result sets of script semantics
+- Generator should create right-size paths -- or have resist.c plug it in
+- Support path scheduling from a driver without generator (for pull mode)
+- Produce vars/gens/conds_needed for path_schedule() in path_have_push/_pull()
+- Actually make the path iterator functions work
+- In path_run() actually generate the values of variables
++ In path_run() actually send values to the output drivers

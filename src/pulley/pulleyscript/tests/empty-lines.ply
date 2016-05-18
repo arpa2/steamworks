@@ -1,0 +1,11 @@
+# Demonstration of utter emptyness; it should deliver CRC-32 hash 00000000
+
+    
+
+
+
+# As you can see, comment lines don't add to the checksum at all!
+# And yet... they're not completely lame... they are in fact very useful :)
+
+# Note that empty / comment-only files are correct scripts.
+# Also note that indented comments are reserved, and currently yield stxerr.

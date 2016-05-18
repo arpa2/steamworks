@@ -1,0 +1,126 @@
+#
+# Construct alias lists for people on vacation; redirect those to
+# a secretary backup address, if they have one.
+#
+
+#
+# The name world is predefined in the global configuration, and refers
+# to the base DN from which we will generate variables.  We do this by
+# matching parts of the LDAP tree underneath world.
+#
+
+#
+# Let x be the names of our secretaries in our company.
+#
+# The name is stored as a CN under the OU for Secretaries.
+# The generator binds it to the variable x occurring to
+# the right of its <- arrow.  Literal text, attribute types
+# and variables on the right side of the <- arrow form a
+# pattern to match against what lives under world.  Mismatches
+# are silently ignored.
+#
+# In terms of LDAP mechanics, a generator is a subscription to
+# updates that will be passed to this line, and for which
+# variables will be bound; the new values are called "forks" of
+# the variable and go out into the remainder of the script to
+# see if they can make it all the way to output statements.
+#
+Mail=x, OU="Secretaries", O="Example Corp" <- world
+
+#
+# We are going to generate a variable "person" that we will ignore in
+# the further examples below this script.  It is however useful to see
+# how variables may be referenced by the generator following this one.
+#
+# Note that this is not necessarily the simplest way of doing this, it
+# merely serves as an example.
+#
+CN=someperson, OU="People", O="Example Corp" <- world
+
+#
+# Let z be the various people under our company's CN=People subtree.
+# Let y be the alternative contacts for z.
+#
+# Refer to the person variable bound by the generator preceding
+# this one.  The variable is treated as a referral because it occurs
+# on the right side of the <- and it therefore helps to build a
+# pattern against which any generated DNs must match.
+#
+# This generator contains @z to bind the z variable to the DN at
+# that point in the tree.  This does not match an RDN like the other
+# components in the generator.  Such DN-valued variables can be used
+# in a similar way as world is done in this example, so as the
+# base DN in a generator line.
+#
+# Note that z,y are bound in pairs, not as independent variables.
+# Also note that y has a colon, thus binding an attribute instead
+# of an RDN portion of the DN.  Multiple attributes can be bound
+# with the + notation that is also used for RDNs.
+#
+Mail:y, CN="Backups", @z, CN=person, OU="People", O="Example Corp" <- world
+
+#
+# A constraint on z, requiring that the person has a flag set to
+# indicate being on vacation.
+#
+# The schema used is http://www.phamm.org/docs/phamm-vacation.schema
+#
+# This demonstrates how the previously bound DN variable for z can
+# be used in a generator to generate data.  In this case, there is
+# no data retrieved, but rather a pattern matched.  This makes the
+# use of this constraint effectively a condition.
+#
+VacationActive: "True" <- z
+
+#
+# Backup persons may be either collegues or secretaries.  In order to
+# look only at the backups that are secretaries, make a cross-reference
+# between x and y, simply equating them.
+#
+# This expresses the desire to find forks for x and for y that have a
+# matching variable.  In LDAP filters, this would compare variables x
+# to string y, but Pulley scripts can also compare generated variables.
+# To compare against literal text y, you would have written "y".
+#
+# Where generators "fork" multiple values for variables, conditions weed
+# out those forks that are unwanted.  This leads to less output combinations
+# being produced.
+#
+(|(x = y)(&))
+(&(|)(x != z))
+#(|(x=y)(x!=y))
+#(&(x=y)(x!=y))
+#(|(x = y)(&(x=y)(x = y)))
+
+#
+# Output "z" contains all people in our company who have
+# backup contacts arranged.
+#
+# Outputs are plugins that are (currently only) written in Python.  The
+# plugin may have arguments, such as the filename shown below.  The
+# variables listed before -> indicates the variables that are sent over
+# to the plugin.
+#
+# The sort of thing that outputs receive is additions and removals of
+# the variable combinations that they are setup for.  It is up to the
+# plugin to decide how to handle an addition, or a deletion.
+#
+z -> dn_flagset (filename="/var/mycorp/people_on_holiday")
+
+#
+# Output "x,y" is a bit silly, as these values are the same.
+#
+x,y -> dbm_map (name="secretary_twice")
+
+#
+# Output "x,y,z" contains all people in our company who have
+# secretaries as backups, including the secretary.  Since x and y
+# are equal, this same information is supplied twice.  Clearly
+# this provides an optimisation potential, because one variable
+# can be derived completely from a set of others avaliable in the
+# set passed to the output plugin.
+#
+z,x,y -> dn_map (name="alias_for_dn")
+
+
+someperson -> dn_map (name="some_personal_entry")
