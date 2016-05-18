@@ -248,7 +248,7 @@ int Steamworks::FCGI::mainloop(VerbDispatcher *dispatcher)
 		FCGX_Finish();
 
 		FD_ZERO(&rfds);
-		if (FCGX_FD_SET(&rfds))
+		if (::FCGX_FD_SET(&rfds))
 		{
 			dispatcher->fd_set(&rfds); // Ignore return, there's at least one to watch already
 			if (fcgi::logger)
