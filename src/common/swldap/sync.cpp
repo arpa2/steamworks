@@ -130,9 +130,18 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 		return;
 	}
 
-	r = ldap_sync_poll(syncrepl);
+	poll(conn);
+}
+
+void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
+{
+	::LDAP* ldaphandle = handle(conn);
+	::ldap_sync_t* syncrepl = d->sync();
+	syncrepl->ls_ld = ldaphandle;
+	int r = ldap_sync_poll(syncrepl);
 	if (r)
 	{
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 		log.errorStream() << "Sync poll result " << r << " " << ldap_err2string(r);
 	}
 }

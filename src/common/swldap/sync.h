@@ -39,6 +39,8 @@ public:
 	~SyncRepl();
 
 	virtual void execute(Connection&, Result result=nullptr);
+	void poll(Connection&);
+
 } ;
 
 }  // namespace LDAP
