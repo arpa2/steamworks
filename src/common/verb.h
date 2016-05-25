@@ -22,14 +22,6 @@ public:
 	virtual int exec(const std::string& verb, const Values values, Object response) = 0;
 
 	/**
-	 * If this dispatcher is watching any file-descriptors,
-	 * set them in @p readfds. Returns true if there are
-	 * any file-descriptos to watch. The default implementation
-	 * sets no file-descriptors and returns false.
-	 */
-	virtual bool fd_set(::fd_set* readfds);
-
-	/**
 	 * If this dispatcher has anything to poll (regardless of
 	 * select() on the file-descriptors it might be watching)
 	 * then poll that.
