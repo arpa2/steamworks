@@ -150,6 +150,14 @@ int CrankDispatcher::do_delete(const Values values, Object response)
 		return 0;
 	}
 
+	std::string dn = values.get("dn").to_string();
+	if (dn.empty())
+	{
+		log.debugStream() << "Can't delete with an empty DN.";
+		// TODO: error in the response object?
+		return 0;
+	}
+
 	log.debugStream() << "Delete is not implemented.";
 	return 0;
 }
