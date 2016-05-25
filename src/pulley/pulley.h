@@ -24,7 +24,8 @@ private:
 public:
 	PulleyDispatcher();
 
-	virtual int exec(const std::string& verb, const Values values, Object response);
+	int exec(const std::string& verb, const Values values, Object response) override;
+	void poll() override;
 
 	State state() const { return m_state; }
 

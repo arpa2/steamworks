@@ -48,6 +48,17 @@ PulleyDispatcher::PulleyDispatcher() :
 {
 }
 
+void PulleyDispatcher::poll()
+{
+	VerbDispatcher::poll();
+
+	for (auto i=d->following.cbegin(); i!=d->following.cend(); ++i)
+	{
+		(*i)->poll(*d->connection);
+	}
+}
+
+
 int PulleyDispatcher::exec(const std::string& verb, const Values values, Object response)
 {
 	if (verb == "connect") return do_connect(values, response);
