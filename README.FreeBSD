@@ -2,12 +2,10 @@ This SteamWorks software is compatible with FreeBSD and has been
 tested on FreeBSD 10-STABLE, 10.1-R and 10.2-R. In order to build
 SteamWorks locally, you will need the following packages installed:
 
-	fcgi-devkit (optional)
 	log4cpp
 	openldap-client
 
 SteamWorks builds with both clang (default on the tested FreeBSD
 versions) and gcc.
 
-SteamWorks can build a bundled copy of FCGI if needed, so fcgi-devkit
-is optional.
+SteamWorks builds a bundled copy of FCGI, so fcgi-devkit is not needed.
