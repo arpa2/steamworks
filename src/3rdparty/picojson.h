@@ -152,7 +152,8 @@ namespace picojson {
 
     bool contains(size_t idx) const;
     bool contains(const std::string& key) const;
-    std::string to_str() const;
+    std::string to_str() const;  // String representation where null -> "null" for JSON representation
+    std::string to_string() const;  // String representation where null -> empty 
     template <typename Iter> void serialize(Iter os, bool prettify = false) const;
     std::string serialize(bool prettify = false) const;
   private:
@@ -402,6 +403,11 @@ namespace picojson {
 #endif
     }
     return std::string();
+  }
+
+  inline std::string value::to_string() const {
+    if (type_ == null_type) return std::string();
+    else return to_str();
   }
 
   template <typename Iter> void copy(const std::string& s, Iter oi) {
