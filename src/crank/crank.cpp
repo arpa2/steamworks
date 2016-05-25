@@ -76,8 +76,8 @@ int CrankDispatcher::do_search(const Values values, Object response)
 		return 0;
 	}
 
-	std::string base = values.get("base").to_str();
-	std::string filter = values.get("filter").to_str();
+	std::string base = values.get("base").to_string();
+	std::string filter = values.get("filter").to_string();
 
 	log.debugStream() << "Search parameter base=" << base;
 	log.debugStream() << "Search         filter=" << filter;
