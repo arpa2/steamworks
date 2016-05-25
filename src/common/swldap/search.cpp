@@ -260,3 +260,38 @@ void Steamworks::LDAP::Update::execute(Connection& conn, Result result)
 		);
 	log.debugStream() << "Result " << r << " " << (r ? ldap_err2string(r) : "OK");
 }
+
+/** Internals of a Remove (delete) action.
+ */
+class Steamworks::LDAP::Remove::Private
+{
+private:
+	std::string m_dn;
+
+public:
+	Private(const std::string& dn) :
+		m_dn(dn)
+	{
+	};
+
+	const std::string& name() const
+	{
+		return m_dn;
+	}
+} ;
+
+Steamworks::LDAP::Remove::Remove(const std::string& dn) :
+	Action(!dn.empty()),
+	d(new Private(dn))
+{
+}
+
+Steamworks::LDAP::Remove::~Remove()
+{
+}
+
+void Steamworks::LDAP::Remove::execute(Connection&, Result result)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	log.warnStream() << "Remove action not implemented.";
+}

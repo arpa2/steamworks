@@ -72,6 +72,23 @@ public:
 	virtual void execute(Connection&, Result result=nullptr);
 } ;
 
+/**
+ * (Synchronous) delete. Deletes a single DIT entry
+ * identified by a dn.
+ */
+class Remove : public Action
+{
+private:
+	class Private;
+	std::unique_ptr<Private> d;
+public:
+	Remove(const std::string& dn);
+	~Remove();
+
+	virtual void execute(Connection&, Result result=nullptr);
+} ;
+
+
 }  // namespace LDAP
 }  // namespace
 

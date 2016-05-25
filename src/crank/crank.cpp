@@ -158,7 +158,11 @@ int CrankDispatcher::do_delete(const Values values, Object response)
 		return 0;
 	}
 
-	log.debugStream() << "Delete is not implemented.";
+	Steamworks::LDAP::Remove r(dn);
+	if (r.is_valid())
+	{
+		r.execute(*d->connection, &response);
+	}
 	return 0;
 }
 
