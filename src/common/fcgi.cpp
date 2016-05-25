@@ -235,7 +235,15 @@ int Steamworks::FCGI::mainloop(VerbDispatcher *dispatcher)
 
 	int r;
 	fd_set rfds;
+	struct timeval tv;
 
+	/*
+	 * The loop-structure is twofold here:
+	 *  - receive an FCGI request and process it (blocking)
+	 *  - poll for an LDAP update (short timeout)
+	 *  - select() for another FCGI request
+	 *  - if no FCGI request, continue polling LDAP
+	 */
 	do
 	{
 		r = FCGX_Accept(&in, &out, &err, &envp);
@@ -247,20 +255,34 @@ int Steamworks::FCGI::mainloop(VerbDispatcher *dispatcher)
 		request_count++;
 		FCGX_Finish();
 
-		FD_ZERO(&rfds);
-		if (::FCGX_FD_SET(&rfds))
+		do
 		{
-			dispatcher->fd_set(&rfds); // Ignore return, there's at least one to watch already
+			dispatcher->poll();  // This has a (short) timeout
+
+			FD_ZERO(&rfds);
+			if (! ::FCGX_FD_SET(&rfds))
+			{
+				if (fcgi::logger)
+				{
+					fcgi::logger->debugStream() << "No FCGI socket, exiting.";
+				}
+				r = -1;  // For outer loop
+				break;
+			}
+
+			/* This spams the debug log with useless select() messages.
 			if (fcgi::logger)
 			{
 				fcgi::logger->debugStream() << "Doing select() for FCGI";
 			}
-			r = select(FD_SETSIZE, &rfds, nullptr, nullptr, nullptr);
-			if (fcgi::logger)
-			{
-				fcgi::logger->debugStream() << "select() returned " << r << (FCGX_HasRequest(&rfds) ? " for FCGI" : " for other");
-			}
+			*/
+			tv.tv_sec = 0;
+			tv.tv_usec = 10000;
+			r = ::select(FD_SETSIZE, &rfds, nullptr, nullptr, &tv);  // Short timeout, just check for request
+			// r is the number of ready FDs, or -1 on error.
+			// We expect 0 (no FCGI request ready) or 1 (FCGI request ready).
 		}
+		while (r==0);
 	}
 	while (r>=0);
 
