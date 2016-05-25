@@ -43,6 +43,7 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 	else if (verb == "search") return do_search(values, response);
 	else if (verb == "typeinfo") return do_typeinfo(values, response);
 	else if (verb == "update") return do_update(values, response);
+	else if (verb == "delete") return do_delete(values, response);
 	else if (verb == "serverinfo") return do_serverinfo(values, response);
 	return -1;
 }
@@ -138,6 +139,21 @@ int CrankDispatcher::do_update(const Values values, Object response)
 	}
 	return 0;
 }
+
+int CrankDispatcher::do_delete(const Values values, Object response)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+
+	if (m_state != connected)
+	{
+		log.debugStream() << "Update on disconnected server.";
+		return 0;
+	}
+
+	log.debugStream() << "Delete is not implemented.";
+	return 0;
+}
+
 
 int CrankDispatcher::do_serverinfo(const Values values, Object response)
 {

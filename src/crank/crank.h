@@ -29,12 +29,18 @@ public:
 	State state() const { return m_state; }
 
 protected:
+	// Generic commands
 	int do_connect(const Values values, Object response);
 	int do_stop(const Values values);
-	int do_search(const Values values, Object response);
-	int do_typeinfo(const Values values, Object response);
-	int do_update(const Values values, Object response);
 	int do_serverinfo(const Values values, Object response);
+
+	// LDAP search / update etc.
+	int do_search(const Values values, Object response);
+	int do_update(const Values values, Object response);
+	int do_delete(const Values values, Object response);
+
+	// Meta-information about the server
+	int do_typeinfo(const Values values, Object response);
 } ;
 
 
