@@ -26,9 +26,9 @@ public:
 	 * select() on the file-descriptors it might be watching)
 	 * then poll that.
 	 *
-	 * The default implementation does nothing and returns false.
+	 * The default implementation does nothing.
 	 */
-	virtual bool poll();
+	virtual void poll();
 } ;
 
 #endif

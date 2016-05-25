@@ -9,8 +9,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include <sys/select.h>
 
-bool VerbDispatcher::poll()
+void VerbDispatcher::poll()
 {
-	return false;
 }
 
