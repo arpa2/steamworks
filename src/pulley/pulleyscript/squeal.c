@@ -815,17 +815,19 @@ struct squeal *squeal_open (hash_t lexhash, gennum_t numgens, drvnum_t numdrvs) 
 	sqlbuf_exchg (&dbname, BUF_GET);
 	//
 	// Construct the filename of the database, possibly create the directory
-	sqlbuf_write (&dbname, "file:");	// Skip these 5 for mkdir() below
 	sqlbuf_write (&dbname, dbdir);
 	sqlbuf_write (&dbname, "0");
 	dbname.buf [dbname.ofs-1] = '\0';	// Setup  trailing NUL for use with C
-	mkdir (dbname.buf + 5, 01777);		// Best effort.  Mode u+rwx, g+rx, o+
+	mkdir (dbname.buf, 01777);		// Best effort.  Mode u+rwx, g+rx, o+
 	dbname.ofs--;				// Forget trailing NUL for use with C
 	sqlbuf_lexhash2name (&dbname, "pulley_", lexhash);
-	sqlbuf_write (&dbname, ".sqlite3");
+	sqlbuf_write (&dbname, ".sqlite30");
+	dbname.buf [dbname.ofs-1] = '\0';	// Setup  trailing NUL for use with C
 	//
 	// Open the SQLite3 database file
-	if (sqlite3_open (dbname.buf, &s3db) != SQLITE_OK) {
+	int s3rv = sqlite3_open_v2 (dbname.buf, &s3db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL);
+	printf ("SQLite3 open (\"%s\", &s3db) returned %d, hoped for %d\n", dbname.buf, s3rv, SQLITE_OK);
+	if (s3rv != SQLITE_OK) {
 		/* TODO: Report detailed error */
 		if (s3db != NULL) {
 			free (work->drivers);
