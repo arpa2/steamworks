@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-ggdb3 -DDEBUG
+CFLAGS=-ggdb3 -DDEBUG -O0
 
 SRC=parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o
 
@@ -68,4 +68,5 @@ tags:
 	ctags *.[ch]
 
 test: compiler demo.ply
+	mkdir -p /var/db/pulley
 	./compiler demo.ply
