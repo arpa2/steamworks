@@ -12,40 +12,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "picojson.h"
 
-/**
- * Internal callback functions for part of sync.
- */
-static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
-{
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
-
-	log.debugStream() << "Entry: " << ldap_get_dn(ls->ls_ld, msg);
-	return 0;
-}
-
-static int search_reference_f(ldap_sync_t* ls, LDAPMessage* msg)
-{
-    Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
-
-    log.debugStream() << "Reference: " << ldap_get_dn(ls->ls_ld, msg);
-    return 0;
-}
-
-static int search_intermediate_f(ldap_sync_t* ls, LDAPMessage* msg, BerVarray syncUUIDs, ldap_sync_refresh_t phase)
-{
-    Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
-
-    log.debugStream() << "Intermediate: " << ldap_get_dn(ls->ls_ld, msg);
-    return 0;
-}
-
-static int search_result_f(ldap_sync_t* ls, LDAPMessage* msg, int refreshDeletes)
-{
-    Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
-
-    log.debugStream() << "Result: " << ldap_get_dn(ls->ls_ld, msg);
-    return 0;
-}
+#include <iomanip>
 
 /**
  * Internals of a sync.
@@ -56,30 +23,95 @@ private:
 	std::string m_base, m_filter;
 	::ldap_sync_t m_syncrepl;
 public:
-	Private(const std::string& base, const std::string& filter) :
-		m_base(base),
-		m_filter(filter)
-	{
-		ldap_sync_initialize(&m_syncrepl);
-		m_syncrepl.ls_base = const_cast<char *>(m_base.c_str());
-		m_syncrepl.ls_scope = LDAP_SCOPE_SUBTREE;
-		m_syncrepl.ls_filter = const_cast<char *>(m_filter.c_str());
-		m_syncrepl.ls_attrs = nullptr;  // All
-		m_syncrepl.ls_timelimit = 0;  // No limit
-		m_syncrepl.ls_sizelimit = 0;  // No limit
-		m_syncrepl.ls_timeout = 2;  // Non-blocking on ldap_sync_poll()
-		m_syncrepl.ls_search_entry = search_entry_f;
-		m_syncrepl.ls_search_reference = search_reference_f;
-		m_syncrepl.ls_intermediate = search_intermediate_f;
-		m_syncrepl.ls_search_result = search_result_f;
-		m_syncrepl.ls_private = nullptr;  // Private data for this sync
-		m_syncrepl.ls_ld = nullptr;  // Done in execute()
-	}
+	Private(const std::string& base, const std::string& filter);
 
 	const std::string& base() const { return m_base; }
 	const std::string& filter() const { return m_filter; }
 	::ldap_sync_t* sync() { return &m_syncrepl; }
 } ;
+
+
+/**
+ * Internal (C-style) callback functions for part of sync.
+ */
+
+static void dump_uuid(Steamworks::Logging::LoggerStream& log, struct berval* uuid)
+{
+	log << std::hex << std::setfill('0') << std::setw(2);
+	for (int i = 0; i<uuid->bv_len; i++)
+	{
+		log << (int(uuid->bv_val[i]) & 0xff);
+	}
+}
+
+static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+
+	auto stream = log.debugStream();
+	stream << "Entry: " << ldap_get_dn(ls->ls_ld, msg) << " UUID ";
+	dump_uuid(stream, entryUUID);
+	return 0;
+}
+
+static int search_reference_f(ldap_sync_t* ls, LDAPMessage* msg)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+
+	log.debugStream() << "Reference: " << ldap_get_dn(ls->ls_ld, msg);
+	return 0;
+}
+
+static int search_intermediate_f(ldap_sync_t* ls, LDAPMessage* msg, BerVarray syncUUIDs, ldap_sync_refresh_t phase)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+
+	log.debugStream() << "Intermediate: " << ldap_get_dn(ls->ls_ld, msg);
+
+	if (syncUUIDs)
+	{
+		auto stream = log.debugStream();
+		stream << "UUIDs: " << (void *)syncUUIDs << ' ';
+		dump_uuid(stream, syncUUIDs);
+	}
+
+	return 0;
+}
+
+static int search_result_f(ldap_sync_t* ls, LDAPMessage* msg, int refreshDeletes)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+
+	log.debugStream() << "Result: " << ldap_get_dn(ls->ls_ld, msg);
+	return 0;
+}
+
+
+/**
+ * SyncRepl implementation uses C-style functions above.
+ */
+Steamworks::LDAP::SyncRepl::Private::Private(const std::string& base, const std::string& filter):
+	m_base(base),
+	m_filter(filter)
+{
+	ldap_sync_initialize(&m_syncrepl);
+	m_syncrepl.ls_base = const_cast<char *>(m_base.c_str());
+	m_syncrepl.ls_scope = LDAP_SCOPE_SUBTREE;
+	m_syncrepl.ls_filter = const_cast<char *>(m_filter.c_str());
+	m_syncrepl.ls_attrs = nullptr;  // All
+	m_syncrepl.ls_timelimit = 0;  // No limit
+	m_syncrepl.ls_sizelimit = 0;  // No limit
+	m_syncrepl.ls_timeout = 2;  // Non-blocking on ldap_sync_poll()
+	m_syncrepl.ls_search_entry = search_entry_f;
+	m_syncrepl.ls_search_reference = search_reference_f;
+	m_syncrepl.ls_intermediate = search_intermediate_f;
+	m_syncrepl.ls_search_result = search_result_f;
+	m_syncrepl.ls_private = this;  // Private data for this sync
+	m_syncrepl.ls_ld = nullptr;  // Done in execute()
+}
+
+
+
 
 Steamworks::LDAP::SyncRepl::SyncRepl(const std::string& base, const std::string& filter) :
 	Action(true),
