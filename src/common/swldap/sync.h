@@ -8,7 +8,7 @@ Adriaan de Groot <groot@kde.org>
 /**
  * LDAP operations in a C++ jacket.
  *
- * Sync -- as om SyncRepl according to RFC4533 -- actions on an LDAP connection.
+ * Sync -- as in SyncRepl according to RFC4533 -- actions on an LDAP connection.
  */
 
 #ifndef SWLDAP_SEARCH_H
