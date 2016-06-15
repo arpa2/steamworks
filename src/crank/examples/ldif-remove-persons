@@ -1,0 +1,5 @@
+dn: cn=Robert Smith,ou=people,dc=example,dc=com
+changetype: delete
+
+dn: cn=Adriaan de Groot,ou=people,dc=example,dc=com
+changetype: delete
