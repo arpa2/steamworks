@@ -57,6 +57,9 @@ sync-update:
 	$(MAKE) start follow & ( cd ../../crank/examples && $(MAKE) start auth && sleep 1 && $(MAKE) update0 && sleep 1 && $(MAKE) update1 stop )
 
 
+update0 update1:
+	( cd ../../crank/examples && $(MAKE) $@ )
+
 ### Convenience targets
 #
 #
