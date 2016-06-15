@@ -44,15 +44,16 @@ static void dump_uuid(Steamworks::Logging::LoggerStream& log, struct berval* uui
 }
 
 /**
- * Display (non-recursively) the JSON object @p d by printing it to the logger @p log.
- * This only works one level deep; each attribute is logged on one line except
- * for array or object attributes, which are (currently) displayed as "array" or "object".
+ * Display (non-recursively) the JSON object @p d by printing it to the 
+ * logger @p log. This only works one level deep; each attribute is logged 
+ * on one line.  For array or object attributes, they display as [] lists
+ * or {} objects, like serialized JSON.
  */
 static void dump_object(Steamworks::Logging::Logger& log, const picojson::object& d)
 {
 	for (auto& kv: d)
 	{
-		log.debugStream() << " .. k " << kv.first << "= " << kv.second.to_str();
+		log.debugStream() << " .. k " << kv.first << "= " << kv.second.serialize(false);
 	}
 }
 
