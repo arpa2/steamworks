@@ -75,8 +75,10 @@ public:
 
 	void dump(Steamworks::LDAP::Result result) const
 	{
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
 		for (auto& d: m_dit)
 		{
+			log.debugStream() << "Dumping " << d.first;
 			picojson::value v(d.second);
 			result->emplace(d.first.c_str(), v);
 		}

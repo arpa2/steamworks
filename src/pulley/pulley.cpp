@@ -164,4 +164,5 @@ int PulleyDispatcher::do_unfollow(const VerbDispatcher::Values values, VerbDispa
 int PulleyDispatcher::do_dump_dit(const VerbDispatcher::Values values, VerbDispatcher::Object response)
 {
 	d->dump_followers(response);
+	return 0;
 }
