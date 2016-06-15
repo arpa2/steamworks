@@ -25,6 +25,9 @@ follow:
 follow-all:
 	-cat json-follow0 | $(CMD)
 
+follow-people:
+	-cat json-follow2 | $(CMD)
+
 unfollow:
 	-cat json-unfollow | $(CMD)
 

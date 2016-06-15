@@ -1,0 +1,5 @@
+{ 
+"verb": "follow",
+"base": "ou=people,dc=example,dc=com",
+"filter": "(objectclass=*)"
+}
