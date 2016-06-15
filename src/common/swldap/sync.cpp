@@ -128,9 +128,13 @@ static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entr
 {
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
 
-	auto stream = log.debugStream();
-	stream << "Entry: " << ldap_get_dn(ls->ls_ld, msg) << " UUID ";
-	dump_uuid(stream, entryUUID);
+#ifndef NDEBUG
+	{
+		auto stream = log.debugStream();
+		stream << "Entry: " << ldap_get_dn(ls->ls_ld, msg) << " UUID ";
+		dump_uuid(stream, entryUUID);
+	}
+#endif
 	reinterpret_cast<DITCore*>(ls->ls_private)->search_entry_f(ls->ls_ld, msg, entryUUID, phase);
 	return 0;
 }
