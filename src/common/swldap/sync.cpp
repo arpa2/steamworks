@@ -107,7 +107,8 @@ public:
 			picojson::object new_v;
 			Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
 			update_dn(ldap, msg, new_v);
-			dump_object(log, new_v);
+			// dump_object(log, new_v);
+			reconcile(m_dit.at(key), new_v);
 		}
 		else
 		{
@@ -133,6 +134,25 @@ public:
 			picojson::value v(d.second);
 			result->emplace(d.first.c_str(), v);
 		}
+	}
+
+	/**
+	 * Update the old DIT entry @p at (retrieved from m_dit) with values
+	 * from the newly-received value @p new_v.
+	 */
+	void reconcile(picojson::object& at, const picojson::object& new_v)
+	{
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+		log.debugStream() << "Before update:";
+		dump_object(log, at);
+		log.debugStream() << "Update from:";
+		dump_object(log, new_v);
+		for (auto& d: new_v)
+		{
+			// Magic happens
+		}
+		log.debugStream() << "After update:";
+		dump_object(log, at);
 	}
 } ;
 
