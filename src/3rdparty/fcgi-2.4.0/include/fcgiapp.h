@@ -18,6 +18,8 @@
 #ifndef _FCGIAPP_H
 #define _FCGIAPP_H
 
+#include <sys/select.h>
+
 /* Hack to see if we are building TCL - TCL needs varargs not stdarg */
 #ifndef TCL_LIBRARY
 #include <stdarg.h>
@@ -619,7 +621,7 @@ DLLAPI void FCGX_FreeStream(FCGX_Stream **stream);
 DLLAPI void FCGX_ShutdownPending(void);
 
 /* Support for select() with an FCGI loop. */
-struct fd_set;
+
 /** Fills @p readfds with the file-descriptors that need to be
  *  select()ed upon for FCGI events. Returns 0 if there are
  *  no applicable file-descriptors.

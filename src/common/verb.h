@@ -10,8 +10,6 @@ Adriaan de Groot <groot@kde.org>
 
 #include "picojson.h"
 
-struct fd_set;
-
 class VerbDispatcher
 {
 public:
