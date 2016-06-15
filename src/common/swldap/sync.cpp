@@ -43,7 +43,7 @@ static void dump_object(Steamworks::Logging::Logger& log, const picojson::object
 {
 	for (auto& kv: d)
 	{
-		log.debugStream() << " .. k " << kv.first;
+		log.debugStream() << " .. k " << kv.first << "= " << kv.second.to_str();
 	}
 }
 
@@ -74,6 +74,9 @@ public:
 		{
 			log.debugStream() << "Known entry " << key;
 			// TODO: update it
+			picojson::object new_v;
+			Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
+			dump_object(log, new_v);
 		}
 		else
 		{
