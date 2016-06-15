@@ -144,10 +144,6 @@ public:
 	void reconcile(picojson::object& at, const picojson::object& new_v)
 	{
 		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
-		log.debugStream() << "Before update:";
-		dump_object(log, at);
-		log.debugStream() << "Update from:";
-		dump_object(log, new_v);
 		for (auto& d: new_v)
 		{
 			if (at.count(d.first))
