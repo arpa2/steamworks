@@ -34,13 +34,18 @@ class SyncRepl: public Action
 private:
 	class Private;
 	std::unique_ptr<Private> d;
+
+	int _execute(::LDAP*);
+
 public:
 	SyncRepl(const std::string& base, const std::string& filter);
 	~SyncRepl();
 
 	virtual void execute(Connection&, Result result=nullptr);
 	void poll(Connection&);
+	void resync();
 
+	/** Debugging, dump the DIT entries stored in this SyncRepl into @p result */
 	void dump_dit(Result result);
 } ;
 

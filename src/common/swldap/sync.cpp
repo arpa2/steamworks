@@ -205,6 +205,7 @@ public:
 	const std::string& filter() const { return m_filter; }
 	::ldap_sync_t* sync() { return &m_syncrepl; }
 	const DITCore& dit() const { return m_dit; }
+	void resync(bool restart);
 } ;
 
 
@@ -266,6 +267,18 @@ Steamworks::LDAP::SyncRepl::Private::Private(const std::string& base, const std:
 	m_base(base),
 	m_filter(filter)
 {
+	resync(false);
+}
+
+void Steamworks::LDAP::SyncRepl::Private::resync(bool restart)
+{
+	::LDAP* handle(nullptr);
+	if (restart)
+	{
+		handle = m_syncrepl.ls_ld;
+		ldap_sync_destroy(&m_syncrepl, 0);  // don't free
+	}
+
 	ldap_sync_initialize(&m_syncrepl);
 	m_syncrepl.ls_base = const_cast<char *>(m_base.c_str());
 	m_syncrepl.ls_scope = LDAP_SCOPE_SUBTREE;
@@ -280,6 +293,11 @@ Steamworks::LDAP::SyncRepl::Private::Private(const std::string& base, const std:
 	m_syncrepl.ls_search_result = search_result_f;
 	m_syncrepl.ls_private = &m_dit;  // Private data for this sync
 	m_syncrepl.ls_ld = nullptr;  // Done in execute()
+
+	if (restart)
+	{
+		m_syncrepl.ls_ld = handle;
+	}
 }
 
 
@@ -315,7 +333,14 @@ static unsigned int _count_controls(Steamworks::Logging::Logger& log, ::LDAPCont
 void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 {
 	::LDAP* ldaphandle = handle(conn);
+	if (_execute(ldaphandle) == 0)
+	{
+		poll(conn);
+	}
+}
 
+int Steamworks::LDAP::SyncRepl::_execute(::LDAP* ldaphandle)
+{
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 
 	// TODO: settings for timeouts?
@@ -331,10 +356,10 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 	if (r)
 	{
 		log.errorStream() << "Sync setup result " << r << " " << ldap_err2string(r);
-		return;
+		return r;
 	}
 
-	poll(conn);
+	return 0;
 }
 
 void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
@@ -353,4 +378,11 @@ void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
 void Steamworks::LDAP::SyncRepl::dump_dit(Result result)
 {
 	d->dit().dump(result);
+}
+
+void Steamworks::LDAP::SyncRepl::resync()
+{
+	d->resync(true);
+	_execute(d->sync()->ls_ld);
+	// No connection to poll() on, wait for later
 }

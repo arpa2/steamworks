@@ -43,7 +43,11 @@ protected:
 	 *  SyncRepl for that DIT. */
 	int do_unfollow(const Values values, Object response);
 
+	/** Debugging method, dump the tree of stored DIT entries. */
 	int do_dump_dit(const VerbDispatcher::Values values, VerbDispatcher::Object response);
+
+	/** Drop all stored state, and restart LDAP SyncRepl. */
+	int do_resync(const Values values, Object response);
 } ;
 
 

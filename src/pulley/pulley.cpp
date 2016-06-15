@@ -48,6 +48,14 @@ public:
 			f->dump_dit(&response);
 		}
 	}
+
+	void resync()
+	{
+		for(auto& f : following)
+		{
+			f->resync();
+		}
+	}
 } ;
 
 PulleyDispatcher::PulleyDispatcher() :
@@ -75,6 +83,7 @@ int PulleyDispatcher::exec(const std::string& verb, const Values values, Object 
 	else if (verb == "follow") return do_follow(values, response);
 	else if (verb == "unfollow") return do_unfollow(values, response);
 	else if (verb == "dump_dit") return do_dump_dit(values, response);
+	else if (verb == "resync") return do_resync(values, response);
 	return -1;
 }
 
@@ -164,5 +173,11 @@ int PulleyDispatcher::do_unfollow(const VerbDispatcher::Values values, VerbDispa
 int PulleyDispatcher::do_dump_dit(const VerbDispatcher::Values values, VerbDispatcher::Object response)
 {
 	d->dump_followers(response);
+	return 0;
+}
+
+int PulleyDispatcher::do_resync(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+{
+	d->resync();
 	return 0;
 }
