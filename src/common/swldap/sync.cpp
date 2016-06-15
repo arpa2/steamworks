@@ -39,6 +39,14 @@ static void dump_uuid(std::string& s, struct berval* uuid)
 	}
 }
 
+static void dump_object(Steamworks::Logging::Logger& log, const picojson::object& d)
+{
+	for (auto& kv: d)
+	{
+		log.debugStream() << " .. k " << kv.first;
+	}
+}
+
 /**
  * Internals of a sync.
  */
@@ -63,13 +71,15 @@ public:
 		if (m_dit.count(key))
 		{
 			log.debugStream() << "Known entry " << key;
+			// TODO: update it
 		}
 		else
 		{
 			log.debugStream() << "New entry   " << key;
 			m_dit.insert(std::make_pair(key, picojson::object()));
-			auto v = m_dit.at(key);  // Reference in the map
-			Steamworks::LDAP::copy_entry(ldap, msg, &v);
+			auto& new_v = m_dit.at(key);  // Reference in the map
+			Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
+			// dump_object(log, new_v);
 		}
 	}
 
