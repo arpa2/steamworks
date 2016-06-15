@@ -68,6 +68,8 @@ public:
 		std::string key(entryUUID->bv_len * 2, '0');
 		dump_uuid(key, entryUUID);
 
+		std::string dn(ldap_get_dn(ldap, msg));
+
 		if (m_dit.count(key))
 		{
 			log.debugStream() << "Known entry " << key;
@@ -79,6 +81,11 @@ public:
 			m_dit.insert(std::make_pair(key, picojson::object()));
 			auto& new_v = m_dit.at(key);  // Reference in the map
 			Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
+			if (!new_v.count("dn"))
+			{
+				picojson::value v(dn);
+				new_v.emplace(std::string("dn"), v);
+			}
 			// dump_object(log, new_v);
 		}
 	}
