@@ -34,6 +34,9 @@ unfollow:
 dump:
 	-cat json-dump | $(CMD)
 
+resync:
+	-cat json-resync | $(CMD)
+
 ### Test edge cases (not actual commands)
 #
 #
