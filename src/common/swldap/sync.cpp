@@ -14,14 +14,72 @@ Adriaan de Groot <groot@kde.org>
 
 #include <iomanip>
 
+static void dump_uuid(Steamworks::Logging::LoggerStream& log, struct berval* uuid)
+{
+	log << std::hex << std::setfill('0') << std::setw(2);
+	for (int i = 0; i<uuid->bv_len; i++)
+	{
+		log << (int(uuid->bv_val[i]) & 0xff);
+	}
+}
+
+static char hex[] = "0123456789ABCDEF";
+
+static void dump_uuid(std::string& s, struct berval* uuid)
+{
+	static_assert(sizeof(hex) == 17, "Hex != 16");  // Allow for trailing NUL byte
+
+	for (int i = 0; i<uuid->bv_len; i++)
+	{
+		char c = uuid->bv_val[i];
+		char c0 = hex[(c & 0xf0) >> 4];
+		char c1 = hex[c & 0x0f];
+		s[i*2] = c0;
+		s[i*2+1] = c1;
+	}
+}
+
 /**
  * Internals of a sync.
  */
+class DITCore
+{
+private:
+	std::map<std::string, Steamworks::JSON::Object> m_dit;  // uuid to object (name/value pairs)
+public:
+	/** Clear the (cached) DIT */
+	void clear()
+	{
+		m_dit.clear();
+	}
+
+	void search_entry_f(LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
+	{
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+
+		std::string key(entryUUID->bv_len * 2, '0');
+		dump_uuid(key, entryUUID);
+
+		if (m_dit.count(key))
+		{
+			log.debugStream() << "Known entry " << key;
+		}
+		else
+		{
+			log.debugStream() << "New entry   " << key;
+		}
+	}
+} ;
+
+
+
 class Steamworks::LDAP::SyncRepl::Private
 {
 private:
 	std::string m_base, m_filter;
 	::ldap_sync_t m_syncrepl;
+	DITCore m_dit;
+
 public:
 	Private(const std::string& base, const std::string& filter);
 
@@ -34,16 +92,6 @@ public:
 /**
  * Internal (C-style) callback functions for part of sync.
  */
-
-static void dump_uuid(Steamworks::Logging::LoggerStream& log, struct berval* uuid)
-{
-	log << std::hex << std::setfill('0') << std::setw(2);
-	for (int i = 0; i<uuid->bv_len; i++)
-	{
-		log << (int(uuid->bv_val[i]) & 0xff);
-	}
-}
-
 static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
 {
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
@@ -51,6 +99,7 @@ static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entr
 	auto stream = log.debugStream();
 	stream << "Entry: " << ldap_get_dn(ls->ls_ld, msg) << " UUID ";
 	dump_uuid(stream, entryUUID);
+	reinterpret_cast<DITCore*>(ls->ls_private)->search_entry_f(msg, entryUUID, phase);
 	return 0;
 }
 
@@ -106,7 +155,7 @@ Steamworks::LDAP::SyncRepl::Private::Private(const std::string& base, const std:
 	m_syncrepl.ls_search_reference = search_reference_f;
 	m_syncrepl.ls_intermediate = search_intermediate_f;
 	m_syncrepl.ls_search_result = search_result_f;
-	m_syncrepl.ls_private = this;  // Private data for this sync
+	m_syncrepl.ls_private = &m_dit;  // Private data for this sync
 	m_syncrepl.ls_ld = nullptr;  // Done in execute()
 }
 
