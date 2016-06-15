@@ -42,6 +42,8 @@ protected:
 	/** Stop following a previously followed DIT. This terminates
 	 *  SyncRepl for that DIT. */
 	int do_unfollow(const Values values, Object response);
+
+	int do_dump_dit(const VerbDispatcher::Values values, VerbDispatcher::Object response);
 } ;
 
 

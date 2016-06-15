@@ -53,7 +53,7 @@ public:
 		m_dit.clear();
 	}
 
-	void search_entry_f(LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
+	void search_entry_f(::LDAP* ldap, ::LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
 	{
 		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
 
@@ -68,6 +68,17 @@ public:
 		{
 			log.debugStream() << "New entry   " << key;
 			m_dit.insert(std::make_pair(key, picojson::object()));
+			auto v = m_dit.at(key);  // Reference in the map
+			Steamworks::LDAP::copy_entry(ldap, msg, &v);
+		}
+	}
+
+	void dump(Steamworks::LDAP::Result result) const
+	{
+		for (auto& d: m_dit)
+		{
+			picojson::value v(d.second);
+			result->emplace(d.first.c_str(), v);
 		}
 	}
 } ;
@@ -87,6 +98,7 @@ public:
 	const std::string& base() const { return m_base; }
 	const std::string& filter() const { return m_filter; }
 	::ldap_sync_t* sync() { return &m_syncrepl; }
+	const DITCore& dit() const { return m_dit; }
 } ;
 
 
@@ -100,7 +112,7 @@ static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entr
 	auto stream = log.debugStream();
 	stream << "Entry: " << ldap_get_dn(ls->ls_ld, msg) << " UUID ";
 	dump_uuid(stream, entryUUID);
-	reinterpret_cast<DITCore*>(ls->ls_private)->search_entry_f(msg, entryUUID, phase);
+	reinterpret_cast<DITCore*>(ls->ls_private)->search_entry_f(ls->ls_ld, msg, entryUUID, phase);
 	return 0;
 }
 
@@ -226,4 +238,9 @@ void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
 		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 		log.errorStream() << "Sync poll result " << r << " " << ldap_err2string(r);
 	}
+}
+
+void Steamworks::LDAP::SyncRepl::dump_dit(Result result)
+{
+	d->dit().dump(result);
 }

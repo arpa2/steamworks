@@ -28,6 +28,9 @@ follow-all:
 unfollow:
 	-cat json-unfollow | $(CMD)
 
+dump:
+	-cat json-dump | $(CMD)
+
 ### Test edge cases (not actual commands)
 #
 #

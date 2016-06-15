@@ -41,6 +41,7 @@ public:
 	virtual void execute(Connection&, Result result=nullptr);
 	void poll(Connection&);
 
+	void dump_dit(Result result);
 } ;
 
 }  // namespace LDAP

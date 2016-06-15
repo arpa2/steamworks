@@ -40,6 +40,14 @@ public:
 		following.back()->execute(*connection, &response);
 		return 0;
 	}
+
+	void dump_followers(Object response)
+	{
+		for(auto& f : following)
+		{
+			f->dump_dit(&response);
+		}
+	}
 } ;
 
 PulleyDispatcher::PulleyDispatcher() :
@@ -66,6 +74,7 @@ int PulleyDispatcher::exec(const std::string& verb, const Values values, Object 
 	else if (verb == "serverinfo") return do_serverinfo(values, response);
 	else if (verb == "follow") return do_follow(values, response);
 	else if (verb == "unfollow") return do_unfollow(values, response);
+	else if (verb == "dump_dit") return do_dump_dit(values, response);
 	return -1;
 }
 
@@ -150,4 +159,9 @@ int PulleyDispatcher::do_unfollow(const VerbDispatcher::Values values, VerbDispa
 	}
 
 	return 0;
+}
+
+int PulleyDispatcher::do_dump_dit(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+{
+	d->dump_followers(response);
 }
