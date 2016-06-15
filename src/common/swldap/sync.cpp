@@ -12,19 +12,13 @@ Adriaan de Groot <groot@kde.org>
 
 #include "picojson.h"
 
-#include <iomanip>
-
-static void dump_uuid(Steamworks::Logging::LoggerStream& log, struct berval* uuid)
-{
-	log << std::hex << std::setfill('0') << std::setw(2);
-	for (int i = 0; i<uuid->bv_len; i++)
-	{
-		log << (int(uuid->bv_val[i]) & 0xff);
-	}
-}
-
 static char hex[] = "0123456789ABCDEF";
 
+/**
+ * Expand the BER UUID into a given string. The string
+ * is assumed to be large enough to hold the hex expansion
+ * (2 chars per byte).
+ */
 static void dump_uuid(std::string& s, struct berval* uuid)
 {
 	static_assert(sizeof(hex) == 17, "Hex != 16");  // Allow for trailing NUL byte
@@ -39,6 +33,21 @@ static void dump_uuid(std::string& s, struct berval* uuid)
 	}
 }
 
+/**
+ * Log a BER UUID to the given logging stream.
+ */
+static void dump_uuid(Steamworks::Logging::LoggerStream& log, struct berval* uuid)
+{
+	std::string s(uuid->bv_len * 2, '0');
+	dump_uuid(s, uuid);
+	log << s;
+}
+
+/**
+ * Display (non-recursively) the JSON object @p d by printing it to the logger @p log.
+ * This only works one level deep; each attribute is logged on one line except
+ * for array or object attributes, which are (currently) displayed as "array" or "object".
+ */
 static void dump_object(Steamworks::Logging::Logger& log, const picojson::object& d)
 {
 	for (auto& kv: d)
@@ -48,7 +57,25 @@ static void dump_object(Steamworks::Logging::Logger& log, const picojson::object
 }
 
 /**
- * Internals of a sync.
+ * Copy the DN from the given LDAP message @p msg into the JSON
+ * object @p v, if no DN is set in the object already.
+ */
+static inline void update_dn(::LDAP *ldap, ::LDAPMessage* msg, picojson::object& v)
+{
+	if (!v.count("dn"))
+	{
+		std::string dn(ldap_get_dn(ldap, msg));
+
+		picojson::value vdn(dn);
+		v.emplace(std::string("dn"), vdn);
+	}
+}
+
+/**
+ * This class maintains a tree (more like a list, actually)
+ * of representations of DIT entries. At the bottom level,
+ * the tree is keyed by UUIDs of the entries. Each
+ * leaf is a JSON object representing the DIT entry.
  */
 class DITCore
 {
@@ -61,6 +88,11 @@ public:
 		m_dit.clear();
 	}
 
+	/**
+	 * Helper function for the SyncRepl search_entry_f() function,
+	 * taking the same arguments and inserting or updating the
+	 * DIT tree as needed.
+	 */
 	void search_entry_f(::LDAP* ldap, ::LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
 	{
 		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
@@ -68,14 +100,13 @@ public:
 		std::string key(entryUUID->bv_len * 2, '0');
 		dump_uuid(key, entryUUID);
 
-		std::string dn(ldap_get_dn(ldap, msg));
-
 		if (m_dit.count(key))
 		{
 			log.debugStream() << "Known entry " << key;
 			// TODO: update it
 			picojson::object new_v;
 			Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
+			update_dn(ldap, msg, new_v);
 			dump_object(log, new_v);
 		}
 		else
@@ -84,15 +115,15 @@ public:
 			m_dit.insert(std::make_pair(key, picojson::object()));
 			auto& new_v = m_dit.at(key);  // Reference in the map
 			Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
-			if (!new_v.count("dn"))
-			{
-				picojson::value v(dn);
-				new_v.emplace(std::string("dn"), v);
-			}
+			update_dn(ldap, msg, new_v);
 			// dump_object(log, new_v);
 		}
 	}
 
+	/**
+	 * Copy the DIT-tree into a Result (which is actually
+	 * just another JSON object, so this makes a copy).
+	 */
 	void dump(Steamworks::LDAP::Result result) const
 	{
 		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
@@ -107,6 +138,9 @@ public:
 
 
 
+/**
+ * Internals of a sync.
+ */
 class Steamworks::LDAP::SyncRepl::Private
 {
 private:
