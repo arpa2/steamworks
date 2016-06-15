@@ -38,6 +38,15 @@ update0:
 update1:
 	-cat json-update1 | $(CMD)
 
+ldap-update-persons0:
+	ldapmodify -Z -h db -D cn=Manager,dc=example,dc=com -w secret < ldif-update-persons0
+
+ldap-update-persons1:
+	ldapmodify -Z -h db -D cn=Manager,dc=example,dc=com -w secret < ldif-update-persons1
+
+ldap-update-persons2:
+	ldapmodify -Z -h db -D cn=Manager,dc=example,dc=com -w secret < ldif-update-persons2
+
 ### Test edge cases (not actual commands)
 #
 #

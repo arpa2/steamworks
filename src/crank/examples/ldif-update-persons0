@@ -1,0 +1,12 @@
+dn: cn=Adriaan de Groot,ou=people,dc=example,dc=com
+changetype: modify
+add: telephoneNumber
+telephoneNumber: 1-800-ARPA
+
+dn: cn=Robert Smith,ou=people,dc=example,dc=com
+changetype: modify
+add: telephoneNumber
+telephoneNumber: 1-800-RJSMITH
+-
+add: cn
+cn: Bobby Tables

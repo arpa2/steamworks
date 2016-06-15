@@ -1,0 +1,20 @@
+dn: cn=Robert Smith,ou=people,dc=example,dc=com
+objectclass: person
+cn: Robert Smith
+cn: Robert J Smith
+cn: bob  smith
+sn: smith
+userpassword: rJsmitH
+telephoneNumber: 555-2222
+description: swell guy
+
+dn: cn=Adriaan de Groot,ou=people,dc=example,dc=com
+objectclass: person
+cn: Adriaan de Groot
+cn: [ade]
+sn: de Groot
+userpassword: schaken
+telephoneNumber: 555-2223
+telephoneNumber: +31 06 1234 1234
+description: programmer
+
