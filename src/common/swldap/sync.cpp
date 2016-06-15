@@ -149,7 +149,14 @@ public:
 		dump_object(log, new_v);
 		for (auto& d: new_v)
 		{
-			// Magic happens
+			if (at.count(d.first))
+			{
+				at.at(d.first) = d.second;
+			}
+			else
+			{
+				at.emplace(d.first, d.second);
+			}
 		}
 		log.debugStream() << "After update:";
 		dump_object(log, at);
