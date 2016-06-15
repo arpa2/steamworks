@@ -45,7 +45,7 @@ static void dump_uuid(std::string& s, struct berval* uuid)
 class DITCore
 {
 private:
-	std::map<std::string, Steamworks::JSON::Object> m_dit;  // uuid to object (name/value pairs)
+	std::map<std::string, picojson::object> m_dit;  // uuid to object (name/value pairs)
 public:
 	/** Clear the (cached) DIT */
 	void clear()
@@ -67,6 +67,7 @@ public:
 		else
 		{
 			log.debugStream() << "New entry   " << key;
+			m_dit.insert(std::make_pair(key, picojson::object()));
 		}
 	}
 } ;
