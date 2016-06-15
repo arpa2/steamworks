@@ -63,6 +63,10 @@ sync-update:
 update0 update1:
 	( cd ../../crank/examples && $(MAKE) $@ )
 
+persons0 persons1 persons2:
+	( cd ../../crank/examples && $(MAKE) ldap-update-$@ )
+
+
 ### Convenience targets
 #
 #
