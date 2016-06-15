@@ -101,24 +101,50 @@ public:
 		std::string key(entryUUID->bv_len * 2, '0');
 		dump_uuid(key, entryUUID);
 
-		if (m_dit.count(key))
+		if ((phase == LDAP_SYNC_CAPI_MODIFY) && !m_dit.count(key))
 		{
-			log.debugStream() << "Known entry " << key;
-			// TODO: update it
-			picojson::object new_v;
-			Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
-			update_dn(ldap, msg, new_v);
-			// dump_object(log, new_v);
-			reconcile(m_dit.at(key), new_v);
+			// Odd case: SyncRepl thinks it's modified for us,
+			// but we don't know about it.
+			phase = LDAP_SYNC_CAPI_ADD;
 		}
-		else
+
+		switch (phase)
 		{
-			log.debugStream() << "New entry   " << key;
-			m_dit.insert(std::make_pair(key, picojson::object()));
-			auto& new_v = m_dit.at(key);  // Reference in the map
-			Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
-			update_dn(ldap, msg, new_v);
-			// dump_object(log, new_v);
+		case LDAP_SYNC_CAPI_PRESENT:
+			{
+				log.debugStream() << "Present entry (ignored) " << key;
+				break;
+			}
+		case LDAP_SYNC_CAPI_DELETE:
+			{
+				log.debugStream() << "Delete entry " << key;
+				if (m_dit.count(key))
+				{
+					m_dit.erase(key);
+				}
+				break;
+			}
+		case LDAP_SYNC_CAPI_MODIFY:
+			{
+				log.debugStream() << "Known entry " << key;
+				picojson::object new_v;
+				Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
+				update_dn(ldap, msg, new_v);
+				// dump_object(log, new_v);
+				reconcile(m_dit.at(key), new_v);
+				break;
+			}
+		case LDAP_SYNC_CAPI_ADD:
+			{
+				log.debugStream() << "New entry   " << key;
+				m_dit.insert(std::make_pair(key, picojson::object()));
+				auto& new_v = m_dit.at(key);  // Reference in the map
+				Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
+				update_dn(ldap, msg, new_v);
+				// dump_object(log, new_v);
+			}
+		default:
+			log.errorStream() << "Unknown LDAP SyncRepl phase " << phase;
 		}
 	}
 
