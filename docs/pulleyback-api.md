@@ -30,8 +30,8 @@ Within the library, we can open any number of instances of a given backend,
 normally in response to corresponding lines in the Pulley Script.  The
 opening and closing calls for instances are:
 
-    int pulleyback_open (int argc, char **argv, int varc);
-    void pulleyback_close (int pbh);
+    void *pulleyback_open (int argc, char **argv, int varc);
+    void pulleyback_close (void *pbh);
 
 The `argc` and `argv` arguments to `pulleyback_open()` are similar in style
 to `main()`, where the values passed in come from the command line in the
@@ -39,10 +39,10 @@ Pulley Script, and more specifically from the instantiation of the driver.
 The argument `varc` gives the number of variables that are passed to the
 driver for addition or removal of variables.  This number is mentioned
 explicitly to permit for error checking.  TODO:TYPING?
-The function returns a handle as a non-negative value, or it returns -1 and
+The function returns a pulley-back handle as a pointer, or it returns NULL and
 sets `errno` to indicate failure.
 
-The argument to `pulleyback_close()` is a non-negative handle as obtained
+The argument to `pulleyback_close()` is a pulley-back handle as obtained
 from `pulleyback_open()`.  In a proper program execution, every succeeded
 call to `pulleyback_open()` should be matched by one later call to
 `pulleyback_close()` and there should be no other invocations to the latter.
@@ -53,8 +53,8 @@ call to `pulleyback_open()` should be matched by one later call to
 The primary function of a backend is to have forks added to and removed from
 an instance.  This is done with the respective functions
 
-    int pulleyback_add (int pbh, uint8_t **forkdata);
-    int pulleyback_del (int pbh, uint8_t **forkdata);
+    int pulleyback_add (void *pbh, uint8_t **forkdata);
+    int pulleyback_del (void *pbh, uint8_t **forkdata);
 
 These functions return 1 on success and 0 on failure; any failure status
 is retained within an instance, and reported for future additions and
@@ -62,7 +62,8 @@ removals of forks, as well as for attempts to commit the transaction.
 Because none of the changes is made instantly, they are stored as part
 of a current transaction, which is always implicitly open.
 
-The first parameter to the calls is an open instance handle, the second
+The first parameter to the calls is an open pulley-back instance handle,
+the second
 points to an array of data fields describing the fork.  Guards are not
 passed down when they are not also mentioned as parameters, because they
 are handled inside Pulley.
@@ -78,7 +79,7 @@ each of which is marked by loading and unloading the backend plugin module.
 Finally, a call exists to clear out an entire database, so it can be
 filled from scratch:
 
-    int pulleyback_reset (int pbh);
+    int pulleyback_reset (void *pbh);
 
 This will result in all data being deleted, as part of the currently
 ongoing transaction.  Since this does not match what is being shown
@@ -102,9 +103,9 @@ the dynamic symbol for prepare-to-commit resolves.
 
 The following API functions support transactions on an open instance:
 
-    int pulleyback_prepare (int pbh);  /* OPTIONAL */
-    int pulleyback_commit (int pbh);
-    void pulleyback_rollback (int pbh);
+    int pulleyback_prepare   (void *pbh);  /* OPTIONAL */
+    int pulleyback_commit    (void *pbh);
+    void pulleyback_rollback (void *pbh);
 
 The functions implement prepare-to-commit, commit and rollback, respectively.
 When only single-phase commit is supported, then `pulleback_prepare()` will
