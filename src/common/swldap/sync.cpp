@@ -205,7 +205,6 @@ public:
 	const std::string& filter() const { return m_filter; }
 	::ldap_sync_t* sync() { return &m_syncrepl; }
 	const DITCore& dit() const { return m_dit; }
-	void resync(bool restart);
 } ;
 
 
@@ -267,18 +266,6 @@ Steamworks::LDAP::SyncRepl::Private::Private(const std::string& base, const std:
 	m_base(base),
 	m_filter(filter)
 {
-	resync(false);
-}
-
-void Steamworks::LDAP::SyncRepl::Private::resync(bool restart)
-{
-	::LDAP* handle(nullptr);
-	if (restart)
-	{
-		handle = m_syncrepl.ls_ld;
-		ldap_sync_destroy(&m_syncrepl, 0);  // don't free
-	}
-
 	ldap_sync_initialize(&m_syncrepl);
 	m_syncrepl.ls_base = const_cast<char *>(m_base.c_str());
 	m_syncrepl.ls_scope = LDAP_SCOPE_SUBTREE;
@@ -293,14 +280,7 @@ void Steamworks::LDAP::SyncRepl::Private::resync(bool restart)
 	m_syncrepl.ls_search_result = search_result_f;
 	m_syncrepl.ls_private = &m_dit;  // Private data for this sync
 	m_syncrepl.ls_ld = nullptr;  // Done in execute()
-
-	if (restart)
-	{
-		m_syncrepl.ls_ld = handle;
-	}
 }
-
-
 
 
 Steamworks::LDAP::SyncRepl::SyncRepl(const std::string& base, const std::string& filter) :
@@ -364,6 +344,13 @@ int Steamworks::LDAP::SyncRepl::_execute(::LDAP* ldaphandle)
 
 void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
 {
+	if (!is_valid())
+	{
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+		log.errorStream() << "SyncRepl " << d->base() << " is not active.";
+		return;
+	}
+
 	::LDAP* ldaphandle = handle(conn);
 	::ldap_sync_t* syncrepl = d->sync();
 	syncrepl->ls_ld = ldaphandle;
@@ -382,7 +369,16 @@ void Steamworks::LDAP::SyncRepl::dump_dit(Result result)
 
 void Steamworks::LDAP::SyncRepl::resync()
 {
-	d->resync(true);
-	_execute(d->sync()->ls_ld);
-	// No connection to poll() on, wait for later
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+
+	if (!is_valid())
+	{
+		log.errorStream() << "Can't resync invalid SyncRepl " << d->base();
+		return;
+	}
+
+	m_valid = false;
+	::ldap_sync_t* syncrepl = d->sync();
+	ldap_sync_destroy(syncrepl, 0);
+	log.debugStream() << "SyncRepl " << d->base() << " has stopped.";
 }
