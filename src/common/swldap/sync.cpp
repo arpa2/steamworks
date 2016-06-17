@@ -197,15 +197,19 @@ private:
 	std::string m_base, m_filter;
 	::ldap_sync_t m_syncrepl;
 	DITCore m_dit;
+	bool m_started;
 
 public:
 	Private(const std::string& base, const std::string& filter);
 	~Private();
 
+	int poll(::LDAP* ldaphandle);
+	int sync(::LDAP* ldaphandle);
+
 	const std::string& base() const { return m_base; }
 	const std::string& filter() const { return m_filter; }
-	::ldap_sync_t* sync() { return &m_syncrepl; }
 	const DITCore& dit() const { return m_dit; }
+	const bool is_started() const { return m_started; }
 } ;
 
 
@@ -265,7 +269,8 @@ static int search_result_f(ldap_sync_t* ls, LDAPMessage* msg, int refreshDeletes
  */
 Steamworks::LDAP::SyncRepl::Private::Private(const std::string& base, const std::string& filter):
 	m_base(base),
-	m_filter(filter)
+	m_filter(filter),
+	m_started(false)
 {
 	ldap_sync_initialize(&m_syncrepl);
 	m_syncrepl.ls_base = const_cast<char *>(m_base.c_str());
@@ -290,6 +295,54 @@ Steamworks::LDAP::SyncRepl::Private::~Private()
 		ldap_sync_destroy(&m_syncrepl, 0);
 		m_syncrepl.ls_ld = nullptr;
 	}
+}
+
+int Steamworks::LDAP::SyncRepl::Private::poll(::LDAP* ldaphandle)
+{
+	if (!m_started)
+	{
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+		log.errorStream() << "Can't poll not-yet-started SyncRepl " << base();
+		return -1;
+	}
+
+	m_syncrepl.ls_ld = ldaphandle;
+	int r = ldap_sync_poll(&m_syncrepl);
+	if (r)
+	{
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+		log.errorStream() << "Sync poll result " << r << " " << ldap_err2string(r);
+	}
+	return r;
+}
+
+int Steamworks::LDAP::SyncRepl::Private::sync(::LDAP* ldaphandle)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+
+	if (m_started)
+	{
+		log.errorStream() << "SyncRepc for " << base() << " already started.";
+		return -1;
+	}
+
+	// TODO: settings for timeouts?
+	struct timeval tv;
+	tv.tv_sec = 2;
+	tv.tv_usec = 0;
+
+	log.debugStream() << "SyncRepl setup for base='" << base() << "' filter='" << filter() << "'";
+
+	m_syncrepl.ls_ld = ldaphandle;
+	int r = ldap_sync_init(&m_syncrepl, LDAP_SYNC_REFRESH_AND_PERSIST);
+	if (r)
+	{
+		log.errorStream() << "Sync setup result " << r << " " << ldap_err2string(r);
+		return r;
+	}
+
+	m_started = true;
+	return 0;
 }
 
 
@@ -324,33 +377,10 @@ static unsigned int _count_controls(Steamworks::Logging::Logger& log, ::LDAPCont
 void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 {
 	::LDAP* ldaphandle = handle(conn);
-	if (_execute(ldaphandle) == 0)
+	if (d->sync(ldaphandle) == 0)
 	{
-		poll(conn);
+		d->poll(ldaphandle);
 	}
-}
-
-int Steamworks::LDAP::SyncRepl::_execute(::LDAP* ldaphandle)
-{
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
-
-	// TODO: settings for timeouts?
-	struct timeval tv;
-	tv.tv_sec = 2;
-	tv.tv_usec = 0;
-
-	log.debugStream() << "SyncRepl setup for base='" << d->base() << "' filter='" << d->filter() << "'";
-
-	::ldap_sync_t* syncrepl = d->sync();
-	syncrepl->ls_ld = ldaphandle;
-	int r = ldap_sync_init(syncrepl, LDAP_SYNC_REFRESH_AND_PERSIST);
-	if (r)
-	{
-		log.errorStream() << "Sync setup result " << r << " " << ldap_err2string(r);
-		return r;
-	}
-
-	return 0;
 }
 
 void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
@@ -362,14 +392,16 @@ void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
 		return;
 	}
 
-	::LDAP* ldaphandle = handle(conn);
-	::ldap_sync_t* syncrepl = d->sync();
-	syncrepl->ls_ld = ldaphandle;
-	int r = ldap_sync_poll(syncrepl);
-	if (r)
+	if (d->is_started())
 	{
-		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
-		log.errorStream() << "Sync poll result " << r << " " << ldap_err2string(r);
+		d->poll(handle(conn));
+	}
+	else
+	{
+		// This happens after a resync, where
+		// the private member has been re-created
+		// but not re-started.
+		d->sync(handle(conn));
 	}
 }
 
@@ -388,16 +420,8 @@ void Steamworks::LDAP::SyncRepl::resync()
 		return;
 	}
 
-	::LDAP* ldaphandle = d->sync()->ls_ld;
-	if (!ldaphandle)
-	{
-		log.debugStream() << "No SyncRepl running for " << d->base();
-		return;
-	}
-
 	m_valid = false;
 	d.reset(new Private(d->base(), d->filter()));
 	log.debugStream() << "SyncRepl " << d->base() << " has stopped.";
 	m_valid = true;
-	_execute(ldaphandle);
 }

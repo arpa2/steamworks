@@ -35,8 +35,6 @@ private:
 	class Private;
 	std::unique_ptr<Private> d;
 
-	int _execute(::LDAP*);
-
 public:
 	SyncRepl(const std::string& base, const std::string& filter);
 	~SyncRepl();
