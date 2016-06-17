@@ -200,6 +200,7 @@ private:
 
 public:
 	Private(const std::string& base, const std::string& filter);
+	~Private();
 
 	const std::string& base() const { return m_base; }
 	const std::string& filter() const { return m_filter; }
@@ -281,6 +282,16 @@ Steamworks::LDAP::SyncRepl::Private::Private(const std::string& base, const std:
 	m_syncrepl.ls_private = &m_dit;  // Private data for this sync
 	m_syncrepl.ls_ld = nullptr;  // Done in execute()
 }
+
+Steamworks::LDAP::SyncRepl::Private::~Private()
+{
+	if (m_syncrepl.ls_ld)
+	{
+		ldap_sync_destroy(&m_syncrepl, 0);
+		m_syncrepl.ls_ld = nullptr;
+	}
+}
+
 
 
 Steamworks::LDAP::SyncRepl::SyncRepl(const std::string& base, const std::string& filter) :
@@ -377,8 +388,16 @@ void Steamworks::LDAP::SyncRepl::resync()
 		return;
 	}
 
+	::LDAP* ldaphandle = d->sync()->ls_ld;
+	if (!ldaphandle)
+	{
+		log.debugStream() << "No SyncRepl running for " << d->base();
+		return;
+	}
+
 	m_valid = false;
-	::ldap_sync_t* syncrepl = d->sync();
-	ldap_sync_destroy(syncrepl, 0);
+	d.reset(new Private(d->base(), d->filter()));
 	log.debugStream() << "SyncRepl " << d->base() << " has stopped.";
+	m_valid = true;
+	_execute(ldaphandle);
 }
