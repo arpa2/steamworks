@@ -142,6 +142,7 @@ public:
 				Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
 				update_dn(ldap, msg, new_v);
 				// dump_object(log, new_v);
+				break;
 			}
 		default:
 			log.errorStream() << "Unknown LDAP SyncRepl phase " << phase;
