@@ -292,6 +292,10 @@ Steamworks::LDAP::SyncRepl::Private::~Private()
 {
 	if (m_syncrepl.ls_ld)
 	{
+		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+		log.debugStream() << "Destroying SyncRepl " << base();
+		m_syncrepl.ls_base = nullptr;
+		m_syncrepl.ls_filter = nullptr;
 		ldap_sync_destroy(&m_syncrepl, 0);
 		m_syncrepl.ls_ld = nullptr;
 	}
@@ -332,6 +336,7 @@ int Steamworks::LDAP::SyncRepl::Private::sync(::LDAP* ldaphandle)
 	tv.tv_usec = 0;
 
 	log.debugStream() << "SyncRepl setup for base='" << base() << "' filter='" << filter() << "'";
+	log.debugStream() << "HND " << (void *)ldaphandle << " MSR " << (void *)this;
 
 	m_syncrepl.ls_ld = ldaphandle;
 	int r = ldap_sync_init(&m_syncrepl, LDAP_SYNC_REFRESH_AND_PERSIST);
@@ -340,8 +345,13 @@ int Steamworks::LDAP::SyncRepl::Private::sync(::LDAP* ldaphandle)
 		log.errorStream() << "Sync setup result " << r << " " << ldap_err2string(r);
 		return r;
 	}
+	else
+	{
+		log.debugStream() << "Sync setup O2K.";
+	}
 
 	m_started = true;
+
 	return 0;
 }
 
@@ -385,15 +395,17 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 
 void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
 {
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+
 	if (!is_valid())
 	{
-		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 		log.errorStream() << "SyncRepl " << d->base() << " is not active.";
 		return;
 	}
 
 	if (d->is_started())
 	{
+		log.debugStream() << "Polling MSR " <<  (void*)d.get();
 		d->poll(handle(conn));
 	}
 	else
@@ -401,6 +413,7 @@ void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
 		// This happens after a resync, where
 		// the private member has been re-created
 		// but not re-started.
+		log.debugStream() << "Restarting MSR " <<  (void*)d.get();
 		d->sync(handle(conn));
 	}
 }
