@@ -17,6 +17,7 @@ set(SWLDAP_SRC
   swldap/search.cpp
   swldap/serverinfo.cpp
   swldap/sync.cpp
+  swldap/update.cpp
   swldap/private.cpp
   )
 
