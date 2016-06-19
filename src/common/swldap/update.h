@@ -16,4 +16,55 @@ Adriaan de Groot <groot@kde.org>
 #ifndef SWLDAP_UPDATE_H
 #define SWLDAP_UPDATE_H
 
+#include <string>
+
+#include "connection.h"
+
+namespace Steamworks
+{
+
+namespace LDAP
+{
+/**
+ * (Synchronous) update action.
+ */
+class Update: public Action
+{
+private:
+	class Private;
+	std::unique_ptr<Private> d;
+
+public:
+	/**
+	 * Do an update on the object names by the dn in the @p entry.
+	 * No precondition is imposed; the existing object is queried and
+	 * then modified (or added if needed).
+	 */
+	Update(picojson::object& entry, bool automatic_rollback=true);
+	~Update();
+
+	bool has_automatic_rollback() const;
+	void set_automatic_rollback(bool automatic_rollback);
+
+	virtual void execute(Steamworks::LDAP::Connection & conn, Result result) override;
+} ;
+
+class UpdateGroup: public Action
+{
+private:
+	class Private;
+	std::unique_ptr<Private> d;
+
+public:
+	UpdateGroup();
+	~UpdateGroup();
+
+	void add_update(const Update&);
+
+	virtual void execute(Steamworks::LDAP::Connection & conn, Result result) override;
+} ;
+
+}  // namespace LDAP
+}  // namespace Steamworks
+
 #endif
