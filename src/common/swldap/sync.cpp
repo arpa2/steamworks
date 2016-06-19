@@ -219,9 +219,9 @@ public:
  */
 static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
 {
+#ifndef NDEBUG
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
 
-#ifndef NDEBUG
 	{
 		auto stream = log.debugStream();
 		stream << "Entry: " << ldap_get_dn(ls->ls_ld, msg) << " UUID ";
@@ -234,14 +234,17 @@ static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entr
 
 static int search_reference_f(ldap_sync_t* ls, LDAPMessage* msg)
 {
+#ifndef NDEBUG
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
 
 	log.debugStream() << "Reference: " << ldap_get_dn(ls->ls_ld, msg);
+#endif
 	return 0;
 }
 
 static int search_intermediate_f(ldap_sync_t* ls, LDAPMessage* msg, BerVarray syncUUIDs, ldap_sync_refresh_t phase)
 {
+#ifndef NDEBUG
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
 
 	log.debugStream() << "Intermediate: " << ldap_get_dn(ls->ls_ld, msg);
@@ -252,15 +255,17 @@ static int search_intermediate_f(ldap_sync_t* ls, LDAPMessage* msg, BerVarray sy
 		stream << "UUIDs: " << (void *)syncUUIDs << ' ';
 		dump_uuid(stream, syncUUIDs);
 	}
-
+#endif
 	return 0;
 }
 
 static int search_result_f(ldap_sync_t* ls, LDAPMessage* msg, int refreshDeletes)
 {
+#ifndef NDEBUG
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
 
 	log.debugStream() << "Result: " << ldap_get_dn(ls->ls_ld, msg);
+#endif
 	return 0;
 }
 
