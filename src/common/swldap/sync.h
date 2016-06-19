@@ -16,9 +16,6 @@ Adriaan de Groot <groot@kde.org>
 
 #include <string>
 
-#include "../logger.h"
-#include "picojson.h"
-
 #include "connection.h"
 
 namespace Steamworks
