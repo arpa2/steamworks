@@ -296,7 +296,7 @@ Steamworks::LDAP::SyncRepl::Private::Private(const std::string& base, const std:
 
 Steamworks::LDAP::SyncRepl::Private::~Private()
 {
-	if (m_syncrepl.ls_ld)
+	if (m_started && m_syncrepl.ls_ld)
 	{
 		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
 		log.debugStream() << "Destroying SyncRepl " << base();
@@ -305,6 +305,7 @@ Steamworks::LDAP::SyncRepl::Private::~Private()
 		ldap_sync_destroy(&m_syncrepl, 0);
 		m_syncrepl.ls_ld = nullptr;
 	}
+	m_started = false;
 }
 
 int Steamworks::LDAP::SyncRepl::Private::poll(::LDAP* ldaphandle)
