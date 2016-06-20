@@ -1,14 +1,22 @@
 CC=gcc
 CFLAGS=-ggdb3 -DDEBUG
 
+SRC=parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o
+
+# Depending on your Linux distribution, the flex library (providing
+# yywrap(), among others) may be called libl or libfl (OpenSUSE).
+LIB_FLEX=-ll
+# LIB_FLEX=-lfl
+LIBS=$(LIB_FLEX) -lsqlite3
+
 all: pulleyscript compiler
 	@echo Build successful
 
-compiler: parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o compiler.o
-	$(CC) $(CFLAGS) -o $@ parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o compiler.o -ll -lsqlite3
+compiler: $(SRC) compiler.o
+	$(CC) $(CFLAGS) -o $@ parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o compiler.o $(LIBS)
 
-pulleyscript: parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o
-	$(CC) $(CFLAGS) -o $@ parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o -ll -lsqlite3
+pulleyscript: $(SRC)
+	$(CC) $(CFLAGS) -o $@ parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o $(LIBS)
 
 anew: clean all
 
