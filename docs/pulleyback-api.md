@@ -116,6 +116,21 @@ not resolve, which is permitted as it is marked optional.  The result from
 then the following `pulleyback_commit()` must also succeed; in fact, the
 calling application is under no obligation to check the result in that case.
 
+The `pulleyback_prepare()` operation is idempotent, meaning that it is not
+problematic to invoke it once more; it will simply yield the same output.
+The `pulleyback_commit()` operation is also idempotent, and so is the
+`pulleyback_rollback()` operation.
+
+When either `pulleyback_prepare()` or `pulleyback_commit()` fails, it
+sets `errno` to give an idea why.  It may specifically be useful to check
+for the `EAGAIN` value.  This is the designated return value in cases
+where a transaction runs into a deadlock.  In a single-threaded Pulley
+this should not happen, but it might in a multithreaded future version,
+and backends should already be prepared to inform such future versions
+with this special return value.
+
+## Normal Transactional Sequence
+
 The normal Pulley sequence is to perform `pulleyback_prepare()` on all
 backends, and when all succeed to run `pulleyback_commit()` on them,
 and otherwise run `pulleyback_rollback()` on all of them.
@@ -133,4 +148,38 @@ Note that `pulleyback_close()` does an implicit `pulleyback_rollback()`
 on any outstanding changes.  Please do not rely on this though, it is
 only there as a stop-gap measure for unexpected program termination.
 
+
+### Sharing Transactions between Backend Instances
+
+Backends may support an addition function to support transactions that
+run over multiple instances of the same backend:
+
+    int pulleyback_collaborate   (void *pbh1, void *pbh2);
+
+This expresses an intent to use one transaction for the two backends.
+The return value is 1 for success and 0 for failure; the value `errno`
+will not be set upon failure, since it is something determined inside
+the implementation, possibly as a result of independent transactional
+scopes -- for example, separate database contexts or environments.
+
+Upon success, an application only needs to end the transaction on
+`pbh1` or `pbh2`; doing it on both is superfluous but, in light of the
+idempotence of the transaction-ending operations, it is also harmless.
+
+One way of using this is to maintain a list (or bitfield) with the backends
+that are involved in a transaction as a unique participant.  As soon as
+a new backend is added, use `pulleyback_collaborate()` to attempt to ask
+the new backend to collaborate with any of the existing transactions, until
+one succeeds.  Only when all collaboration attempts fail will the backend
+be added to the list (or bitfield) with the backends that are involved in
+a transaction as a unique participant.  When ending the transaction,
+invoke the operations only on the backends that are in this list (or bitfield).
+To implement this scheme, there probably is a need to also keep a list
+(or bitfield) of collaborators, just to make sure that it isn't asked to
+pair over and over again.
+
+The implementation of this facility, as well as its grounds on which
+acceptance or rejection is formed, is entirely up to the backend.  This
+is why it is not optional -- it can easily return 0 in all cases, if it
+wants to.
 
