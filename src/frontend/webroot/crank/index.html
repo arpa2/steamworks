@@ -1,10 +1,64 @@
-<html>
-<head>
-<meta encoding="utf-8">
-</head>
-<body>
-<p>
-This is a new sample page.
-</p>
-</body>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SteamWorks Crank Demo</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h3 class="bg-primary">SteamWorks Crank</h3>
+          <p>
+          This is the demonstration site for the
+          SteamWorks Crank. The Crank is responsible
+          for manipulating the source of configuration
+          data. In this demonstration, we will 
+          show how an ISP can configure the trusted
+          CA store for the TLSPool.
+          </p>
+        </div>
+        <div class="col-md-4">
+          <h3 class="bg-info">Get It</h3>
+          <p>
+          The entire source code of SteamWorks,
+          including the Crank and other components
+          and this demonstration, can be obtained
+          from the ARPA2 SteamWorks git repository
+          on github.
+          </p>
+        </div>
+        <div class="col-md-4">
+          <h3 class="bg-info">About</h3>
+          <p>
+          SteamWorks Crank is a product of the ARPA2
+          project.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Demonstration</h1>
+        <p>
+        All the data shown in this demonstration, and all the certificates, including the root CA,
+        are fake, and not intended for production purposes. The Crank does actually store the
+        data in an LDAP server, so please make sure that it is configured with a test-directory.
+        </p>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h3 class="bg-primary">Crank Status</h3>
+        </div>
+        <div class="col-md-8">
+          <h3 class="bg-info">Certificate</h3>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
