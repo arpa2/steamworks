@@ -9,8 +9,11 @@ LIB_FLEX=-ll
 # LIB_FLEX=-lfl
 LIBS=$(LIB_FLEX) -lsqlite3
 
-all: pulleyscript compiler
+all: pulleyscript compiler simple
 	@echo Build successful
+
+simple: $(SRC) simple.o
+	$(CC) $(CFLAGS) -o $@ parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o simple.o $(LIBS)
 
 compiler: $(SRC) compiler.o
 	$(CC) $(CFLAGS) -o $@ parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o compiler.o $(LIBS)
@@ -19,6 +22,9 @@ pulleyscript: $(SRC)
 	$(CC) $(CFLAGS) -o $@ parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o $(LIBS)
 
 anew: clean all
+
+simple.o: simple.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 compiler.o: compiler.c
 	$(CC) $(CFLAGS) -c -o $@ $<
