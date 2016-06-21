@@ -1,9 +1,4 @@
-var crankApp = angular.module("crankApp", []);
+'use strict';
 
-crankApp.controller("CrankStatusController",
-  function CrankStatusController($scope) {
-    $scope.crank = {
-      status: "Not Connected"
-    }
-  }
-);
+angular.module('crankApp', []);
+
