@@ -45,6 +45,7 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 	else if (verb == "update") return do_update(values, response);
 	else if (verb == "delete") return do_delete(values, response);
 	else if (verb == "serverinfo") return do_serverinfo(values, response);
+	else if (verb == "serverstatus") return do_serverstatus(values, response);
 	return -1;
 }
 
@@ -64,6 +65,44 @@ int CrankDispatcher::do_stop(const Values values)
 	m_state = stopped;
 	d->connection.reset(nullptr);
 	return -1;
+}
+
+void _serverstatus(VerbDispatcher::Object response, int status, const char* statusname, const char* message)
+{
+	picojson::value v(statusname);
+	response.emplace("status", v);
+
+	if (!message)
+	{
+		char buffer[64];
+		snprintf(buffer, sizeof(buffer), "Unknown status %d", status);
+		v = picojson::value(buffer);
+		response.emplace("message", v);
+	}
+	else
+	{
+		v = picojson::value(message);
+		response.emplace("message", v);
+	}
+
+	v = picojson::value((double)status);
+	response.emplace("_status", v);
+}
+
+int CrankDispatcher::do_serverstatus(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+{
+	switch(m_state)
+	{
+		case stopped:
+			_serverstatus(response, m_state, "stopped", "The Crank has stopped and is disconnected from the server.");
+			break;
+		case connected:
+			_serverstatus(response, m_state, "connected", "The Crank is connected to the server.");
+			break;
+		default:
+			_serverstatus(response, m_state, "unknown", nullptr);
+	}
+	return 0;
 }
 
 int CrankDispatcher::do_search(const Values values, Object response)
