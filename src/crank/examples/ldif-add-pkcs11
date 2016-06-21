@@ -1,0 +1,6 @@
+dn: cn=www,dc=example,dc=com
+objectclass: pkcs11PrivateKeyObject
+cn: Example.com CA Root
+pkcs11PrivateKeyURI: pkuri://www.example.com/private.pkcs11
+pkcs11CertificateURI: pkuri://www.example.com/public.pkcs11
+owner: cn=Adriaan de Groot,ou=people,dc=example,dc=com
