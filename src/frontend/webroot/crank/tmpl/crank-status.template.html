@@ -1,2 +1,5 @@
-<p>Herp:{{$ctrl.status}}</p>
-<p>Derp:{{$ctrl.serverstatus}}</p>
+<p>
+  <img src="/img/ok.png" ng-show="$ctrl.status"></img>
+  <img src="/img/bad.png" ng-hide="$ctrl.status"></img>
+  {{$ctrl.serverstatus}}
+</p>
