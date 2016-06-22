@@ -1,0 +1,9 @@
+<h3 class="bg-info">Remove Trusted Issuer</h3>
+
+<p>
+  Really remove the Trusted Issuer
+{{$ctrl.issuerdn}}?
+</p>
+
+<a href="#!/issuers" role="button" class="btn btn-info"><span class="glyphicon glyphicon-ban-circle"></span> Cancel</a>
+<a href="#!/issuers/remove/{{c.dn}}" role="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove-circle"></span> Remove</a>
