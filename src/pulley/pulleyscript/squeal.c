@@ -706,7 +706,7 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 		sqlbuf_lexhash2name (&sql, "gen_", gen_get_hash (gentab, g));
 		sqlbuf_write (&sql, " (\n\t");
 		sqlbuf_lexhash2name (&sql, "key_", gen_get_hash (gentab, g));
-		sqlbuf_write (&sql, " INTEGER PRIMARY KEY NOT NULL");
+		sqlbuf_write (&sql, " ENTRYUUID CHAR(36)");
 		bitset_iterator_init (&it, itbits);
 		while (bitset_iterator_next_one (&it, NULL)) {
 			v = bitset_iterator_bitnum (&it);
@@ -719,6 +719,7 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 		}
 		sqlbuf_write (&sql, ")");
 		retval = retval || sqlbuf_run (&sql, squeal->s3db);
+		//TODO// CREATE TABLE IF NOT EXISTS genidx_XXX on gen_XXX (ENTRYUUID)
 	}
 	//
 	// Release the SQL buffer
