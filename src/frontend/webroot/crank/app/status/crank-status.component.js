@@ -3,7 +3,7 @@
 angular.
   module('crankApp').
   component('crankStatus', {
-    templateUrl: 'tmpl/crank-status.template.html',
+    templateUrl: 'app/status/crank-status.template.html',
     controller: function CrankStatusController($http, config) {
       this.status = false;
       this.serverstatus = "Checking ..";

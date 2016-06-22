@@ -3,7 +3,7 @@
 angular.
   module('crankApp').
   component('crankCertificateList', {
-    templateUrl: 'tmpl/crank-certificate-list.template.html',
+    templateUrl: 'app/certificate/crank-certificate-list.template.html',
     controller: function CrankCertificateListController($http, config) {
       this.status = false;
       this.certificates = [];

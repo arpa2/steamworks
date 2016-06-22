@@ -18,6 +18,12 @@ app.config(['$locationProvider', '$routeProvider',
         when('/certificates/add', {
           template: '<p>Add</p>'
         }).
-        otherwise('/certificates');
+        when('/issuers', {
+          template: '<crank-issuer-list></crank-issuer-list>'
+        }).
+        when('/issuers/add', {
+          template: '<p>Issuers-add</p>'
+        }).
+        otherwise('/issuers');
     }
   ]);

@@ -1,0 +1,11 @@
+<h3 class="bg-info">Trusted Issuer</h3>
+<ul ng-show="$ctrl.status">
+  <li ng-repeat="c in $ctrl.issuers">
+    {{c.dn}}
+  </li>
+</ul>
+<p ng-hide="$ctrl.status">
+There are no Trusted Issuers available.
+</p>
+
+<a href="#!/issuers/add" role="button" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add</button>
