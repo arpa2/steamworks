@@ -1,0 +1,8 @@
+<ul ng-show="$ctrl.status">
+  <li ng-repeat="c in $ctrl.certificates">
+    {{c.dn}}
+  </li>
+</ul>
+<p ng-hide="$ctrl.status">
+There are no certificates available.
+</p>
