@@ -5,3 +5,6 @@ cmake_install.cmake
 build
 docs/html
 docs/man
+.kdev4
+src/src.kdev4
+*.o
