@@ -133,10 +133,21 @@ not resolve, which is permitted as it is marked optional.  The result from
 then the following `pulleyback_commit()` must also succeed; in fact, the
 calling application is under no obligation to check the result in that case.
 
-The `pulleyback_prepare()` operation is idempotent, meaning that it is not
-problematic to invoke it once more; it will simply yield the same output.
-The `pulleyback_commit()` operation is also idempotent, and so is the
-`pulleyback_rollback()` operation.
+Invocations of `pulleyback_prepare()` are idempotent, meaning that they
+may be repeated and will then return the same result.  Afterwards, one
+call to either `pulleyback_commit()` or `pulleyback_rollback()` can be
+made.  Using `pulleyback_commit()` or `pulleyback_rollback()` when no
+transaction was implicitly created responds equivalently to going through
+a transaction without any changes made in it.  When `pulleyback_close()`
+is called after `pulleyback_prepare()` then, regardless of success or
+failure having been returned from it, the usualy implicit call to
+`pulleyback_rollback()` is conducted.
+
+It is a wrong use of this API to operate on data between a
+`pulleyback_prepare()` and either `pulleyback_commit()` or
+`pulleyback_rollback()`; it is wrong to call `pulleyback_commit()`
+after a failed `pulleyback_prepare()` but it is not wrong to
+call `pulleyback_rollback()` after a successful `pulleyback_prepare()`.
 
 When either `pulleyback_prepare()` or `pulleyback_commit()` fails, it
 sets `errno` to give an idea why.  It may specifically be useful to check
