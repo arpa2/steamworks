@@ -1,7 +1,9 @@
-<h3 class="bg-info">Trusted Issuer</h3>
-<ul ng-show="$ctrl.status">
+<h3 class="bg-info">Trusted Issuers</h3>
+<ul ng-show="$ctrl.status" class="item-list-tall item-list-flat">
   <li ng-repeat="c in $ctrl.issuers">
-    {{c.dn}}
+    <a href="#!/issuers/view/{{c.dn}}" role="button" class="btn btn-info" aria-label="View Issuer"><span class="glyphicon glyphicon-envelope"></span></a>
+    <a href="#!/issuers/remove/{{c.dn}}" role="button" class="btn btn-danger" aria-label="Remove Issuer"><span class="glyphicon glyphicon-remove"></span></a>
+    {{c.cn ? c.cn : c.dn}}
   </li>
 </ul>
 <p ng-hide="$ctrl.status">
