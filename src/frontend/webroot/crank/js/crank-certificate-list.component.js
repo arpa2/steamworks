@@ -4,12 +4,12 @@ angular.
   module('crankApp').
   component('crankCertificateList', {
     templateUrl: 'tmpl/crank-certificate-list.template.html',
-    controller: function CrankCertificateListController($http) {
+    controller: function CrankCertificateListController($http, config) {
       this.status = false;
       this.certificates = [];
 
       var self = this;
-      $http.post('/cgi-bin/', {
+      $http.post(config.basecgi, {
         verb: 'search',
         base: 'dc=example,dc=com',
         filter: 'objectClass=pkcs11PrivateKeyObject'}).

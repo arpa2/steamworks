@@ -4,12 +4,12 @@ angular.
   module('crankApp').
   component('crankStatus', {
     templateUrl: 'tmpl/crank-status.template.html',
-    controller: function CrankStatusController($http) {
+    controller: function CrankStatusController($http, config) {
       this.status = false;
       this.serverstatus = "Checking ..";
       
       var self = this;
-      $http.post('/cgi-bin/', {verb: 'serverstatus'}).then(
+      $http.post(config.basecgi, {verb: 'serverstatus'}).then(
         function(response) {
           self.serverstatus = response.data.message;
           self.status = (response.data._status == 1);
