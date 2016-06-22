@@ -1,0 +1,6 @@
+## frontend/schema ##
+
+This directory holds the LDAP schema files (copied from the
+TLSPool repository) that are necessary to configure an LDAP
+server for holding TLSPool entries. This, in turn, is needed
+for the crank frontend demonstration.

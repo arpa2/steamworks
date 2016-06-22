@@ -1,0 +1,77 @@
+# PKCS #11 URIs for use in LDAP
+#
+# These URIs will usually be supplied only to authenticated users, to cover
+# their private key material.  The pkcs11PrivateKeyObject is the core of
+# this publication, mentioning a pkcs11: URI and referencing the locations
+# of public credentials in LDAP.  In addition, hints may be added to find
+# the PKCS #11 implementation, either as a local shared library or as a
+# remote service.
+#
+# This is a direct alternative to the habit of linking public and private
+# keys with a shared CKA_ID within PKCS #11 itself.  The reason for this
+# alternative approach is that the data in LDAP can now be linked to the
+# private key material.  Moreover, the pkcs11: URI scheme helps to select
+# a PKCS #11 token from among a potential set, including even tokens that
+# are not currently visible on a system.
+#
+# From: Rick van Rein <rick@openfortress.nl>
+
+
+attributetype ( 1.3.6.1.4.1.44469.666.11.389.1.1
+        NAME 'pkcs11PrivateKeyURI'
+        DESC 'PKCS #11 URI for a private key, with optional description'
+	SUP labeledURI
+        SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.44469.666.11.389.1.2
+        NAME 'pkcs11Certificate'
+        DESC 'DistinguishedName for an application certificate'
+        SUP distinguishedName )
+
+attributetype ( 1.3.6.1.4.1.44469.666.11.389.1.3
+        NAME 'pkcs11CertificateURI'
+        DESC 'URI with possible comment for an application certificate'
+        SUP labeledURI )
+
+attributetype ( 1.3.6.1.4.1.44469.666.11.389.1.4
+        NAME 'pkcs11DeprecatedBy'
+        DESC 'This PKCS #11 key is deprecated, the reference provides a replacement'
+        SUP distinguishedName
+        SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.44469.666.11.389.1.5
+        NAME 'pkcs11LocalProviderModule'
+        DESC 'Filename or local path of a loadable provider module for PKCS #11'
+        EQUALITY caseExactIA5Match
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.3.6.1.4.1.44469.666.11.389.1.6
+        NAME 'pkcs11RemoteServiceProtocol'
+        DESC 'OID of the (secure) remote procedure call protocol for PKCS #11'
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.38
+        SINGLE-VALUE )
+
+attributetype ( 1.3.6.1.4.1.44469.666.11.389.1.7
+        NAME 'pkcs11RemoteServiceLocator'
+        DESC 'pkcs11RemoteServiceProtocol-specific locator for remote PKCS #11 service'
+        SUP DistinguishedName )
+
+objectclass ( 1.3.6.1.4.1.44469.666.11.389.1.10
+        NAME 'pkcs11PrivateKeyObject'
+        DESC 'Private or secret key and any reliant application certificates'
+        SUP top STRUCTURAL
+        MUST ( pkcs11PrivateKeyURI )
+        MAY ( pkcs11Certificate $ pkcs11CertificateURI $ cn $ owner ) )
+
+objectclass ( 1.3.6.1.4.1.44469.666.11.389.1.11
+        NAME 'pkcs11PrivateKeyLocal'
+        DESC 'Local PKCS #11 module reference'
+        AUXILIARY
+        MUST ( pkcs11LocalProviderModule ) )
+
+objectclass ( 1.3.6.1.4.1.44469.666.11.389.1.12
+        NAME 'pkcs11PrivateKeyRemote'
+        DESC 'Remote procedure call information for a pkcs11PrivateKey'
+        AUXILIARY
+        MUST ( pkcs11RemoteServiceProtocol $ pkcs11RemoteServiceLocator ) )
+

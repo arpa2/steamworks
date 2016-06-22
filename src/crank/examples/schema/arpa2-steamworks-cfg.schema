@@ -1,0 +1,67 @@
+# General configuration file and registry format to be used in SteamWorks
+#
+# The old-fashioned INI files and later Registry format are widely used,
+# both on Windows and POSIX systems.  The following defines an untyped
+# system for passing individual variables and lists through SteamWorks,
+# and have them delivered in these file formats.
+#
+# A very simple format is used for the assignments, using name=value
+# syntax.  There is no support for = signs in the name, and whitespace
+# is not being ignored, neither at start or end, or surrounding = signs.
+# Both name and value are case-insensitive IA5String values.
+#
+# The choice to include name=value syntax is that this supports multiple
+# variables to be set as part of one LDAP object, thus supporting
+# atomic updates of at least such an object.  Conflicting settings can
+# to some degree be avoided because of that.  Note that substring matches
+# are possible so as to support (name=*) style searching.
+#
+# A nice application example is the UCI configuration framework in *WRT,
+# https://wiki.openwrt.org/doc/uci
+#
+# Optional extensions, neither defined nor forbidden here:
+#  - LDAP-styled attributes to use in filters weeding out others' configdata
+#  - Insertion or regexping of ${sysvars} in the value and entryvalue
+#
+# From: Rick van Rein <rick@openfortress.nl>
+
+attributetype ( 1.3.6.1.4.1.44469.666.389.1.1.1
+        NAME 'cfgVariable'
+        DESC 'Generic variable in name=value format'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+	EQUALITY caseIgnoreIA5Match
+        SUBSTR caseIgnoreIA5SubstringsMatch )
+
+attributetype ( 1.3.6.1.4.1.44469.666.389.1.1.2
+        NAME 'cfgListEntry'
+        DESC 'List entry in listname=entryvalue format'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+	EQUALITY caseIgnoreIA5Match
+        SUBSTR caseIgnoreIA5SubstringsMatch )
+
+objectclass ( 1.3.6.1.4.1.44469.666.389.1.1.6
+	NAME 'cfgSection'
+	DESC 'A commonNamed section of tied-together configuration settings for variables and lists'
+	SUP top STRUCTURAL
+	MUST ( cn )
+	MAY ( cfgVariable $ cfgListEntry ) )
+
+objectclass ( 1.3.6.1.4.1.44469.666.389.1.1.7
+	NAME 'cfgGroup'
+	DESC 'A commonNamed file of tied-together cfgSections, cfgFiles and cfgGroups'
+	SUP top STRUCTURAL
+	MUST ( cn ) )
+
+objectclass ( 1.3.6.1.4.1.44469.666.389.1.1.8
+	NAME 'cfgFile'
+	DESC 'A commonNamed file of tied-together objects with cfgVariables and/or cfgListEntries (possibly having these of its own as well)'
+	SUP cfgGroup STRUCTURAL
+	MUST ( cn )
+	MAY ( cfgVariable $ cfgListEntry ) )
+
+objectclass ( 1.3.6.1.4.1.44469.666.389.1.1.9
+	NAME 'cfgRegister'
+	DESC 'A commonNamed top of a nested configuration structure'
+	SUP cfgGroup STRUCTURAL
+	MUST ( cn ) )
+

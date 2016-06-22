@@ -1,0 +1,41 @@
+dn: dc=test,dc=example,dc=com
+dc: test
+description: ARPA2 infrastructure test
+objectclass: dcobject
+objectclass: organization
+o: ARPA2 infrastructure test
+
+# A part of the directory with potential root certificates
+dn: ou=Trust Contestors,dc=test,dc=example,dc=com
+objectClass: organizationalUnit
+ou: Trust Contestors
+
+# A certificate of a potential root CA
+dn: o=Verishot primary root,ou=Trust Contestors,dc=test,dc=example,dc=com
+objectClass: organization
+objectClass: pkiUser
+o: Verishot primary root
+userCertificate;binary:< file:///tmp/tlspool-test-client-cert.der
+
+# A part of the directory to follow for trust declarations
+dn: ou=In ARPA2 we Trust,dc=test,dc=example,dc=com
+objectClass: organizationalUnit
+ou: In ARPA2 we Trust
+
+# An entry for a CA -- without active trust anchors
+dn: cn=Veritralala (Enschede),ou=In ARPA2 we Trust,dc=test,dc=example,dc=com
+objectClass: tlsPoolTrustedIssuer
+cn: Veritralala (Enschede)
+tlsPoolCredentialType: x509
+tlsPoolSupportedRole: server
+tlsPoolValidationExpression: 1
+
+# An entry for a CA -- with an active trust anchor
+dn: cn=Veritralala (Lent),ou=In ARPA2 we Trust,dc=test,dc=example,dc=com
+objectClass: tlsPoolTrustedIssuer
+cn: Veritralala (Lent)
+tlsPoolCredentialType: x509
+tlsPoolSupportedRole: server
+tlsPoolValidationExpression: 1
+tlsPoolTrustAnchor: o=Verishot primary root, ou=Trust Contestors,dc=test,dc=example,dc=com
+
