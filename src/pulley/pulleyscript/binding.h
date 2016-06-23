@@ -127,7 +127,7 @@
 //		13 00 00 00 - V19, attr,  CN
 //		14 00 00 00 - V20, var,   person
 // 32 - DN BIND
-//		TODO REVISE - PROBLEMATIC IRREGULARITY -- BIND WITH ONE PARAM
+//		ff ff ff ff - VARNUM_BAD, space filler for the BIND form
 //		12 00 00 00 - V18, var,   z
 // 0d - DOWN
 // 21 - RDN CMP

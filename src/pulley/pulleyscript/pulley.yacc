@@ -357,6 +357,7 @@ bindsteps: bindsteps COMMA bindstep
 bindstep: AT dnvar {
 	bitset_set (_tosV (prs), $2);
 	_varO (prs, $2);
+	_varO (prs, VARNUM_BAD);
 	_actO (prs, BNDO_SUBJ_DN | BNDO_ACT_BIND);
 	// We do not move down at this point, we just harvest the DN
 }
