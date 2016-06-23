@@ -40,6 +40,7 @@ typedef enum varkind {
 	VARKIND_CONSTANT,
 	VARKIND_ATTRTYPE,
 	VARKIND_DRIVERNAME,
+	VARKIND_BINDING,
 } varkind_t;
 
 enum vartype {
