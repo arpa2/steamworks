@@ -705,8 +705,7 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 		sqlbuf_write (&sql, "CREATE TABLE IF NOT EXISTS ");
 		sqlbuf_lexhash2name (&sql, "gen_", gen_get_hash (gentab, g));
 		sqlbuf_write (&sql, " (\n\t");
-		sqlbuf_lexhash2name (&sql, "key_", gen_get_hash (gentab, g));
-		sqlbuf_write (&sql, " ENTRYUUID CHAR(36)");
+		sqlbuf_write (&sql, "entryUUID CHAR(36)");
 		bitset_iterator_init (&it, itbits);
 		while (bitset_iterator_next_one (&it, NULL)) {
 			v = bitset_iterator_bitnum (&it);
@@ -719,7 +718,11 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 		}
 		sqlbuf_write (&sql, ")");
 		retval = retval || sqlbuf_run (&sql, squeal->s3db);
-		//TODO// CREATE TABLE IF NOT EXISTS genidx_XXX on gen_XXX (ENTRYUUID)
+		sqlbuf_write (&sql, "CREATE INDEX IF NOT EXISTS ");
+		sqlbuf_lexhash2name (&sql, "idx_", gen_get_hash (gentab, g));
+		sqlbuf_lexhash2name (&sql, "\n\tON gen_", gen_get_hash (gentab, g));
+		sqlbuf_write (&sql, " (entryUUID)");
+		retval = retval || sqlbuf_run (&sql, squeal->s3db);
 	}
 	//
 	// Release the SQL buffer
