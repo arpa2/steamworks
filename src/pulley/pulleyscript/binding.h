@@ -88,15 +88,20 @@
 
 // EXAMPLE: Mail=x, OU="Secretaries", O="Example Corp" <- world
 //
+// Binding bnd_b8a4bd87 created: >>>
+//
 // 0d - DOWN
 // 21 - RDN CMP
-//		V4, attr,  O
-//		V5, const, "Example Corp"
+//		04 00 00 00 - V4, attr,  O
+//		05 00 00 00 - V5, const, "Example Corp"
 // 0d - DOWN
 // 21 - RDN CMP
-//		V2, attr,  OU
-//		V3, const, "Secretaries"
+//		02 00 00 00 - V2, attr,  OU
+//		03 00 00 00 - V3, const, "Secretaries"
 // 0d - DOWN
 // 22 - RDN BIND
-//		V0, attr,  Mail
-//		V1, var,   x
+//		00 00 00 00 - V0, attr,  Mail
+//		01 00 00 00 - V1, var,   x
+// 0f - DONE
+//
+// <<<
