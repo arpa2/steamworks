@@ -140,3 +140,38 @@
 // 0f - DONE
 //
 // <<<
+
+
+// EXAMPLE 3:
+//
+// CN:someperson+CN:x+CN:y, CN=someperson + CN=x + CN=z, OU=z <- world
+//
+// Binding bnd_8c1f64e7 created: >>>
+// 0d - DOWN
+// 22 - RDN BIND
+//		11 00 00 00 - V17, attr,  OU
+//		10 00 00 00 - V18, var,   z
+// 0d - DOWN
+// 21 - RDN CMP
+//		0f 00 00 00 - V15, attr,  CN
+//		10 00 00 00 - V16, var    z
+// 22 - RDN BIND
+//		0e 00 00 00 - V14, attr,  CN
+//		01 00 00 00 - V1,  var,   x
+// 22 - RDN BIND
+//		0d 00 00 00 - V13, attr,  CN
+//		09 00 00 00 - V9,  var,   someperson
+// 0e - DOWN
+// 12 - ATTR BIND
+//		0b 00 00 00 - V11, attr,  CN
+//		0c 00 00 00 - V12, var,   y
+// 11 - ATTR CMP
+//		0a 00 00 00 - V10, attr,  CN
+//		01 00 00 00 - V1,  var,   x
+// 11 - ATTR CMP
+//		08 00 00 00 - V8,  attr,  CN
+//		09 00 00 00 - V9,  var,   someperson
+// 0f - DONE
+//
+// <<<
+
