@@ -86,7 +86,9 @@
 // must be requested to learn if we are dealing with a variable or constant.
 
 
-// EXAMPLE: Mail=x, OU="Secretaries", O="Example Corp" <- world
+// EXAMPLE 1
+//
+// Mail=x, OU="Secretaries", O="Example Corp" <- world
 //
 // Binding bnd_b8a4bd87 created: >>>
 //
@@ -102,6 +104,39 @@
 // 22 - RDN BIND
 //		00 00 00 00 - V0, attr,  Mail
 //		01 00 00 00 - V1, var,   x
+// 0f - DONE
+//
+// <<<
+
+
+// EXAMPLE 2
+//
+// Mail:y, CN="Backups", @z, CN=person, OU="People", O="Example Corp" <- world
+//
+// Binding bnd_007674c6 created: >>>
+// 0d - DOWN
+// 21 - RDN CMP
+//		16 00 00 00 - V22, attr,  O
+//		05 00 00 00 - V5,  const, "Example Corp"
+// 0d - DOWN
+// 21 - RDN CMP
+//		15 00 00 00 - V21, attr,  OU
+//		0b 00 00 00 - V11, const, "People"
+// 0d - DOWN
+// 22 - RDN BIND
+//		13 00 00 00 - V19, attr,  CN
+//		14 00 00 00 - V20, var,   person
+// 32 - DN BIND
+//		TODO REVISE - PROBLEMATIC IRREGULARITY -- BIND WITH ONE PARAM
+//		12 00 00 00 - V18, var,   z
+// 0d - DOWN
+// 21 - RDN CMP
+//		10 00 00 00 - V16, attr,  CN
+//		11 00 00 00 - V17, const, Backups
+// 0e - OBJECT
+// 12 - ATTR BIND
+//		0e 00 00 00 - V14, attr,  Mail
+//		0f 00 00 00 - V15, var,   y
 // 0f - DONE
 //
 // <<<
