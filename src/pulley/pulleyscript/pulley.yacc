@@ -127,37 +127,39 @@ void _actO (struct parser *prs, uint8_t action) {
 	prs->action_sp = here;
 	prs->action [here] = action;
 	// Same variable bound in follow-up?  Then make that a comparison!
-	while (here < sizeof (prs->action)) {
-		switch (prs->action [here] & BNDO_ACT_MASK) {
-		case BNDO_ACT_DOWN:
-		case BNDO_ACT_OBJECT:
-		case BNDO_ACT_DONE:
-			// Uses no parameters
-			here += 1;
-			break;
-		case BNDO_ACT_HAVE:
-			// Only uses $1
-			here += 1 + sizeof (varnum_t);
-			break;
-		case BNDO_ACT_BIND:
-			// Uses both $1 and $2
-			if (rematch != VARNUM_BAD) {
-				if (rematch == * (varnum_t *) &prs->action [here+1]) {
-					// BIND is overruled by the new one
-					prs->action [here] &= ~BNDO_ACT_MASK;
-					prs->action [here] |=  BNDO_ACT_CMP;
-					// There will not be any more of these
-					here = sizeof (prs->action);
-					break;
+	if ((action & BNDO_ACT_MASK) == BNDO_ACT_BIND) {
+		while (here < sizeof (prs->action)) {
+			switch (prs->action [here] & BNDO_ACT_MASK) {
+			case BNDO_ACT_DOWN:
+			case BNDO_ACT_OBJECT:
+			case BNDO_ACT_DONE:
+				// Uses no parameters
+				here += 1;
+				break;
+			case BNDO_ACT_HAVE:
+				// Only uses $1
+				here += 1 + sizeof (varnum_t);
+				break;
+			case BNDO_ACT_BIND:
+				// Uses both $1 and $2
+				if (rematch != VARNUM_BAD) {
+					if (rematch == * (varnum_t *) &prs->action [here+1]) {
+						// BIND is overruled by the new one
+						prs->action [here] &= ~BNDO_ACT_MASK;
+						prs->action [here] |=  BNDO_ACT_CMP;
+						// There will not be any more of these
+						here = sizeof (prs->action);
+						break;
+					}
+				} else {
+					rematch = * (varnum_t *) &prs->action [here+1];
 				}
-			} else {
-				rematch = * (varnum_t *) &prs->action [here+1];
+				// ...continue into BNDO_ACT_CMP...
+			case BNDO_ACT_CMP:
+				// Uses both $1 and $2
+				here += 1 + 2 * sizeof (varnum_t);
+				break;
 			}
-			// ...continue into BNDO_ACT_CMP...
-		case BNDO_ACT_CMP:
-			// Uses both $1 and $2
-			here += 1 + 2 * sizeof (varnum_t);
-			break;
 		}
 	}
 }
