@@ -680,6 +680,16 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 				"END");
 	retval = retval || sqlbuf_run (&sql, squeal->s3db);
 	//
+	// Create a table holding the cookie for LDAP SyncRepl
+	if (!may_reuse) {
+		sqlbuf_write (&sql, "DROP TABLE IF EXISTS syncrepl_cookie");
+		retval = retval || sqlbuf_run (&sql, squeal->s3db);
+	}
+	sqlbuf_write (&sql, "CREATE TABLE IF NOT EXISTS syncrepl_cookie (\n"
+				"\ttimestamp INTEGER PRIMARY KEY NOT NULL\n"
+				"\tcookie BLOB)");
+	retval = retval || sqlbuf_run (&sql, squeal->s3db);
+	//
 	// Create a table for each generator that is/has a co-generator
 	numgens = gentab_count (gentab);
 	for (g=0; g<numgens; g++) {
