@@ -1,11 +1,14 @@
 
 %{
 
+#include <assert.h>
+
 #include "parser.h"
 #include "variable.h"
 #include "condition.h"
 #include "generator.h"
 #include "driver.h"
+#include "binding.h"
 
 %}
 
@@ -37,7 +40,7 @@ void yyerror (struct parser *,char *);
 %token ATTRTYPE ATTRNAME ATTROPT VARIABLE SILENCER DRIVERNAME PARAMETER
 %token STRING BLOB INTEGER FLOAT
 
-%type<varnum> INTEGER FLOAT STRING BLOB DRIVERNAME
+%type<varnum> INTEGER FLOAT STRING BLOB DRIVERNAME ATTRTYPE
 %type<varnum> VARIABLE PARAMETER optvalue value const varnm dnvar bindrdnpart
 %type<intval> filtcmp
 
@@ -107,6 +110,104 @@ void _clrV (struct parser *prs) {
 	bitset_empty (prs->varstack [0]);
 }
 
+// The following code implements a reverse bufffer, in which binding actions
+// variable/constant numbers are collected.  This is done before allocating
+// memory for them and setting it up in a variable.  The buffer starts with
+// the BNDO_ACT_DONE installed and grows towards the beginning, minding its
+// maximum size while at it.  After it is cloned into the variable space,
+// the buffer is reset to just BNDO_ACT_DONE.
+
+// _actO prefixes an action code to the buffer
+void _actO (struct parser *prs, uint8_t action) {
+	varnum_t rematch = VARNUM_BAD;
+	size_t here = prs->action_sp;
+	//TODO// Throw parser error instead
+	assert (here >= sizeof (action));
+	here--;
+	prs->action_sp = here;
+	prs->action [here] = action;
+	// Same variable bound in follow-up?  Then make that a comparison!
+	while (here < sizeof (prs->action)) {
+		switch (prs->action [here] & BNDO_ACT_MASK) {
+		case BNDO_ACT_DOWN:
+		case BNDO_ACT_OBJECT:
+		case BNDO_ACT_DONE:
+			// Uses no parameters
+			here += 1;
+			break;
+		case BNDO_ACT_HAVE:
+			// Only uses $1
+			here += 1 + sizeof (varnum_t);
+			break;
+		case BNDO_ACT_BIND:
+			// Uses both $1 and $2
+			if (rematch != VARNUM_BAD) {
+				if (rematch == * (varnum_t *) &prs->action [here+1]) {
+					// BIND is overruled by the new one
+					prs->action [here] &= ~BNDO_ACT_MASK;
+					prs->action [here] |=  BNDO_ACT_CMP;
+					// There will not be any more of these
+					here = sizeof (prs->action);
+					break;
+				}
+			} else {
+				rematch = * (varnum_t *) &prs->action [here+1];
+			}
+			// ...continue into BNDO_ACT_CMP...
+		case BNDO_ACT_CMP:
+			// Uses both $1 and $2
+			here += 1 + 2 * sizeof (varnum_t);
+			break;
+		}
+	}
+}
+
+// _varO stores a variable number before the rest of the buffer.
+// The variable number represents either a constant or a variable.
+void _varO (struct parser *prs, varnum_t var) {
+	size_t actionbuf_freespace = prs->action_sp;
+	//TODO// Throw parser error instead
+	assert (actionbuf_freespace >= sizeof (var));
+	prs->action_sp -= sizeof (varnum_t);
+	* (varnum_t *) &prs->action [prs->action_sp] = var;
+}
+
+// _clrO clears the action buffer.
+void _clrO (struct parser *prs) {
+	prs->action_sp = sizeof (prs->action) -1;
+}
+
+// _flushO stores the action buffer as bnd_<linehash>
+void _flushO (struct parser *prs, hash_t linehash) {
+	char bndname [4 + 2 * sizeof (hash_t) + 1];
+	struct var_value varval;
+	varnum_t binding;
+	int len = sizeof (hash_t);
+	uint8_t *ptr = (uint8_t *) &linehash;
+	memcpy (bndname, "bnd_", 4);
+	uint8_t *hexstr = bndname + 4;
+	while (len-- > 0) {
+		sprintf (hexstr, "%02x", *ptr++);
+		hexstr += 2;
+	}
+	binding = var_have (prs->vartab, bndname, VARKIND_BINDING);
+	varval.type = VARTP_BLOB;
+	varval.typed_blob.len = sizeof (prs->action) - prs->action_sp;
+	varval.typed_blob.str = malloc (varval.typed_blob.len);
+	assert (varval.typed_blob.str != NULL);
+	memcpy (varval.typed_blob.str, &prs->action [prs->action_sp],
+			varval.typed_blob.len);
+	var_set_value (prs->vartab, binding, &varval);
+//DEBUG//
+printf ("Binding %s created: >>> ", bndname);
+ptr = varval.typed_blob.str;
+len = varval.typed_blob.len;
+while (len-- > 0) {
+	printf ("%02x ", *ptr++);
+}
+printf ("<<<\n");
+}
+
 %}
 
 %%
@@ -144,7 +245,7 @@ line_empty:
  * extract information from a DN-type variable and they have annotations that
  * can define guard variables and a line weight.
  */
-line_generator: error GEN_FROM dnvar annotations { _clrV (prs); }
+line_generator: error GEN_FROM dnvar annotations { _clrV (prs); _clrO (prs); }
 line_generator: binding GEN_FROM _pushV dnvar annotations {
 	bitset_t *guards = _popV (prs);
 	varnum_t dnvar = $4;
@@ -166,7 +267,9 @@ printf ("FOUND %d bound variables in generator line\n", bitset_count (bindvars))
 	gen_set_weight (prs->gentab, gennew, prs->weight_set? prs->weight: 250.0);
 	hash_curline (&prs->scanhashbuf, &linehash);
 	gen_set_hash (prs->gentab, gennew, linehash);
+	_flushO (prs, linehash);
 	_clrV (prs);
+	_clrO (prs);
 }
 
 /* Condition lines simply mention a filter and annotations.  As part of their
@@ -244,28 +347,59 @@ annotation1: BRA varlist KET
 annotation2: /* %empty */ { prs->weight_set = false; }
 annotation2: STAR FLOAT { prs->weight_set = true; prs->weight = /*TODO*/ 0.1; }
 
-binding: bindatr
-binding: bindatr COMMA bindsteps
+binding: bindatr { _actO (prs, BNDO_ACT_OBJECT); }
+binding: bindatr { _actO (prs, BNDO_ACT_OBJECT); } COMMA bindsteps
 binding: bindsteps
 bindsteps: bindstep
 bindsteps: bindsteps COMMA bindstep
 bindstep: AT dnvar {
 	bitset_set (_tosV (prs), $2);
+	_varO (prs, $2);
+	_actO (prs, BNDO_SUBJ_DN | BNDO_ACT_BIND);
+	// We do not move down at this point, we just harvest the DN
 }
-bindstep: bindrdn
+bindstep: bindrdn {
+	_actO (prs, BNDO_ACT_DOWN);
+}
 bindrdn: bindrdnpart
 bindrdn: bindrdn PLUS bindrdnpart
 bindrdnpart: ATTRTYPE CMP_EQ optvalue {
-	// The optvalue may be a SILENCER
-	if ($3 != VARNUM_BAD) {
+	//TODO// Recognise special names, like DCList
+	//TODO// Alternatively, append dnvarmods ::= ? | + | *
+	if ($3 == VARNUM_BAD) {
+		// SILENCER means just require having $1
+		_varO (prs, $1);
+		_actO (prs, BNDO_SUBJ_RDN | BNDO_ACT_HAVE);
+	} else {
+		uint8_t action;
+		 if (var_get_kind (prs->vartab, $3) == VARKIND_CONSTANT) {
+			action = BNDO_SUBJ_RDN | BNDO_ACT_CMP;
+		} else {
+			action = BNDO_SUBJ_RDN | BNDO_ACT_BIND;
+		}
+		_varO (prs, $3);
+		_varO (prs, $1);
+		_actO (prs, action);
 		bitset_set (_tosV (prs), $3);
 	}
 }
 bindatr: atmatch
 bindatr: bindatr PLUS atmatch
 atmatch: ATTRTYPE COLON optvalue {
-	// The optvalue may be a SILENCER
-	if ($3 != VARNUM_BAD) {
+	if ($3 == VARNUM_BAD) {
+		// SILENCER means just require having $1
+		_varO (prs, $1);
+		_actO (prs, BNDO_SUBJ_ATTR | BNDO_ACT_HAVE);
+	} else {
+		uint8_t action;
+		if (var_get_kind (prs->vartab, $3) == VARKIND_CONSTANT) {
+			action = BNDO_SUBJ_ATTR | BNDO_ACT_CMP;
+		} else {
+			action = BNDO_SUBJ_ATTR | BNDO_ACT_BIND;
+		}
+		_varO (prs, $3);
+		_varO (prs, $1);
+		_actO (prs, action);
 		bitset_set (_tosV (prs), $3);
 	}
 }
@@ -316,7 +450,7 @@ filtbase: varnm filtcmp value {
 optvalue: value { $$ = $1; }
 optvalue: SILENCER { $$ = VARNUM_BAD; }
 value: varnm | const
-dnvar: varnm
+dnvar: varnm { $$ = $1; }
 drvout_vallist_s: drvout_vallist_s COMMA drvout_vallist_s
 drvout_vallist_s: value {
 	if (prs->newdrv == DRVNUM_BAD) {

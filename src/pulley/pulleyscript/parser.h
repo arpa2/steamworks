@@ -11,6 +11,7 @@ enum parser_type {
 };
 
 #define PARSER_VARIABLE_STACK_ENTRIES 4
+#define PARSER_ACTION_BYTECODE_MAXLEN 200
 
 struct parser {
 	void *lexer;
@@ -18,7 +19,9 @@ struct parser {
 	hash_t scanhash;
 	int bison_switch;
 	int varstack_sp;
+	int action_sp;
 	bitset_t *varstack [PARSER_VARIABLE_STACK_ENTRIES];
+	uint8_t   action   [PARSER_ACTION_BYTECODE_MAXLEN];
 	struct vartab *vartab;
 	struct gentab *gentab;
 	struct cndtab *cndtab;

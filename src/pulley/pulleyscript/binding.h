@@ -55,7 +55,7 @@
 // Masks for the multiplicity marker, attr-or-RDN, and "plain" action
 #define BNDO_MULTI_MASK  	0xc0
 #define BNDO_SUBJ_MASK		0x30
-#define BNDO_ACTION_MASK 	0x0f
+#define BNDO_ACT_MASK	 	0x0f
 
 // Masks for generic repeaters for 1 / 0,1 / 1.. / 0.. (not currently used)
 #define BNDO_MULTI_ONCE		0x00
@@ -85,3 +85,18 @@
 // Variables and constants are stored in the same vartab, and their kind
 // must be requested to learn if we are dealing with a variable or constant.
 
+
+// EXAMPLE: Mail=x, OU="Secretaries", O="Example Corp" <- world
+//
+// 0d - DOWN
+// 21 - RDN CMP
+//		V4, attr,  O
+//		V5, const, "Example Corp"
+// 0d - DOWN
+// 21 - RDN CMP
+//		V2, attr,  OU
+//		V3, const, "Secretaries"
+// 0d - DOWN
+// 22 - RDN BIND
+//		V0, attr,  Mail
+//		V1, var,   x

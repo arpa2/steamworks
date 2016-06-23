@@ -12,6 +12,7 @@
 
 #include "lexhash.h"
 #include "variable.h"
+#include "binding.h"
 
 
 #define YY_DECL int yylex (YYSTYPE *yylval_param, yyscan_t yyscanner)
@@ -324,6 +325,8 @@ int pulley_parser_init (struct parser *prs) {
 	while (prs->varstack_sp > 0) {
 		prs->varstack [--prs->varstack_sp] = bitset_new (vartab_share_type (prs->vartab));
 	}
+	prs->action_sp = sizeof (prs->action) -1;
+	prs->action [prs->action_sp] = BNDO_ACT_DONE;
 	hash_start (&prs->scanhashbuf);
 	prs->vartab = vartab_new ();
 	prs->gentab = gentab_new ();

@@ -112,6 +112,7 @@ void vartab_print (struct vartab *tab, char *opt_header, FILE *stream, int inden
 		case VARKIND_ATTRTYPE:   kindstr="attr "; break;
 		case VARKIND_PARAMETER:  kindstr="param"; break;
 		case VARKIND_DRIVERNAME: kindstr="drvnm"; break;
+		case VARKIND_BINDING:    kindstr="bind "; break;
 		default:                 kindstr="undef"; break;
 		}
 		fprintf (stream, "V%d kind=%s partition=P%d, cheapest_generator=G%d, name=\"%s\"\n", i, kindstr, var->partition, var->cheapest_generator, var->name);
