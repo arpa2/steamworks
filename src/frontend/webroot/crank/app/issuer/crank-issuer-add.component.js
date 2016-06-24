@@ -14,5 +14,13 @@ angular.
       for(e=0; e<l.length; e++) {
         l[e].removeAttribute("readonly");
       }
+
+      var self = this;
+      this.do_save = function() {
+        $http.post(config.basecgi, {
+          verb: 'add',
+          values: [ self.issuerdata ]});
+        window.location = '#!/issuers';
+      }
     }
   });

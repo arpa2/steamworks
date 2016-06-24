@@ -10,6 +10,7 @@ angular.
       this.issuerdata = undefined;
       
       var self = this;
+      
       $http.post(config.basecgi, {
         verb: 'search',
         base: this.issuerdn,
@@ -29,7 +30,15 @@ angular.
         function(response) {
           self.issuerdata = undefined;
           self.status = false;
-      })
+      });
 
+      this.do_save = function() {
+        var d = angular.copy(self.issuerdata);
+        delete d.objectClass;
+        $http.post(config.basecgi, {
+          verb: 'update',
+          values: [ d ]});
+        window.location = '#!/issuers';
+      }
     }
   });
