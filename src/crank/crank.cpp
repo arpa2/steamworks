@@ -46,7 +46,13 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 	else if (verb == "delete") return do_delete(values, response);
 	else if (verb == "serverinfo") return do_serverinfo(values, response);
 	else if (verb == "serverstatus") return do_serverstatus(values, response);
-	return -1;
+	else {
+		std::string s("Unknown verb '");
+		s.append(verb);
+		s.append("', ignored.");
+		Steamworks::JSON::simple_output(response, 500, s.c_str());
+		return 0;
+	}
 }
 
 int CrankDispatcher::do_connect(const Values values, Object response)
