@@ -39,6 +39,7 @@ protected:
 	int do_search(const Values values, Object response);
 	int do_update(const Values values, Object response);
 	int do_delete(const Values values, Object response);
+	int do_add(const Values values, Object response);
 
 	// Meta-information about the server
 	int do_typeinfo(const Values values, Object response);

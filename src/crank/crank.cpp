@@ -44,6 +44,7 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 	else if (verb == "typeinfo") return do_typeinfo(values, response);
 	else if (verb == "update") return do_update(values, response);
 	else if (verb == "delete") return do_delete(values, response);
+	else if (verb == "add") return do_add(values, response);
 	else if (verb == "serverinfo") return do_serverinfo(values, response);
 	else if (verb == "serverstatus") return do_serverstatus(values, response);
 	else {
@@ -210,6 +211,44 @@ int CrankDispatcher::do_delete(const Values values, Object response)
 	}
 	return 0;
 }
+
+int CrankDispatcher::do_add(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+{
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+
+	if (m_state != connected)
+	{
+		log.debugStream() << "Add on disconnected server.";
+		return 0;
+	}
+
+	picojson::value v = values.get("values");
+	if (!v.is<picojson::array>())
+	{
+		log.debugStream() << "Add json is not an array of additions.";
+		return 0;
+	}
+
+	for (unsigned int count = 0; ; count++)
+	{
+		log.debugStream() << "Add #" << count;
+
+		Steamworks::LDAP::Addition u(v.get(count));
+		if (u.is_valid())
+		{
+			u.execute(*d->connection, &response);
+			log.debugStream() << "Completed #" << count;
+		}
+		else
+		{
+			break;
+		}
+	}
+	return 0;
+
+
+}
+
 
 
 int CrankDispatcher::do_serverinfo(const Values values, Object response)

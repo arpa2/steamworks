@@ -57,7 +57,7 @@ public:
  */
 class Update : public Action
 {
-friend class Connection;
+friend class Addition;
 private:
 	class Private;
 	std::unique_ptr<Private> d;
@@ -68,6 +68,19 @@ public:
 	Update(const std::string& dn, const Attributes& attr);  // Update one attribute
 	Update(const picojson::value& json);  // Update multiple attributes
 	~Update();
+
+	virtual void execute(Connection&, Result result=nullptr);
+} ;
+
+/**
+ * (Synchronous) addition. Like an update,
+ * but adds a new entry to the DIT with an
+ * all-new DN.
+ */
+class Addition : public Update
+{
+public:
+	Addition(const picojson::value& v);
 
 	virtual void execute(Connection&, Result result=nullptr);
 } ;

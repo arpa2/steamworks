@@ -259,6 +259,48 @@ void Steamworks::LDAP::Update::execute(Connection& conn, Result result)
 	log.debugStream() << "Result " << r << " " << (r ? ldap_err2string(r) : "OK");
 }
 
+
+/**
+ * Addition as a variation on updates.
+ */
+Steamworks::LDAP::Addition::Addition(const picojson::value& v): Update(v)
+{
+}
+
+
+void Steamworks::LDAP::Addition::execute(Connection& conn, Result result)
+{
+	// TODO: actually do an update
+	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	if (!m_valid)
+	{
+		log.warnStream() << "Can't execute invalid addition.";
+		return;
+	}
+
+	log.debugStream() << "Addition execute:" << d->name() << " #changes:" << d->size();
+
+	// TODO: here we assume each JSON-change maps to  one LDAP modification
+	LDAPMods mods(d->size());
+	for (auto i = d->begin(); i != d->end(); ++i)
+	{
+		log.debugStream() << "  A=" << i->first << " V=" << i->second;
+		mods.replace(i->first, i->second);
+	}
+
+	int r = ldap_add_ext_s(
+		handle(conn),
+		d->name().c_str(),
+		mods.c_ptr(),
+		server_controls(conn),
+		client_controls(conn)
+		);
+	log.debugStream() << "Result " << r << " " << (r ? ldap_err2string(r) : "OK");
+}
+
+
+
+
 /** Internals of a Remove (delete) action.
  */
 class Steamworks::LDAP::Remove::Private
