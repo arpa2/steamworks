@@ -128,6 +128,9 @@ void _actO (struct parser *prs, uint8_t action) {
 	prs->action [here] = action;
 	// Same variable bound in follow-up?  Then make that a comparison!
 	if ((action & BNDO_ACT_MASK) == BNDO_ACT_BIND) {
+		here += 1 + sizeof (varnum_t);
+		rematch = * (varnum_t *) &prs->action [here];
+		here += 0 + sizeof (varnum_t);
 		while (here < sizeof (prs->action)) {
 			switch (prs->action [here] & BNDO_ACT_MASK) {
 			case BNDO_ACT_DOWN:
@@ -142,17 +145,13 @@ void _actO (struct parser *prs, uint8_t action) {
 				break;
 			case BNDO_ACT_BIND:
 				// Uses both $1 and $2
-				if (rematch != VARNUM_BAD) {
-					if (rematch == * (varnum_t *) &prs->action [here+1]) {
-						// BIND is overruled by the new one
-						prs->action [here] &= ~BNDO_ACT_MASK;
-						prs->action [here] |=  BNDO_ACT_CMP;
-						// There will not be any more of these
-						here = sizeof (prs->action);
-						break;
-					}
-				} else {
-					rematch = * (varnum_t *) &prs->action [here+1];
+				if (rematch == * (varnum_t *) &prs->action [here + 1 + sizeof (varnum_t)]) {
+					// BIND is overruled by the new one
+					prs->action [here] &= ~BNDO_ACT_MASK;
+					prs->action [here] |=  BNDO_ACT_CMP;
+					// There will not be any more of these
+					here = sizeof (prs->action);
+					break;
 				}
 				// ...continue into BNDO_ACT_CMP...
 			case BNDO_ACT_CMP:
