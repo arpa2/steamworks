@@ -8,6 +8,7 @@ angular.
       this.status = false;
       this.issuerdn = $routeParams.issuerdn;
       this.issuerdata = undefined;
+      this._issuerdata = undefined;
       
       var self = this;
       
@@ -18,6 +19,8 @@ angular.
       then(
         function(response) {
           self.issuerdata = response.data[self.issuerdn];
+          delete self.issuerdata.objectClass;
+          self._issuerdata = angular.copy(self.issuerdata);
           self.status = true;
           
           // While editing, DN (last one) remains readonly.
@@ -33,8 +36,14 @@ angular.
       });
 
       this.do_save = function() {
-        var d = angular.copy(self.issuerdata);
-        delete d.objectClass;
+        var d = {};
+        var k;
+        for (k in self._issuerdata) {
+          if (self.issuerdata[k] != self._issuerdata[k]) {
+            d[k] = self.issuerdata[k];
+          }
+        }
+        d.dn = self._issuerdata.dn;
         $http.post(config.basecgi, {
           verb: 'update',
           values: [ d ]});
