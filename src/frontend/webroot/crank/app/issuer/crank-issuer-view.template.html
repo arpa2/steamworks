@@ -9,16 +9,20 @@
     </input>
   </div>
   <div class="form-group">
-    <label class="control-label col-sm-2" for="crtype">Type:</label>
-    <div class="col-sm-10">
-      <input type="text" class="form-control" readonly id="crtype" placeholder="Credential Type" ng-model="$ctrl.issuerdata.tlsPoolCredentialType" />
+    <label class="control-label col-sm-2">Type:</label>
+    <div class="col-sm-10 form-inline">
+      <input type="radio" class="form-control" readonly ng-model="$ctrl.issuerdata.tlsPoolCredentialType" value="x509"/> x509
+      <input type="radio" class="form-control" readonly ng-model="$ctrl.issuerdata.tlsPoolCredentialType" value="ssh"/> SSH
+      <input type="radio" class="form-control" readonly ng-model="$ctrl.issuerdata.tlsPoolCredentialType" value="gpg"/> PGP / GPG
     </div>
     </input>
   </div>
   <div class="form-group">
-    <label class="control-label col-sm-2" for="suprole">Role:</label>
-    <div class="col-sm-10">
-      <input type="text" class="form-control" readonly id="suprole" placeholder="Supported Role" ng-model="$ctrl.issuerdata.tlsPoolSupportedRole" />
+    <label class="control-label col-sm-2">Role:</label>
+    <div class="col-sm-10 form-inline">
+      <input type="radio" class="form-control" readonly ng-model="$ctrl.issuerdata.tlsPoolSupportedRole" value="server"/> Server
+      <input type="radio" class="form-control" readonly ng-model="$ctrl.issuerdata.tlsPoolSupportedRole" value="client"/> Client
+      <input type="radio" class="form-control" readonly ng-model="$ctrl.issuerdata.tlsPoolSupportedRole" value="peer"/> Peer (both)
     </div>
     </input>
   </div>
@@ -43,8 +47,16 @@
     </div>
     </input>
   </div>
+  <div class="form-group">
+    <div class="col-sm-2">&nbsp;</div>
+    <div class="col-sm-10">
+      <a href="#!/issuers" role="button" class="btn btn-info"><span class="glyphicon glyphicon-ban-circle"></span> Cancel</a>
+      <button class="btn btn-primary" ng-click="$ctrl.do_save()"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+    </div>
+  </div>
 </form>
 
 <p ng-hide="$ctrl.status">
   No Trusted Issuer selected.
 </p>
+
