@@ -1,13 +1,50 @@
 <h3 class="bg-info">Trusted Issuer</h3>
 
-<form ng-show="$ctrl.status">
-  Name: {{($ctrl.issuerdata.cn) ? $ctrl.issuerdata.cn : $ctrl.issuerdn}}<br/>
-  Type: {{$ctrl.issuerdata.tlsPoolCredentialType}}<br/>
-  Role: {{$ctrl.issuerdata.tlsPoolSupportedRole}}<br/>
-  Validation: {{$ctrl.issuerdata.tlsPoolValidationExpression}}<br/>
-  Anchor: {{$ctrl.issuerdata.tlsPoolTrustAnchor}}<br/>
-  DN: {{$ctrl.issuerdn}}<br/>
+<form ng-show="$ctrl.status" class="form-horizontal" id="issuerview">
+  <div class="form-group">
+    <label class="control-label col-sm-2" for="issuercn">Name:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" readonly id="email" placeholder="Common Name" ng-model="$ctrl.issuerdata.cn" />
+    </div>
+    </input>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2" for="crtype">Type:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" readonly id="crtype" placeholder="Credential Type" ng-model="$ctrl.issuerdata.tlsPoolCredentialType" />
+    </div>
+    </input>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2" for="suprole">Role:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" readonly id="suprole" placeholder="Supported Role" ng-model="$ctrl.issuerdata.tlsPoolSupportedRole" />
+    </div>
+    </input>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2" for="validation">Validation:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" readonly id="validation" placeholder="Validation Expression" ng-model="$ctrl.issuerdata.tlsPoolValidationExpression" />
+    </div>
+    </input>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2" for="anchor">Anchor:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" readonly id="anchor" placeholder="Trust Anchor" ng-model="$ctrl.issuerdata.tlsPoolTrustAnchor" />
+    </div>
+    </input>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2" for="issuerdn">DN:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" readonly id="issuerdn" placeholder="DN" ng-model="$ctrl.issuerdn" />
+    </div>
+    </input>
+  </div>
 </form>
+
 <p ng-hide="$ctrl.status">
   No Trusted Issuer selected.
 </p>
