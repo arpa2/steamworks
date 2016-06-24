@@ -7,5 +7,12 @@ angular.
     controller: function CrankIssuerAddController($http, $routeParams, config) {
       this.status = true;
       this.issuerdn = undefined;
+      
+      // While adding, DN is writable, too.
+      var l = document.getElementById('issuerview').getElementsByTagName("input");
+      var e;
+      for(e=0; e<l.length; e++) {
+        l[e].removeAttribute("readonly");
+      }
     }
   });

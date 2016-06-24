@@ -18,6 +18,13 @@ angular.
         function(response) {
           self.issuerdata = response.data[self.issuerdn];
           self.status = true;
+          
+          // While editing, DN (last one) remains readonly.
+          var l = document.getElementById('issuerview').getElementsByTagName("input");
+          var e;
+          for(e=0; e<l.length-1; e++) {
+            l[e].removeAttribute("readonly");
+          }
         },
         function(response) {
           self.issuerdata = undefined;
