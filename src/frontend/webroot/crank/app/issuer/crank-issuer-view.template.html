@@ -1,3 +1,13 @@
 <h3 class="bg-info">Trusted Issuer</h3>
 
-{{$ctrl.issuerdn}}
+<form ng-show="$ctrl.status">
+  Name: {{($ctrl.issuerdata.cn) ? $ctrl.issuerdata.cn : $ctrl.issuerdn}}<br/>
+  Type: {{$ctrl.issuerdata.tlsPoolCredentialType}}<br/>
+  Role: {{$ctrl.issuerdata.tlsPoolSupportedRole}}<br/>
+  Validation: {{$ctrl.issuerdata.tlsPoolValidationExpression}}<br/>
+  Anchor: {{$ctrl.issuerdata.tlsPoolTrustAnchor}}<br/>
+  DN: {{$ctrl.issuerdn}}<br/>
+</form>
+<p ng-hide="$ctrl.status">
+  No Trusted Issuer selected.
+</p>
