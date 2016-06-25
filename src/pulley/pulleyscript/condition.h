@@ -7,6 +7,10 @@
 #include "types.h"
 #include "lexhash.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 typedef struct condition {
 	float weight;
@@ -52,7 +56,7 @@ void cnd_pushop  (struct cndtab *tab, cndnum_t cndnum, int token);
 
 /* Parser support for external reproduction of conditions */
 void cnd_share_expression (struct cndtab *tab, cndnum_t cndnum, int **exp, size_t *explen);
-void cnd_parse_operation (int *exp, size_t explen, int *operator, int *operands, int **subexp, size_t *subexplen);
+void cnd_parse_operation (int *exp, size_t explen, int *operator_, int *operands, int **subexp, size_t *subexplen);
 void cnd_parse_operand (int **exp, size_t *explen, int **subexp, size_t *subexplen);
 varnum_t cnd_parse_variable (int **exp, size_t *explen);
 
@@ -89,5 +93,8 @@ bool cnd_estimate_total_cost (struct cndtab *tab, cndnum_t cndnum,
 				unsigned int *soln_generator_count,
 				gennum_t soln_generators []);
 
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif /* CONDITION_H */

@@ -17,6 +17,11 @@
 #include <stdio.h>
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* The hash outcome has its own type */
 typedef uint32_t hash_t;
 
@@ -38,5 +43,8 @@ void hash_text (hashbuf_t *buf, char *text);
 void hash_token_text (hashbuf_t *buf, int token, char *text);
 void hash_token_blob (hashbuf_t *buf, int token, void *data, int len);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LEXHASH_H */

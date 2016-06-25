@@ -17,6 +17,11 @@
 #include "types.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 typedef struct bitset {
 	anynum_t maxbit;
 	uint32_t *bits;
@@ -113,5 +118,8 @@ anynum_t bitset_iterator_bitnum (bitset_iter_t *bitit);
 bool bitset_iterator_test (bitset_iter_t *bitit, bitset_t *bits);
 void *bitset_iterator_element (bitset_iter_t *bitit, bitset_t *bits);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* BITSET_H */

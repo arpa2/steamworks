@@ -1,6 +1,10 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
 	void *data;
 	void * (*index) (void *data, unsigned int idx);
@@ -28,5 +32,9 @@ struct gentab *gentab_from_type (type_t *gentype);
 struct vartab *vartab_from_type (type_t *vartype);
 struct cndtab *cndtab_from_type (type_t *cndtype);
 struct drvtab *drvtab_from_type (type_t *drvtype);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif /* TYPES_H */

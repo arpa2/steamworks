@@ -1,6 +1,9 @@
-
 #include "lexhash.h"
 #include "bitset.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 enum parser_type {
 	PARSER_SCRIPT,
@@ -90,3 +93,7 @@ int pulley_parser_file (struct parser *prs, FILE *f);
  * the contents are printable, readable or NUL-terminated strings.
  */
 void pulley_parser_hash (struct parser *prs);
+
+#ifdef __cplusplus
+}
+#endif

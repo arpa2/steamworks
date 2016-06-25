@@ -28,6 +28,9 @@
 #include "types.h"
 #include "bitset.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Structures for variable values, including the type of the element.
  * Note that constants are also entered into the variable table, since
@@ -261,5 +264,8 @@ bitset_t *vartab_unbound_variables (struct vartab *tab);
  */
 bitset_t *vartab_multibound_variables (struct vartab *tab);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* VARIABLE_H */

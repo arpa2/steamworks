@@ -9,6 +9,10 @@
 #include "types.h"
 #include "lexhash.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct drvtab;
 
 struct drvtab *drvtab_new (void);
@@ -102,3 +106,7 @@ driver_callback *drv_register_callback (struct drvtab *tab, drvnum_t drv, driver
 driver_callback *drv_unregister_callback (struct drvtab *tab, drvnum_t drv);
 
 int drv_callback (struct drvtab *tab, drvnum_t drv);
+
+#ifdef __cplusplus
+}
+#endif
