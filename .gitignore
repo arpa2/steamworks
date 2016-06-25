@@ -8,3 +8,4 @@ docs/man
 .kdev4
 src/src.kdev4
 *.o
+**/examples/*.log
