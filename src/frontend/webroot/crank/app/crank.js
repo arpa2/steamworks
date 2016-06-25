@@ -2,7 +2,7 @@
 
 var app = angular.module('crankApp', ['ngRoute']);
 
-app.constant('config', {basecgi: '/cgi-bin/'});
+app.constant('config', {basecgi: '/cgi-bin/', basedn: 'dc=example,dc=com'});
 
 app.config(['$locationProvider', '$routeProvider',
     function config($locationProvider, $routeProvider) {

@@ -7,7 +7,9 @@ angular.
     controller: function CrankIssuerAddController($http, $routeParams, config) {
       this.status = true;
       this.issuerdn = undefined;
-      
+      this.issuerdata = {};
+      this.basedn = config.basedn;
+
       // While adding, DN is writable, too.
       var l = document.getElementById('issuerview').getElementsByTagName("input");
       var e;
@@ -15,12 +17,15 @@ angular.
         l[e].removeAttribute("readonly");
       }
 
-      var self = this;
-      this.do_save = function() {
-        $http.post(config.basecgi, {
-          verb: 'add',
-          values: [ self.issuerdata ]});
-        window.location = '#!/issuers';
+      this.do_save = function(self) {
+        if (self.issuerdn && self.issuerdata) {
+          self.issuerdata.dn = self.issuerdn;
+	  self.issuerdata.objectClass = 'tlsPoolTrustedIssuer';
+          $http.post(config.basecgi, {
+            verb: 'add',
+            values: [ self.issuerdata ]});
+          window.location = '#!/issuers';
+        }
       }
     }
   });

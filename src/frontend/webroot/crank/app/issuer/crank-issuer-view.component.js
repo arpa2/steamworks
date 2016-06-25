@@ -9,9 +9,9 @@ angular.
       this.issuerdn = $routeParams.issuerdn;
       this.issuerdata = undefined;
       this._issuerdata = undefined;
-      
+
       var self = this;
-      
+
       $http.post(config.basecgi, {
         verb: 'search',
         base: this.issuerdn,
@@ -22,7 +22,7 @@ angular.
           delete self.issuerdata.objectClass;
           self._issuerdata = angular.copy(self.issuerdata);
           self.status = true;
-          
+
           // While editing, DN (last one) remains readonly.
           var l = document.getElementById('issuerview').getElementsByTagName("input");
           var e;
@@ -35,7 +35,7 @@ angular.
           self.status = false;
       });
 
-      this.do_save = function() {
+      this.do_save = function(self) {
         var d = {};
         var k;
         for (k in self._issuerdata) {
