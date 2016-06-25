@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 2.8.11)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../../../cmake)
 
 find_package(SQLite3 REQUIRED)
-find_package(BISON REQUIRED)
+find_package(BISON 3 REQUIRED)
 find_package(FLEX REQUIRED)
 
 # The Bison / Flex bits are a bit particular;
