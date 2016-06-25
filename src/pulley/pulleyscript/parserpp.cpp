@@ -43,6 +43,31 @@ public:
 
 	bool is_valid() const { return m_valid; }
 
+	std::string state_string() const
+	{
+		const char *s = nullptr;
+
+		switch (m_state)
+		{
+		case State::Initial:
+			s = "Initial";
+			break;
+		case State::Parsing:
+			s = "Parsing";
+			break;
+		case State::Analyzed:
+			s = "Analyzed";
+			break;
+		}
+
+		if (!s)
+		{
+			s = "Unknown";
+		}
+
+		return std::string(s);
+	}
+
 	bool can_parse() const
 	{
 		if ((m_state == Parser::State::Initial) || (m_state == Parser::State::Parsing))
@@ -52,7 +77,35 @@ public:
 		else
 		{
 			auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
-			log.errorStream() << "Parser has been analyzed; can't parse Script anymore.";
+			log.errorStream() << "Parser cannot parse Script from state " << state_string();
+			return false;
+		}
+	}
+
+	bool can_analyze() const
+	{
+		if (m_state == Parser::State::Parsing)
+		{
+			return true;
+		}
+		else
+		{
+			auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+			log.errorStream() << "Parser cannot do analysis from state " << state_string();
+			return false;
+		}
+	}
+
+	bool can_generate_sql() const
+	{
+		if (m_state == Parser::State::Analyzed)
+		{
+			return true;
+		}
+		else
+		{
+			auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+			log.errorStream() << "Parser cannot generate SQL from state " << state_string();
 			return false;
 		}
 	}
@@ -78,6 +131,11 @@ public:
 
 	int structural_analysis()
 	{
+		if (!can_analyze())
+		{
+			return 1;
+		}
+
 		int prsret = 0;
 
 		// Use conditions to drive variable partitions;
@@ -126,29 +184,8 @@ SteamWorks::PulleyScript::Parser::State SteamWorks::PulleyScript::Parser::state(
 
 std::string SteamWorks::PulleyScript::Parser::state_string() const
 {
-	const char *s = nullptr;
-
-	switch (state())
-	{
-	case State::Initial:
-		s = "Initial";
-		break;
-	case State::Parsing:
-		s = "Parsing";
-		break;
-	case State::Analyzed:
-		s = "Analyzed";
-		break;
-	}
-
-	if (!s)
-	{
-		s = "Unknown";
-	}
-
-	return std::string(s);
+	return d->state_string();
 }
-
 
 int SteamWorks::PulleyScript::Parser::read_file(const char* filename)
 {
