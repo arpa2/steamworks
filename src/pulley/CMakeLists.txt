@@ -13,6 +13,7 @@ find_package(FCGI REQUIRED)
 find_package(OpenLDAP REQUIRED)
 
 find_package(FLEX REQUIRED)  # Required by pulleyscript
+find_package(SQLite3 REQUIRED)
 
 include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../common ../3rdparty)
 
@@ -26,5 +27,6 @@ set(PULLEY_SRC
 
 add_executable(pulley ${PULLEY_SRC})
 target_link_libraries(pulley ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES})
-target_link_libraries(pulley swldap swcommon pslib ${FLEX_LIBRARIES})
+target_link_libraries(pulley swldap swcommon pslib)
+target_link_libraries(pulley ${FLEX_LIBRARIES} ${SQLITE3_LIBRARIES})
 
