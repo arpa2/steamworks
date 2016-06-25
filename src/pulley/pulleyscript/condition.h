@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 
+#include "bitset.h"
 #include "types.h"
 #include "lexhash.h"
 
