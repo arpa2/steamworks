@@ -1,0 +1,12 @@
+# Example for generating from the trusted issuers (TI)
+# in a TLSPool configuration stored in LDAP. See
+# the crank/examples/schema directory for LDAP schema
+# and crank/examples/ldif-tlspool for example data.
+# The Crank front-end can be used to manipulate these
+# TIs from a web interface.
+
+# Keep the capitals/non-captital distinction in mind!
+# This matches the (case-insensitive) LDAP objectClass
+# attribute, while using (lower case) objectClass in
+# the PulleyScript expression is a syntax error.
+ObjectClass=tlsPoolTrustedIssuer <- world
