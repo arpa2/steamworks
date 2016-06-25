@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Declare the opaque structure that is used in the squeal engine.
  */
@@ -38,6 +41,7 @@ typedef void (*squeal_driverfun_t) (void *cbdata, int add_not_del,
  * TODO: Privileges of the database itself?
  */
 struct squeal *squeal_open (hash_t lexhash, gennum_t numgens, drvnum_t numdrvs);
+struct squeal *squeal_open_in_dbdir (hash_t lexhash, gennum_t numgens, drvnum_t numdrvs, const char *dbdir);
 
 /* Close a SQLite3 engine using the handle that was returned by squeal_open().
  */
@@ -47,6 +51,7 @@ void squeal_close (struct squeal *s3db);
  * file, there is a chance that the file has a hard link and is kept around for that.
  */
 void squeal_unlink (hash_t lexhash);
+void squeal_unlink_in_dbdir (hash_t lexhash, const char *dbdir);
 
 /* Create type descriptions in the present database.  Indicate whether pre-existing
  * tables may be reused.  If not, they will be dropped if they already exist.
@@ -54,3 +59,6 @@ void squeal_unlink (hash_t lexhash);
  */
 int squeal_have_tables (struct squeal *s3db, struct gentab *gentab, bool may_reuse);
 
+#ifdef __cplusplus
+}
+#endif

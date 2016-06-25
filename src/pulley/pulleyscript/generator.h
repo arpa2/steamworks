@@ -25,6 +25,9 @@
 #include "bitset.h"
 #include "lexhash.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct gentab;
 
@@ -106,5 +109,9 @@ bitset_t *gen_share_driverout (struct gentab *tab, gennum_t gennum);
 
 void gen_add_path_of_least_resistence (struct gentab *tab, gennum_t gennum, path_t *path);
 path_t *gen_share_path_of_least_resistence (struct gentab *tab, gennum_t gennum);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GENERATOR_H */
