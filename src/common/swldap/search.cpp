@@ -103,8 +103,6 @@ public:
 	void update(const std::string& name, const std::string& value)
 	{
 		m_map.emplace<>(name, value);
-		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
-		log.debugStream() << "Update dn=" << m_dn << " attr " << name << "=" << value;
 	}
 	void remove(const std::string& name)
 	{
