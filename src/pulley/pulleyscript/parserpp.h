@@ -28,8 +28,13 @@ private:
 	std::unique_ptr<Private> d;
 
 public:
+	enum class State { Initial, Parsing, Analyzed };
+
 	Parser();
 	~Parser();
+
+	State state() const;
+	std::string state_string() const;
 
 	/**
 	 * Reads (parses & analyzes) a given @p filename.
@@ -41,6 +46,14 @@ public:
 	 * As above, from an opened file.
 	 */
 	int read_file(FILE *input);
+
+	/**
+	 * Perform structural analysis on the parsed structures
+	 * (you must have parsed at least one thing already)
+	 * and prepare for using the script.
+	 * Returns 0 on success.
+	 */
+	int structural_analysis();
 } ;
 
 }  // namespace PulleyScript
