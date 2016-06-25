@@ -22,7 +22,7 @@ static int request_count = 0;
 
 namespace fcgi
 {
-static Steamworks::Logging::Logger *logger = 0;
+static SteamWorks::Logging::Logger *logger = 0;
 
 /**
  * Reads the remainer of an input stream (this seems to be needed if wrapping
@@ -128,7 +128,7 @@ void simple_output(FCGX_Stream* out, int status, const char* message=nullptr, co
 	}
 
 	picojson::value::object map;
-	Steamworks::JSON::simple_output(map, status, message, err);
+	SteamWorks::JSON::simple_output(map, status, message, err);
 	simple_output(out, status, picojson::value(map));
 }
 
@@ -220,15 +220,15 @@ int handle_request(FCGX_Stream* in, FCGX_Stream* out, FCGX_Stream* err, FCGX_Par
 
 }  // namespace
 
-int Steamworks::FCGI::init_logging(const std::string& logname)
+int SteamWorks::FCGI::init_logging(const std::string& logname)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger(logname);
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger(logname);
 	fcgi::logger = &log;
 	return 0;
 }
 
 // TODO: integrate with other main loops
-int Steamworks::FCGI::mainloop(VerbDispatcher *dispatcher)
+int SteamWorks::FCGI::mainloop(VerbDispatcher *dispatcher)
 {
 	FCGX_Stream *in, *out, *err;
 	FCGX_ParamArray envp;

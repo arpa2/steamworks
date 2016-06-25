@@ -15,7 +15,7 @@ Adriaan de Groot <groot@kde.org>
  * and a filter expression. When executed, it returns an array
  * of objects found.
  */
-class Steamworks::LDAP::Search::Private
+class SteamWorks::LDAP::Search::Private
 {
 private:
 	std::string m_base, m_filter;
@@ -34,21 +34,21 @@ public:
 	LDAPScope scope() const { return m_scope; }
 } ;
 
-Steamworks::LDAP::Search::Search(const std::string& base, const std::string& filter, LDAPScope scope) :
+SteamWorks::LDAP::Search::Search(const std::string& base, const std::string& filter, LDAPScope scope) :
 	Action(true),
 	d(new Private(base, filter, scope))
 {
 }
 
-Steamworks::LDAP::Search::~Search()
+SteamWorks::LDAP::Search::~Search()
 {
 }
 
-void Steamworks::LDAP::Search::execute(Connection& conn, Result results)
+void SteamWorks::LDAP::Search::execute(Connection& conn, Result results)
 {
 	::LDAP* ldaphandle = handle(conn);
 
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 
 	// TODO: settings for timeouts?
 	struct timeval tv;
@@ -85,18 +85,18 @@ void Steamworks::LDAP::Search::execute(Connection& conn, Result results)
 /**
  * Internals of an update.
  */
-class Steamworks::LDAP::Update::Private
+class SteamWorks::LDAP::Update::Private
 {
 private:
 	std::string m_dn;
-	Steamworks::LDAP::Update::Attributes m_map;
+	SteamWorks::LDAP::Update::Attributes m_map;
 
 public:
 	Private(const std::string& dn) :
 		m_dn(dn)
 	{
 	};
-	void update(const Steamworks::LDAP::Update::Attributes& attrs)
+	void update(const SteamWorks::LDAP::Update::Attributes& attrs)
 	{
 		m_map.insert(attrs.cbegin(), attrs.cend());
 	}
@@ -119,12 +119,12 @@ public:
 		return m_dn;
 	}
 
-	Steamworks::LDAP::Update::Attributes::const_iterator begin() const
+	SteamWorks::LDAP::Update::Attributes::const_iterator begin() const
 	{
 		return m_map.begin();
 	}
 
-	Steamworks::LDAP::Update::Attributes::const_iterator end() const
+	SteamWorks::LDAP::Update::Attributes::const_iterator end() const
 	{
 		return m_map.end();
 	}
@@ -178,21 +178,21 @@ public:
 	}
 } ;
 
-Steamworks::LDAP::Update::Update(const std::string& dn) :
+SteamWorks::LDAP::Update::Update(const std::string& dn) :
 	Action(false),
 	d(new Private(dn))
 {
 
 }
 
-Steamworks::LDAP::Update::Update(const std::string& dn, const Steamworks::LDAP::Update::Attributes& attr) :
+SteamWorks::LDAP::Update::Update(const std::string& dn, const SteamWorks::LDAP::Update::Attributes& attr) :
 	Action(attr.size() > 0),
 	d(new Private(dn))
 {
 	d->update(attr);
 }
 
-Steamworks::LDAP::Update::Update(const picojson::value& json) :
+SteamWorks::LDAP::Update::Update(const picojson::value& json) :
 	Action(false),  // For now
 	d(nullptr)
 {
@@ -225,14 +225,14 @@ Steamworks::LDAP::Update::Update(const picojson::value& json) :
 	}
 }
 
-Steamworks::LDAP::Update::~Update()
+SteamWorks::LDAP::Update::~Update()
 {
 }
 
-void Steamworks::LDAP::Update::execute(Connection& conn, Result result)
+void SteamWorks::LDAP::Update::execute(Connection& conn, Result result)
 {
 	// TODO: actually do an update
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 	if (!m_valid)
 	{
 		log.warnStream() << "Can't execute invalid update.";
@@ -263,15 +263,15 @@ void Steamworks::LDAP::Update::execute(Connection& conn, Result result)
 /**
  * Addition as a variation on updates.
  */
-Steamworks::LDAP::Addition::Addition(const picojson::value& v): Update(v)
+SteamWorks::LDAP::Addition::Addition(const picojson::value& v): Update(v)
 {
 }
 
 
-void Steamworks::LDAP::Addition::execute(Connection& conn, Result result)
+void SteamWorks::LDAP::Addition::execute(Connection& conn, Result result)
 {
 	// TODO: actually do an update
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 	if (!m_valid)
 	{
 		log.warnStream() << "Can't execute invalid addition.";
@@ -303,7 +303,7 @@ void Steamworks::LDAP::Addition::execute(Connection& conn, Result result)
 
 /** Internals of a Remove (delete) action.
  */
-class Steamworks::LDAP::Remove::Private
+class SteamWorks::LDAP::Remove::Private
 {
 private:
 	std::string m_dn;
@@ -320,19 +320,19 @@ public:
 	}
 } ;
 
-Steamworks::LDAP::Remove::Remove(const std::string& dn) :
+SteamWorks::LDAP::Remove::Remove(const std::string& dn) :
 	Action(!dn.empty()),
 	d(new Private(dn))
 {
 }
 
-Steamworks::LDAP::Remove::~Remove()
+SteamWorks::LDAP::Remove::~Remove()
 {
 }
 
-void Steamworks::LDAP::Remove::execute(Connection& conn, Result result)
+void SteamWorks::LDAP::Remove::execute(Connection& conn, Result result)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 	if (!is_valid())
 	{
 		log.warnStream() << "Can't execute invalid removal.";

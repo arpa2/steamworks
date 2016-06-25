@@ -26,7 +26,7 @@ Adriaan de Groot <groot@kde.org>
 #include "../logger.h"
 #include "../jsonresponse.h"
 
-namespace Steamworks
+namespace SteamWorks
 {
 
 namespace LDAP
@@ -70,7 +70,7 @@ public:
 	std::string get_uri() const;
 } ;
 
-using ConnectionUPtr = std::unique_ptr<Steamworks::LDAP::Connection>;
+using ConnectionUPtr = std::unique_ptr<SteamWorks::LDAP::Connection>;
 
 /**
  * Try to connect to an LDAP server at the given URI.

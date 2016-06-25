@@ -36,7 +36,7 @@ static void dump_uuid(std::string& s, struct berval* uuid)
 /**
  * Log a BER UUID to the given logging stream.
  */
-static void dump_uuid(Steamworks::Logging::LoggerStream& log, struct berval* uuid)
+static void dump_uuid(SteamWorks::Logging::LoggerStream& log, struct berval* uuid)
 {
 	std::string s(uuid->bv_len * 2, '0');
 	dump_uuid(s, uuid);
@@ -49,7 +49,7 @@ static void dump_uuid(Steamworks::Logging::LoggerStream& log, struct berval* uui
  * on one line.  For array or object attributes, they display as [] lists
  * or {} objects, like serialized JSON.
  */
-static void dump_object(Steamworks::Logging::Logger& log, const picojson::object& d)
+static void dump_object(SteamWorks::Logging::Logger& log, const picojson::object& d)
 {
 	for (auto& kv: d)
 	{
@@ -96,7 +96,7 @@ public:
 	 */
 	void search_entry_f(::LDAP* ldap, ::LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
 	{
-		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap.sync");
 
 		std::string key(entryUUID->bv_len * 2, '0');
 		dump_uuid(key, entryUUID);
@@ -128,7 +128,7 @@ public:
 			{
 				log.debugStream() << "Known entry " << key;
 				picojson::object new_v;
-				Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
+				SteamWorks::LDAP::copy_entry(ldap, msg, &new_v);
 				update_dn(ldap, msg, new_v);
 				// dump_object(log, new_v);
 				reconcile(m_dit.at(key), new_v);
@@ -139,7 +139,7 @@ public:
 				log.debugStream() << "New entry   " << key;
 				m_dit.insert(std::make_pair(key, picojson::object()));
 				auto& new_v = m_dit.at(key);  // Reference in the map
-				Steamworks::LDAP::copy_entry(ldap, msg, &new_v);
+				SteamWorks::LDAP::copy_entry(ldap, msg, &new_v);
 				update_dn(ldap, msg, new_v);
 				// dump_object(log, new_v);
 				break;
@@ -153,9 +153,9 @@ public:
 	 * Copy the DIT-tree into a Result (which is actually
 	 * just another JSON object, so this makes a copy).
 	 */
-	void dump(Steamworks::LDAP::Result result) const
+	void dump(SteamWorks::LDAP::Result result) const
 	{
-		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap.sync");
 		for (auto& d: m_dit)
 		{
 			log.debugStream() << "Dumping " << d.first;
@@ -170,7 +170,7 @@ public:
 	 */
 	void reconcile(picojson::object& at, const picojson::object& new_v)
 	{
-		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap.sync");
 		for (auto& d: new_v)
 		{
 			if (at.count(d.first))
@@ -192,7 +192,7 @@ public:
 /**
  * Internals of a sync.
  */
-class Steamworks::LDAP::SyncRepl::Private
+class SteamWorks::LDAP::SyncRepl::Private
 {
 private:
 	std::string m_base, m_filter;
@@ -220,7 +220,7 @@ public:
 static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entryUUID, ldap_sync_refresh_t phase)
 {
 #ifndef NDEBUG
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap.sync");
 
 	{
 		auto stream = log.debugStream();
@@ -235,7 +235,7 @@ static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entr
 static int search_reference_f(ldap_sync_t* ls, LDAPMessage* msg)
 {
 #ifndef NDEBUG
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap.sync");
 
 	log.debugStream() << "Reference: " << ldap_get_dn(ls->ls_ld, msg);
 #endif
@@ -245,7 +245,7 @@ static int search_reference_f(ldap_sync_t* ls, LDAPMessage* msg)
 static int search_intermediate_f(ldap_sync_t* ls, LDAPMessage* msg, BerVarray syncUUIDs, ldap_sync_refresh_t phase)
 {
 #ifndef NDEBUG
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap.sync");
 
 	log.debugStream() << "Intermediate: " << ldap_get_dn(ls->ls_ld, msg);
 
@@ -262,7 +262,7 @@ static int search_intermediate_f(ldap_sync_t* ls, LDAPMessage* msg, BerVarray sy
 static int search_result_f(ldap_sync_t* ls, LDAPMessage* msg, int refreshDeletes)
 {
 #ifndef NDEBUG
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap.sync");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap.sync");
 
 	log.debugStream() << "Result: " << ldap_get_dn(ls->ls_ld, msg);
 #endif
@@ -273,7 +273,7 @@ static int search_result_f(ldap_sync_t* ls, LDAPMessage* msg, int refreshDeletes
 /**
  * SyncRepl implementation uses C-style functions above.
  */
-Steamworks::LDAP::SyncRepl::Private::Private(const std::string& base, const std::string& filter):
+SteamWorks::LDAP::SyncRepl::Private::Private(const std::string& base, const std::string& filter):
 	m_base(base),
 	m_filter(filter),
 	m_started(false)
@@ -294,11 +294,11 @@ Steamworks::LDAP::SyncRepl::Private::Private(const std::string& base, const std:
 	m_syncrepl.ls_ld = nullptr;  // Done in execute()
 }
 
-Steamworks::LDAP::SyncRepl::Private::~Private()
+SteamWorks::LDAP::SyncRepl::Private::~Private()
 {
 	if (m_started && m_syncrepl.ls_ld)
 	{
-		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 		log.debugStream() << "Destroying SyncRepl " << base();
 		m_syncrepl.ls_base = nullptr;
 		m_syncrepl.ls_filter = nullptr;
@@ -308,11 +308,11 @@ Steamworks::LDAP::SyncRepl::Private::~Private()
 	m_started = false;
 }
 
-int Steamworks::LDAP::SyncRepl::Private::poll(::LDAP* ldaphandle)
+int SteamWorks::LDAP::SyncRepl::Private::poll(::LDAP* ldaphandle)
 {
 	if (!m_started)
 	{
-		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 		log.errorStream() << "Can't poll not-yet-started SyncRepl " << base();
 		return -1;
 	}
@@ -321,15 +321,15 @@ int Steamworks::LDAP::SyncRepl::Private::poll(::LDAP* ldaphandle)
 	int r = ldap_sync_poll(&m_syncrepl);
 	if (r)
 	{
-		Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 		log.errorStream() << "Sync poll result " << r << " " << ldap_err2string(r);
 	}
 	return r;
 }
 
-int Steamworks::LDAP::SyncRepl::Private::sync(::LDAP* ldaphandle)
+int SteamWorks::LDAP::SyncRepl::Private::sync(::LDAP* ldaphandle)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 
 	if (m_started)
 	{
@@ -364,18 +364,18 @@ int Steamworks::LDAP::SyncRepl::Private::sync(::LDAP* ldaphandle)
 
 
 
-Steamworks::LDAP::SyncRepl::SyncRepl(const std::string& base, const std::string& filter) :
+SteamWorks::LDAP::SyncRepl::SyncRepl(const std::string& base, const std::string& filter) :
 	Action(true),
 	d(new Private(base, filter))
 {
 }
 
-Steamworks::LDAP::SyncRepl::~SyncRepl()
+SteamWorks::LDAP::SyncRepl::~SyncRepl()
 {
 }
 
 // Side-effect: log the controls
-static unsigned int _count_controls(Steamworks::Logging::Logger& log, ::LDAPControl** ctls, const char *message)
+static unsigned int _count_controls(SteamWorks::Logging::Logger& log, ::LDAPControl** ctls, const char *message)
 {
 	log.debugStream() << message << " controls are set:";
 
@@ -391,7 +391,7 @@ static unsigned int _count_controls(Steamworks::Logging::Logger& log, ::LDAPCont
 }
 
 
-void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
+void SteamWorks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 {
 	::LDAP* ldaphandle = handle(conn);
 	if (d->sync(ldaphandle) == 0)
@@ -400,9 +400,9 @@ void Steamworks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 	}
 }
 
-void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
+void SteamWorks::LDAP::SyncRepl::poll(Connection& conn)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 
 	if (!is_valid())
 	{
@@ -425,14 +425,14 @@ void Steamworks::LDAP::SyncRepl::poll(Connection& conn)
 	}
 }
 
-void Steamworks::LDAP::SyncRepl::dump_dit(Result result)
+void SteamWorks::LDAP::SyncRepl::dump_dit(Result result)
 {
 	d->dit().dump(result);
 }
 
-void Steamworks::LDAP::SyncRepl::resync()
+void SteamWorks::LDAP::SyncRepl::resync()
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 
 	if (!is_valid())
 	{

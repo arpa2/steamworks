@@ -11,11 +11,11 @@ Adriaan de Groot <groot@kde.org>
 
 #include <unordered_set>
 
-Steamworks::LDAP::APIInfo::APIInfo()
+SteamWorks::LDAP::APIInfo::APIInfo()
 {
 }
 
-void Steamworks::LDAP::APIInfo::execute(::LDAP* ldaphandle)
+void SteamWorks::LDAP::APIInfo::execute(::LDAP* ldaphandle)
 {
 	m_info.ldapai_info_version = LDAP_API_INFO_VERSION;
 	int r = ldap_get_option(ldaphandle, LDAP_OPT_API_INFO, &m_info);
@@ -23,13 +23,13 @@ void Steamworks::LDAP::APIInfo::execute(::LDAP* ldaphandle)
 	m_valid = true;
 }
 
-void Steamworks::LDAP::APIInfo::execute(Steamworks::LDAP::Connection& conn, Result _)
+void SteamWorks::LDAP::APIInfo::execute(SteamWorks::LDAP::Connection& conn, Result _)
 {
 	execute(handle(conn));
 }
 
 
-Steamworks::LDAP::APIInfo::~APIInfo()
+SteamWorks::LDAP::APIInfo::~APIInfo()
 {
 	if (!m_valid) return;
 
@@ -45,7 +45,7 @@ Steamworks::LDAP::APIInfo::~APIInfo()
 }
 
 
-void Steamworks::LDAP::APIInfo::log(Steamworks::Logging::Logger& log, Steamworks::Logging::LogLevel level) const
+void SteamWorks::LDAP::APIInfo::log(SteamWorks::Logging::Logger& log, SteamWorks::Logging::LogLevel level) const
 {
 	if (!m_valid)
 	{
@@ -63,7 +63,7 @@ void Steamworks::LDAP::APIInfo::log(Steamworks::Logging::Logger& log, Steamworks
 	}
 }
 
-class Steamworks::LDAP::ServerControlInfo::Private
+class SteamWorks::LDAP::ServerControlInfo::Private
 {
 private:
 	using OIDSet = std::unordered_set<std::string>;
@@ -78,9 +78,9 @@ public:
 	void extract_controls(Result_t& r);
 } ;
 
-void Steamworks::LDAP::ServerControlInfo::Private::extract_controls(Result_t& result)
+void SteamWorks::LDAP::ServerControlInfo::Private::extract_controls(Result_t& result)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 
 	picojson::value a = result.at("").get("supportedControl");
 	if (!a.is<picojson::array>())
@@ -99,16 +99,16 @@ void Steamworks::LDAP::ServerControlInfo::Private::extract_controls(Result_t& re
 
 
 
-Steamworks::LDAP::ServerControlInfo::ServerControlInfo() :
+SteamWorks::LDAP::ServerControlInfo::ServerControlInfo() :
 	d(new Private())
 {
 }
 
-void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn, Result result)
+void SteamWorks::LDAP::ServerControlInfo::execute(Connection& conn, Result result)
 {
 	::LDAP* ldaphandle = handle(conn);
 
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 
 	log.debugStream() << "Check for server controls.";
 
@@ -158,42 +158,42 @@ void Steamworks::LDAP::ServerControlInfo::execute(Connection& conn, Result resul
 	ldap_msgfree(res);
 }
 
-Steamworks::LDAP::ServerControlInfo::~ServerControlInfo()
+SteamWorks::LDAP::ServerControlInfo::~ServerControlInfo()
 {
 }
 
-bool Steamworks::LDAP::ServerControlInfo::is_available(const std::string& oid) const
+bool SteamWorks::LDAP::ServerControlInfo::is_available(const std::string& oid) const
 {
 	return d->is_available(oid);
 }
 
-const char Steamworks::LDAP::ServerControlInfo::SC_SYNC[] = LDAP_CONTROL_SYNC;
-const char Steamworks::LDAP::ServerControlInfo::SC_SORTREQUEST[] = LDAP_CONTROL_SORTREQUEST;
-const char Steamworks::LDAP::ServerControlInfo::SC_SORTRESPONSE[] = LDAP_CONTROL_SORTRESPONSE;
+const char SteamWorks::LDAP::ServerControlInfo::SC_SYNC[] = LDAP_CONTROL_SYNC;
+const char SteamWorks::LDAP::ServerControlInfo::SC_SORTREQUEST[] = LDAP_CONTROL_SORTREQUEST;
+const char SteamWorks::LDAP::ServerControlInfo::SC_SORTRESPONSE[] = LDAP_CONTROL_SORTRESPONSE;
 
-bool Steamworks::LDAP::require_server_control(ConnectionUPtr& connection, const char *control, JSON::Object response, Logging::Logger& log)
+bool SteamWorks::LDAP::require_server_control(ConnectionUPtr& connection, const char *control, JSON::Object response, Logging::Logger& log)
 {
-	Steamworks::LDAP::ServerControlInfo info;
+	SteamWorks::LDAP::ServerControlInfo info;
 	info.execute(*connection);
 
 	if (!info.is_available(control))
 	{
 		connection.reset(nullptr);
 		log.warnStream() << "Server at " << connection->get_uri() << " does not support SyncRepl.";
-		Steamworks::JSON::simple_output(response, 501, "Server does not support SyncRepl", LDAP_UNAVAILABLE_CRITICAL_EXTENSION);
+		SteamWorks::JSON::simple_output(response, 501, "Server does not support SyncRepl", LDAP_UNAVAILABLE_CRITICAL_EXTENSION);
 		return false;
 	}
 
 	return true;
 }
 
-bool Steamworks::LDAP::require_syncrepl(Steamworks::LDAP::ConnectionUPtr& connection, Steamworks::JSON::Object response, Steamworks::Logging::Logger& log)
+bool SteamWorks::LDAP::require_syncrepl(SteamWorks::LDAP::ConnectionUPtr& connection, SteamWorks::JSON::Object response, SteamWorks::Logging::Logger& log)
 {
 	return require_server_control(connection, ServerControlInfo::SC_SYNC, response, log);
 }
 
 
-class Steamworks::LDAP::TypeInfo::Private
+class SteamWorks::LDAP::TypeInfo::Private
 {
 private:
 	std::string m_objectclass;
@@ -204,21 +204,21 @@ public:
 	}
 } ;
 
-Steamworks::LDAP::TypeInfo::TypeInfo() :
+SteamWorks::LDAP::TypeInfo::TypeInfo() :
 	Action(true),
 	d(new Private())
 {
 }
 
-Steamworks::LDAP::TypeInfo::~TypeInfo()
+SteamWorks::LDAP::TypeInfo::~TypeInfo()
 {
 }
 
-void Steamworks::LDAP::TypeInfo::execute(Connection& conn, Result result)
+void SteamWorks::LDAP::TypeInfo::execute(Connection& conn, Result result)
 {
 	::LDAP* ldaphandle = handle(conn);
 
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 
 	log.debugStream() << "Check for typeinfo.";
 

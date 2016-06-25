@@ -14,12 +14,12 @@ static const char* copyright = "Copyright (C) 2014-2016 InternetWide.org and the
 
 int main(int argc, char** argv)
 {
-	Steamworks::Logging::Manager logManager("pulley.properties");
-	Steamworks::Logging::getRoot().debugStream() << "Steamworks Pulley" << copyright;
+	SteamWorks::Logging::Manager logManager("pulley.properties");
+	SteamWorks::Logging::getRoot().debugStream() << "Steamworks Pulley" << copyright;
 
 	PulleyDispatcher* dispatcher = new PulleyDispatcher();
-	Steamworks::FCGI::init_logging("pulley.fcgi");
-	Steamworks::FCGI::mainloop(dispatcher);
+	SteamWorks::FCGI::init_logging("pulley.fcgi");
+	SteamWorks::FCGI::mainloop(dispatcher);
 
 	return 0;
 }

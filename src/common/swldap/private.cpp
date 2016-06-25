@@ -9,7 +9,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "serverinfo.h"
 
-namespace Steamworks
+namespace SteamWorks
 {
 
 namespace LDAP
@@ -65,7 +65,7 @@ void copy_entry(::LDAP* ldaphandle, ::LDAPMessage* entry, Result map)
 	}
 }
 
-void copy_search_result(::LDAP* ldaphandle, ::LDAPMessage* res, Result results, Steamworks::Logging::Logger& log)
+void copy_search_result(::LDAP* ldaphandle, ::LDAPMessage* res, Result results, SteamWorks::Logging::Logger& log)
 {
 	log.infoStream() << "Search message count=" << ldap_count_messages(ldaphandle, res);
 

@@ -18,10 +18,10 @@ class PulleyDispatcher::Private
 {
 friend class PulleyDispatcher;
 private:
-	using ConnectionUPtr = std::unique_ptr<Steamworks::LDAP::Connection>;
+	using ConnectionUPtr = std::unique_ptr<SteamWorks::LDAP::Connection>;
 	ConnectionUPtr connection;
 
-	using SyncReplUPtr = std::unique_ptr<Steamworks::LDAP::SyncRepl>;
+	using SyncReplUPtr = std::unique_ptr<SteamWorks::LDAP::SyncRepl>;
 	std::vector<SyncReplUPtr> following;
 
 public:
@@ -36,7 +36,7 @@ public:
 
 	int add_follower(const std::string& base, const std::string& filter, Object response)
 	{
-		following.emplace_back(new Steamworks::LDAP::SyncRepl(base, filter));
+		following.emplace_back(new SteamWorks::LDAP::SyncRepl(base, filter));
 		following.back()->execute(*connection, &response);
 		return 0;
 	}
@@ -89,11 +89,11 @@ int PulleyDispatcher::exec(const std::string& verb, const Values values, Object 
 
 int PulleyDispatcher::do_connect(const Values values, Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.pulley");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 	std::string name = values.get("uri").to_str();
 
-	if (Steamworks::LDAP::do_connect(d->connection, name, response, log) &&
-	    Steamworks::LDAP::require_syncrepl(d->connection, response, log)
+	if (SteamWorks::LDAP::do_connect(d->connection, name, response, log) &&
+	    SteamWorks::LDAP::require_syncrepl(d->connection, response, log)
 	)
 	{
 		m_state = connected;
@@ -111,7 +111,7 @@ int PulleyDispatcher::do_stop(const Values values)
 
 int PulleyDispatcher::do_serverinfo(const Values values, Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.pulley");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 
 	if (m_state != connected)
 	{
@@ -119,13 +119,13 @@ int PulleyDispatcher::do_serverinfo(const Values values, Object response)
 		return 0;
 	}
 
-	Steamworks::LDAP::ServerControlInfo info;
+	SteamWorks::LDAP::ServerControlInfo info;
 	info.execute(*d->connection, &response);
 
 	return 0;
 }
 
-static inline std::string _get_parameter(Steamworks::JSON::Values values, const char* key)
+static inline std::string _get_parameter(SteamWorks::JSON::Values values, const char* key)
 {
 	auto v = values.get(key);
 	if (v.is<picojson::null>())
@@ -137,7 +137,7 @@ static inline std::string _get_parameter(Steamworks::JSON::Values values, const 
 
 int PulleyDispatcher::do_follow(const VerbDispatcher::Values values, VerbDispatcher::Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.pulley");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 
 	if (m_state != connected)
 	{
@@ -159,7 +159,7 @@ int PulleyDispatcher::do_follow(const VerbDispatcher::Values values, VerbDispatc
 
 int PulleyDispatcher::do_unfollow(const VerbDispatcher::Values values, VerbDispatcher::Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.pulley");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 
 	if (m_state != connected)
 	{

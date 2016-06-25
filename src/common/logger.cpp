@@ -8,9 +8,9 @@ Adriaan de Groot <groot@kde.org>
 #include "logger.h"
 
 #ifdef NDEBUG
-Steamworks::Logging::LoggerStream Steamworks::Logging::Logger::stream;
-Steamworks::Logging::Logger Steamworks::Logging::Manager::logger;
+SteamWorks::Logging::LoggerStream SteamWorks::Logging::Logger::stream;
+SteamWorks::Logging::Logger SteamWorks::Logging::Manager::logger;
 #else
-int Steamworks::Logging::Manager::instances = 0;
+int SteamWorks::Logging::Manager::instances = 0;
 #endif
 

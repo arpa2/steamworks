@@ -20,7 +20,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "connection.h"
 
-namespace Steamworks
+namespace SteamWorks
 {
 
 namespace LDAP
@@ -46,7 +46,7 @@ public:
 	bool has_automatic_rollback() const;
 	void set_automatic_rollback(bool automatic_rollback);
 
-	virtual void execute(Steamworks::LDAP::Connection & conn, Result result) override;
+	virtual void execute(SteamWorks::LDAP::Connection & conn, Result result) override;
 } ;
 
 class UpdateGroup: public Action
@@ -61,7 +61,7 @@ public:
 
 	void add_update(const Update&);
 
-	virtual void execute(Steamworks::LDAP::Connection & conn, Result result) override;
+	virtual void execute(SteamWorks::LDAP::Connection & conn, Result result) override;
 } ;
 
 }  // namespace LDAP

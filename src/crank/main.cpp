@@ -14,11 +14,11 @@ static const char* copyright = "Copyright (C) 2014, 2015 InternetWide.org and th
 
 int main(int argc, char** argv)
 {
-	Steamworks::Logging::Manager logManager("crank.properties");
-	Steamworks::Logging::getRoot().debugStream() << "Steamworks Crank " << copyright;
+	SteamWorks::Logging::Manager logManager("crank.properties");
+	SteamWorks::Logging::getRoot().debugStream() << "Steamworks Crank " << copyright;
 
 	CrankDispatcher* dispatcher = new CrankDispatcher();
-	Steamworks::FCGI::init_logging("crank.fcgi");
-	Steamworks::FCGI::mainloop(dispatcher);
+	SteamWorks::FCGI::init_logging("crank.fcgi");
+	SteamWorks::FCGI::mainloop(dispatcher);
 	return 0;
 }

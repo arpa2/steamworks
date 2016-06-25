@@ -14,12 +14,12 @@ static const char* copyright = "Copyright (C) 2014-2016 InternetWide.org and the
 
 int main(int argc, char** argv)
 {
-	Steamworks::Logging::Manager logManager("shaft.properties");
-	Steamworks::Logging::getRoot().debugStream() << "Steamworks Shaft " << copyright;
+	SteamWorks::Logging::Manager logManager("shaft.properties");
+	SteamWorks::Logging::getRoot().debugStream() << "Steamworks Shaft " << copyright;
 
 	ShaftDispatcher* dispatcher = new ShaftDispatcher();
-	Steamworks::FCGI::init_logging("shaft.fcgi");
-	Steamworks::FCGI::mainloop(dispatcher);
+	SteamWorks::FCGI::init_logging("shaft.fcgi");
+	SteamWorks::FCGI::mainloop(dispatcher);
 
 	return 0;
 }

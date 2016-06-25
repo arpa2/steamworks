@@ -10,7 +10,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "picojson.h"
 
-namespace Steamworks
+namespace SteamWorks
 {
 namespace JSON
 {

@@ -37,7 +37,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include <iostream>
 
-namespace Steamworks
+namespace SteamWorks
 {
 
 namespace Logging

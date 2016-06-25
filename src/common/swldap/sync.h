@@ -18,7 +18,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "connection.h"
 
-namespace Steamworks
+namespace SteamWorks
 {
 
 namespace LDAP

@@ -14,7 +14,7 @@ Adriaan de Groot <groot@kde.org>
 #include "../jsonresponse.h"
 #include "connection.h"
 
-namespace Steamworks {
+namespace SteamWorks {
 namespace LDAP {
 
 /**
@@ -43,7 +43,7 @@ public:
 	 *
 	 * TODO: stream operator?
 	 */
-	void log(Steamworks::Logging::Logger& log, Steamworks::Logging::LogLevel level) const;
+	void log(SteamWorks::Logging::Logger& log, SteamWorks::Logging::LogLevel level) const;
 
 	/// Gets the API version number (usually 3), or -1 on error.
 	int get_version() const { return is_valid() ? m_info.ldapai_info_version : -1; }

@@ -9,7 +9,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include <string>
 
-void Steamworks::JSON::simple_output(Steamworks::JSON::Object response, int status, const char* message, const int err)
+void SteamWorks::JSON::simple_output(SteamWorks::JSON::Object response, int status, const char* message, const int err)
 {
 	if (status)
 	{

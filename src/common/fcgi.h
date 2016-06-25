@@ -19,7 +19,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include "verb.h"
 
-namespace Steamworks
+namespace SteamWorks
 {
 namespace FCGI
 {

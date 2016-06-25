@@ -17,7 +17,7 @@ class CrankDispatcher::Private
 {
 friend class CrankDispatcher;
 private:
-	std::unique_ptr<Steamworks::LDAP::Connection> connection;
+	std::unique_ptr<SteamWorks::LDAP::Connection> connection;
 
 public:
 	Private() :
@@ -51,15 +51,15 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 		std::string s("Unknown verb '");
 		s.append(verb);
 		s.append("', ignored.");
-		Steamworks::JSON::simple_output(response, 500, s.c_str());
+		SteamWorks::JSON::simple_output(response, 500, s.c_str());
 		return 0;
 	}
 }
 
 int CrankDispatcher::do_connect(const Values values, Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
-	if (Steamworks::LDAP::do_connect(d->connection, values, response, log))
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
+	if (SteamWorks::LDAP::do_connect(d->connection, values, response, log))
 	{
 		m_state = connected;
 	}
@@ -114,7 +114,7 @@ int CrankDispatcher::do_serverstatus(const VerbDispatcher::Values values, VerbDi
 
 int CrankDispatcher::do_search(const Values values, Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
 	if (m_state != connected)
 	{
@@ -129,14 +129,14 @@ int CrankDispatcher::do_search(const Values values, Object response)
 	log.debugStream() << "Search         filter=" << filter;
 
 	// TODO: check authorization for this query
-	Steamworks::LDAP::Search search(base, filter);
+	SteamWorks::LDAP::Search search(base, filter);
 	search.execute(*d->connection, &response);
 	return 0;
 }
 
 int CrankDispatcher::do_typeinfo(const Values values, Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
 	if (m_state != connected)
 	{
@@ -144,7 +144,7 @@ int CrankDispatcher::do_typeinfo(const Values values, Object response)
 		return 0;
 	}
 
-	Steamworks::LDAP::TypeInfo search;
+	SteamWorks::LDAP::TypeInfo search;
 	search.execute(*d->connection, &response);
 	return 0;
 }
@@ -153,7 +153,7 @@ int CrankDispatcher::do_typeinfo(const Values values, Object response)
 
 int CrankDispatcher::do_update(const Values values, Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
 	if (m_state != connected)
 	{
@@ -172,7 +172,7 @@ int CrankDispatcher::do_update(const Values values, Object response)
 	{
 		log.debugStream() << "Updating #" << count;
 
-		Steamworks::LDAP::Update u(v.get(count));
+		SteamWorks::LDAP::Update u(v.get(count));
 		if (u.is_valid())
 		{
 			u.execute(*d->connection, &response);
@@ -188,7 +188,7 @@ int CrankDispatcher::do_update(const Values values, Object response)
 
 int CrankDispatcher::do_delete(const Values values, Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
 	if (m_state != connected)
 	{
@@ -204,7 +204,7 @@ int CrankDispatcher::do_delete(const Values values, Object response)
 		return 0;
 	}
 
-	Steamworks::LDAP::Remove r(dn);
+	SteamWorks::LDAP::Remove r(dn);
 	if (r.is_valid())
 	{
 		r.execute(*d->connection, &response);
@@ -214,7 +214,7 @@ int CrankDispatcher::do_delete(const Values values, Object response)
 
 int CrankDispatcher::do_add(const VerbDispatcher::Values values, VerbDispatcher::Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
 	if (m_state != connected)
 	{
@@ -233,7 +233,7 @@ int CrankDispatcher::do_add(const VerbDispatcher::Values values, VerbDispatcher:
 	{
 		log.debugStream() << "Add #" << count;
 
-		Steamworks::LDAP::Addition u(v.get(count));
+		SteamWorks::LDAP::Addition u(v.get(count));
 		if (u.is_valid())
 		{
 			u.execute(*d->connection, &response);
@@ -253,7 +253,7 @@ int CrankDispatcher::do_add(const VerbDispatcher::Values values, VerbDispatcher:
 
 int CrankDispatcher::do_serverinfo(const Values values, Object response)
 {
-	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.crank");
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
 	if (m_state != connected)
 	{
@@ -261,7 +261,7 @@ int CrankDispatcher::do_serverinfo(const Values values, Object response)
 		return 0;
 	}
 
-	Steamworks::LDAP::ServerControlInfo info;
+	SteamWorks::LDAP::ServerControlInfo info;
 	info.execute(*d->connection, &response);
 
 	return 0;
