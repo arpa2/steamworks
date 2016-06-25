@@ -9,4 +9,4 @@
 # This matches the (case-insensitive) LDAP objectClass
 # attribute, while using (lower case) objectClass in
 # the PulleyScript expression is a syntax error.
-ObjectClass=tlsPoolTrustedIssuer <- world
+TlsPoolCredentialType:x, ObjectClass="tlsPoolTrustedIssuer" <- world
