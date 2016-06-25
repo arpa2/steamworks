@@ -14,9 +14,9 @@ find_package(OpenLDAP REQUIRED)
 
 find_package(FLEX REQUIRED)  # Required by pulleyscript
 
-add_subdirectory(pulleyscript)
-
 include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../common ../3rdparty)
+
+add_subdirectory(pulleyscript)
 
 set(PULLEY_SRC
   main.cpp

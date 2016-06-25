@@ -43,3 +43,6 @@ add_library(pslib STATIC ${SHARED_SRC})
 
 add_executable(compiler ${COMPILER_SRC})
 target_link_libraries(compiler pslib ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES})
+
+add_executable(simple simple.cpp parserpp.cpp)
+target_link_libraries(simple pslib ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES} ${LOG4CPP_LIBRARIES})
