@@ -7,17 +7,58 @@ Adriaan de Groot <groot@kde.org>
 
 #include "parserpp.h"
 
-#include "parser.h"
 #include "condition.h"
 #include "driver.h"
+#include "generator.h"
+#include "parser.h"
+#include "squeal.h"
 #include "variable.h"
 
 #include <logger.h>
+
+class SquealOpener
+{
+public:
+	struct squeal* m_sql;
+
+	SquealOpener() : m_sql(nullptr) {}
+	SquealOpener(struct parser* prs) : m_sql(nullptr) { open(prs); }
+	~SquealOpener()
+	{
+		if (m_sql)
+		{
+			squeal_close(m_sql);
+		}
+	}
+
+	bool open(struct parser* prs)
+	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+		log.debugStream() << "Opening SQL for " << prs->scanhash;
+
+		m_sql = squeal_open_in_dbdir (prs->scanhash, gentab_count (prs->gentab), drvtab_count (prs->drvtab), "/tmp/");
+		return m_sql != nullptr;
+	}
+
+	void close()
+	{
+		if (m_sql)
+		{
+			auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+			log.debugStream() << "Closing SQL.";
+
+			squeal_close(m_sql);
+			m_sql = nullptr;
+		}
+	}
+} ;
+
 
 class SteamWorks::PulleyScript::Parser::Private
 {
 private:
 	struct parser m_prs;
+	SquealOpener m_sql;
 	bool m_valid;
 
 public:
@@ -166,6 +207,20 @@ public:
 		m_state = State::Analyzed;
 		return prsret;
 	}
+
+	int generate_sql()
+	{
+		if (!can_generate_sql())
+		{
+			return 1;
+		}
+		if (!m_sql.open(&m_prs))
+		{
+			return 1;
+		}
+		m_sql.close();
+		return 0;
+	}
 } ;
 
 SteamWorks::PulleyScript::Parser::Parser() :
@@ -222,4 +277,9 @@ int SteamWorks::PulleyScript::Parser::structural_analysis()
 	}
 
 	return d->structural_analysis();
+}
+
+int SteamWorks::PulleyScript::Parser::setup_sql()
+{
+	return d->generate_sql();
 }

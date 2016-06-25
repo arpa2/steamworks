@@ -54,6 +54,8 @@ public:
 	 * Returns 0 on success.
 	 */
 	int structural_analysis();
+
+	int setup_sql();
 } ;
 
 }  // namespace PulleyScript

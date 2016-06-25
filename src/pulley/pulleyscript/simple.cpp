@@ -15,13 +15,15 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	SteamWorks::Logging::Manager logManager("pulleyscript.properties");
+	SteamWorks::Logging::Manager logManager("pulleyscript.properties", SteamWorks::Logging::DEBUG);
 	SteamWorks::Logging::getRoot().debugStream() << "Steamworks PulleyScript " << copyright;
 
 	SteamWorks::PulleyScript::Parser prs;
 	int prsret = prs.read_file(argv[1]);
 	printf("Parser status %d\n", prsret);
 	printf("Parser analysis %d\n", prs.structural_analysis());
+	printf("  .. %s\n", prs.state_string().c_str());
+	printf("Parser SQL setup %d\n", prs.setup_sql());
 	printf("  .. %s\n", prs.state_string().c_str());
 	return 0;
 }
