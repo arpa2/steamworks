@@ -330,8 +330,22 @@ Steamworks::LDAP::Remove::~Remove()
 {
 }
 
-void Steamworks::LDAP::Remove::execute(Connection&, Result result)
+void Steamworks::LDAP::Remove::execute(Connection& conn, Result result)
 {
 	Steamworks::Logging::Logger& log = Steamworks::Logging::getLogger("steamworks.ldap");
-	log.warnStream() << "Remove action not implemented.";
+	if (!is_valid())
+	{
+		log.warnStream() << "Can't execute invalid removal.";
+		return;
+	}
+
+	log.debugStream() << "Removal execute:" << d->name();
+
+	int r = ldap_delete_ext_s(
+		handle(conn),
+		d->name().c_str(),
+		server_controls(conn),
+		client_controls(conn)
+		);
+	log.debugStream() << "Result " << r << " " << (r ? ldap_err2string(r) : "OK");
 }
