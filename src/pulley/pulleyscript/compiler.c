@@ -70,7 +70,7 @@ int collect_input (struct parser *prs, int argc, char *argv []) {
 			// Normal input file
 			fh = fopen (argv [i], "r");
 			if (!fh) {
-				fprintf (stderr, "Failed to open %s\n", argv [1]);
+				fprintf (stderr, "Failed to open %s\n", argv [i]);
 				return 1;
 			}
 			printf ("Loading %s\n", argv [i]);
