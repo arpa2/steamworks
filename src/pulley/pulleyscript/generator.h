@@ -78,6 +78,10 @@ void gentab_print (struct gentab *tab, char *head, FILE *stream, int indent);
  */
 gennum_t gen_new (struct gentab *tab, varnum_t source);
 
+/* Retrieve the source DN variable that was supplied to this generator.
+ */
+varnum_t gen_get_source (struct gentab *tab, gennum_t gennum);
+
 /* Manage whether this generator is used as a cogenerator or, which is the same,
  * has cogenerators.  For some engines, this may be used to determine whether
  * all generated values must be stored for iteration when it is called upon to

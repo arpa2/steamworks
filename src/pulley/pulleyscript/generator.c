@@ -131,6 +131,8 @@ hash_t gen_get_hash (struct gentab *tab, gennum_t gennum) {
 void gen_print (struct gentab *tab, gennum_t gennum, FILE *stream, int indent) {
 	fprintf (stream, "G%d, lexhash=", gennum);
 	hash_print (&tab->gens [gennum].linehash, stream);
+	// fprintf (stream, "<- %s", var_get_name (
+	// 			tab->gens->vartype, tab->gens [gennum].source));
 	fprintf (stream, "\nvariables=");
 	bitset_print (tab->gens [gennum].variables, "V", stream);
 	fprintf (stream, "\ndriverout=");
@@ -150,6 +152,10 @@ void gentab_print (struct gentab *tab, char *head, FILE *stream, int indent) {
 	for (i=0; i<tab->count_gens; i++) {
 		gen_print (tab, i, stream, indent);
 	}
+}
+
+varnum_t gen_get_source (struct gentab *tab, gennum_t gennum) {
+	return tab->gens [gennum].source;
 }
 
 void gen_set_cogeneration (struct gentab *tab, gennum_t gennum) {
