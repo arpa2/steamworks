@@ -12,6 +12,8 @@ find_package(Log4cpp)
 find_package(FCGI REQUIRED)
 find_package(OpenLDAP REQUIRED)
 
+find_package(FLEX REQUIRED)  # Required by pulleyscript
+
 add_subdirectory(pulleyscript)
 
 include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../common ../3rdparty)
@@ -19,8 +21,10 @@ include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../common ../3r
 set(PULLEY_SRC
   main.cpp
   pulley.cpp
+  pulleyscript/parserpp.cpp
   )
 
 add_executable(pulley ${PULLEY_SRC})
-target_link_libraries(pulley ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES} swldap swcommon)
+target_link_libraries(pulley ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES})
+target_link_libraries(pulley swldap swcommon pslib ${FLEX_LIBRARIES})
 
