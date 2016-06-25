@@ -44,7 +44,7 @@
 
 /* TODO: Make the database directory a configurable entity.
  */
-static const char *dbdir = "/var/db/pulley/";
+static const char *default_dbdir = "/var/db/pulley/";
 
 
 /* Definitions for FNV-1a hashing */
@@ -803,10 +803,14 @@ cleanup:
  * not exist yet.  The database directory is also created if it does not exist yet;
  * if so, its mode is set to 01777 (ugo+rwx with the sticky(8) bit set)
  * The return value NULL indicates an error opening the database.
+ *
+ * The database is placed in the directory named @p dbdir; if @p dbdir is NULL,
+ * then an in-memory database is used instead. This is not recommended.
+ *
  * TODO: Consider use of sticky bits, as are used for /tmp
  * TODO: Privileges of the database itself?
  */
-struct squeal *squeal_open (hash_t lexhash, gennum_t numgens, drvnum_t numdrvs) {
+struct squeal *squeal_open_in_dbdir (hash_t lexhash, gennum_t numgens, drvnum_t numdrvs, const char *dbdir) {
 	struct squeal *retval = NULL, *work = NULL;
 	sqlite3 *s3db = NULL;
 	struct sqlbuf dbname;
@@ -829,14 +833,19 @@ struct squeal *squeal_open (hash_t lexhash, gennum_t numgens, drvnum_t numdrvs) 
 	sqlbuf_exchg (&dbname, BUF_GET);
 	//
 	// Construct the filename of the database, possibly create the directory
-	sqlbuf_write (&dbname, dbdir);
-	sqlbuf_write (&dbname, "0");
-	dbname.buf [dbname.ofs-1] = '\0';	// Setup  trailing NUL for use with C
-	mkdir (dbname.buf, 01777);		// Best effort.  Mode u+rwx, g+rx, o+
-	dbname.ofs--;				// Forget trailing NUL for use with C
-	sqlbuf_lexhash2name (&dbname, "pulley_", lexhash);
-	sqlbuf_write (&dbname, ".sqlite30");
-	dbname.buf [dbname.ofs-1] = '\0';	// Setup  trailing NUL for use with C
+	if (dbdir) {
+		sqlbuf_write (&dbname, dbdir);
+		sqlbuf_write (&dbname, "0");
+		dbname.buf [dbname.ofs-1] = '\0';	// Setup  trailing NUL for use with C
+		mkdir (dbname.buf, 01777);		// Best effort.  Mode u+rwx, g+rx, o+
+		dbname.ofs--;				// Forget trailing NUL for use with C
+		sqlbuf_lexhash2name (&dbname, "pulley_", lexhash);
+		sqlbuf_write (&dbname, ".sqlite30");
+		dbname.buf [dbname.ofs-1] = '\0';	// Setup  trailing NUL for use with C
+	} else {
+		sqlbuf_write (&dbname, ":memory:0");
+		dbname.buf [dbname.ofs-1] = '\0';	// Setup  trailing NUL for use with C
+	}
 	//
 	// Open the SQLite3 database file
 	int s3rv = sqlite3_open_v2 (dbname.buf, &s3db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL);
@@ -858,6 +867,10 @@ struct squeal *squeal_open (hash_t lexhash, gennum_t numgens, drvnum_t numdrvs) 
 	return retval;
 }
 
+struct squeal *squeal_open (hash_t lexhash, gennum_t numgens, drvnum_t numdrvs) {
+	return squeal_open_in_dbdir(lexhash, numgens, numdrvs, default_dbdir);
+}
+
 /* Close a SQLite3 engine using the handle that was returned by squeal_open().
  */
 void squeal_close (struct squeal *squeal) {
@@ -869,7 +882,10 @@ void squeal_close (struct squeal *squeal) {
 /* Unlink a SQLite3 engine for a given Pulley script lexhash.  As with any other
  * file, there is a chance that the file has a hard link and is kept around for that.
  */
-void squeal_unlink (hash_t lexhash) {
+void squeal_unlink_in_dbdir (hash_t lexhash, const char *dbdir) {
+	if (!dbdir) {
+		return;
+	}
 	struct sqlbuf dbname;
 	sqlbuf_exchg (&dbname, BUF_GET);
 	sqlbuf_write (&dbname, dbdir);
@@ -878,6 +894,10 @@ void squeal_unlink (hash_t lexhash) {
 	dbname.buf [dbname.ofs-1] = '\0';	// Modify for use as a C string
 	unlink (dbname.buf);			// Best effort
 	sqlbuf_exchg (&dbname, BUF_PUT);
+}
+
+void squeal_unlink (hash_t lexhash) {
+	squeal_unlink_in_dbdir(lexhash, default_dbdir);
 }
 
 
