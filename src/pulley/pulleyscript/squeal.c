@@ -848,6 +848,8 @@ struct squeal *squeal_open_in_dbdir (hash_t lexhash, gennum_t numgens, drvnum_t 
 	}
 	//
 	// Open the SQLite3 database file
+	//
+	// TODO: may want to add SQLITE_OPEN_URI flag to allow file: and similar URIs
 	int s3rv = sqlite3_open_v2 (dbname.buf, &s3db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL);
 	printf ("SQLite3 open (\"%s\", &s3db) returned %d, hoped for %d\n", dbname.buf, s3rv, SQLITE_OK);
 	if (s3rv != SQLITE_OK) {
