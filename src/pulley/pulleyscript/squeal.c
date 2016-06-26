@@ -209,6 +209,7 @@ static void sqlbuf_write (struct sqlbuf *buf, const char *addend) {
 			fprintf (stderr, "Out of memory while writing \"%s\" to squeal buffer\n", addend);
 			exit (1);
 		}
+		memset(buf2 + buf->ofs, 0, siz2 - buf->ofs);
 		buf->buf = buf2;
 		buf->siz = siz2;
 	}
@@ -222,15 +223,18 @@ static void sqlbuf_write (struct sqlbuf *buf, const char *addend) {
  */
 static int sqlbuf_run (struct sqlbuf *sql, sqlite3 *s3db) {
 	int retval = 0;
+	int sqlretval = 0;
 	sqlite3_stmt *s3in;
 	printf ("sql>\n%.*s\n", (int) sql->ofs, sql->buf);
-	if (sqlite3_prepare (s3db, sql->buf, sql->ofs, &s3in, NULL) != SQLITE_OK) {
+	sqlretval = sqlite3_prepare (s3db, sql->buf, sql->ofs, &s3in, NULL);
+	if ((sqlretval != SQLITE_OK)) {
 		/* TODO: Report error in more detail */
-		printf ("SYNTAX ERROR in SQL\n");
+		printf ("SYNTAX ERROR in SQL %d\n", sqlretval);
 	}
-	if (sqlite3_step (s3in) != SQLITE_OK) {
+	sqlretval = sqlite3_step (s3in);
+	if ((sqlretval != SQLITE_OK) && (sqlretval != SQLITE_DONE)) {
 		/* TODO: Report error in more detail */
-		printf ("RUNTIME ERROR in SQL\n");
+		printf ("RUNTIME ERROR in SQL %d\n", sqlretval);
 	} else {
 		printf ("DONE\n");
 	}
