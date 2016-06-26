@@ -47,6 +47,8 @@
  * From: Rick van Rein <rick@openfortress.nl>
  */
 
+#ifndef PULLEYSCRIPT_BINDING_H
+#define PULLEYSCRIPT_BINDING_H
 
 /* The abstract operation that indicates how to process the following
  * attribute or RDN step(s).
@@ -187,3 +189,4 @@
 //
 // <<<
 
+#endif

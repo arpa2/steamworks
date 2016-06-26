@@ -1,6 +1,6 @@
 
-#ifndef CONDITION_H
-#define CONDITION_H
+#ifndef PULLEYSCRIPT_CONDITION_H
+#define PULLEYSCRIPT_CONDITION_H
 
 #include <stdio.h>
 

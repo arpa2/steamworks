@@ -3,6 +3,10 @@
 
 #include "parserpp.h"
 
+#include <logger.h>
+
+static const char* copyright = "Copyright (C) 2014-2016 InternetWide.org and the ARPA2.net project";
+
 int main(int argc, char **argv)
 {
 	if (argc < 2)
@@ -10,6 +14,9 @@ int main(int argc, char **argv)
 		fprintf(stderr,"Usage: simple <file>\n");
 		return 1;
 	}
+
+	SteamWorks::Logging::Manager logManager("pulleyscript.properties");
+	SteamWorks::Logging::getRoot().debugStream() << "Steamworks PulleyScript " << copyright;
 
 	SteamWorks::PulleyScript::Parser prs;
 	int prsret = prs.read_file(argv[1]);

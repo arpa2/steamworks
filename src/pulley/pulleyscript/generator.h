@@ -18,8 +18,8 @@
  */
 
 
-#ifndef GENERATOR_H
-#define GENERATOR_H
+#ifndef PULLEYSCRIPT_GENERATOR_H
+#define PULLEYSCRIPT_GENERATOR_H
 
 #include "types.h"
 #include "bitset.h"

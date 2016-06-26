@@ -3,6 +3,8 @@
  * From: Rick van Rein <rick@openfortress.nl>
  */
 
+#ifndef PULLEYSCRIPT_DRIVER_H
+#define PULLEYSCRIPT_DRIVER_H
 
 #include <stdio.h>
 
@@ -111,3 +113,6 @@ int drv_callback (struct drvtab *tab, drvnum_t drv);
 #ifdef __cplusplus
 }
 #endif
+
+#endif
+

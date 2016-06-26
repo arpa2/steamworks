@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef PULLEYSCRIPT_TYPES_H
+#define PULLEYSCRIPT_TYPES_H
 
 #ifdef __cplusplus
 extern "C" {

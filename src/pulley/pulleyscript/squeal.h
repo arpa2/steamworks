@@ -1,3 +1,7 @@
+#ifndef PULLEYSCRIPT_SQUEAL_H
+#define PULLEYSCRIPT_SQUEAL_H
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -62,3 +66,6 @@ int squeal_have_tables (struct squeal *s3db, struct gentab *gentab, bool may_reu
 #ifdef __cplusplus
 }
 #endif
+
+#endif
+

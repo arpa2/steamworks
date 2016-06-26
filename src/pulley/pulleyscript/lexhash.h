@@ -9,8 +9,8 @@
  */
 
 
-#ifndef LEXHASH_H
-#define LEXHASH_H
+#ifndef PULLEYSCRIPT_LEXHASH_H
+#define PULLEYSCRIPT_LEXHASH_H
 
 
 #include <stdint.h>

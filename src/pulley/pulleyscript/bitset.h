@@ -4,8 +4,8 @@
  */
 
 
-#ifndef BITSET_H
-#define BITSET_H
+#ifndef PULLEYSCRIPT_BITSET_H
+#define PULLEYSCRIPT_BITSET_H
 
 
 #include <stdlib.h>

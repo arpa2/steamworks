@@ -1,3 +1,6 @@
+#ifndef PULLEYSCRIPT_PARSER_H
+#define PULLEYSCRIPT_PARSER_H
+
 #include "lexhash.h"
 #include "bitset.h"
 
@@ -97,3 +100,6 @@ void pulley_parser_hash (struct parser *prs);
 #ifdef __cplusplus
 }
 #endif
+
+#endif
+

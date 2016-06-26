@@ -1,5 +1,5 @@
-#ifndef RESIST_H
-#define RESIST_H
+#ifndef PULLEYSCRIPT_RESIST_H
+#define PULLEYSCRIPT_RESIST_H
 
 #include <stdio.h>
 

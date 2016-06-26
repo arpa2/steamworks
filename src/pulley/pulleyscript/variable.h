@@ -16,8 +16,8 @@
  */
 
 
-#ifndef VARIABLE_H
-#define VARIABLE_H
+#ifndef PULLEYSCRIPT_VARIABLE_H
+#define PULLEYSCRIPT_VARIABLE_H
 
 
 #include <stdlib.h>
