@@ -33,6 +33,7 @@ Adriaan de Groot <groot@kde.org>
 #ifndef NDEBUG
 #include <log4cpp/Category.hh>
 #include <log4cpp/PropertyConfigurator.hh>
+#include <log4cpp/BasicConfigurator.hh>
 #endif
 
 #include <iostream>
@@ -93,6 +94,10 @@ public:
 	{
 	}
 
+	Manager(const std::string& propertyfile, LogLevel l)
+	{
+	}
+
 	static
 	Logger& getLogger(const std::string& categoryname)
 	{
@@ -126,6 +131,38 @@ class Manager
 private:
 	static int instances;
 
+	/**
+	 * Try to configure logging from @p propertyfile.
+	 * Returns true on success, false on failure (does
+	 * not propagate the ConfigureFailure exception).
+	 */
+	static
+	bool configureFromFile(const std::string& propertyfile)
+	{
+		try
+		{
+			log4cpp::PropertyConfigurator::configure(propertyfile);
+			return true;
+		}
+		catch (log4cpp::ConfigureFailure& e)
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Do a basic configuration of logging, with root
+	 * logging set to level @p l. This should not be done
+	 * if another logging-configuration has already succeeded.
+	 */
+	static
+	bool configureFromLevel(LogLevel l)
+	{
+		log4cpp::BasicConfigurator::configure();
+		getRoot().setPriority(l);
+		return true;
+	}
+
 public:
 	/**
 	 * Create a logging manager and read the @p propertyfile
@@ -136,17 +173,34 @@ public:
 	 */
 	Manager(const std::string& propertyfile)
 	{
-		try
-		{
-			log4cpp::PropertyConfigurator::configure(propertyfile);
-		}
-		catch (log4cpp::ConfigureFailure& e)
+		if (!configureFromFile(propertyfile))
 		{
 			// Logging disabled.
 			std::cerr << "No file " << propertyfile << ". Logging disabled.\n";
 		}
 		instances++;
 		getRoot().debugStream() << "LoggerManager created, #" << instances;
+	}
+
+	/**
+	 * As above, but if the @p propertyfile cannot be read,
+	 * fall back to a simple logging configuration to stdout.
+	 */
+	Manager(const std::string& propertyfile, LogLevel l)
+	{
+		std::string s;
+
+		if (configureFromFile(propertyfile))
+		{
+			s = propertyfile;
+		}
+		else
+		{
+			configureFromLevel(l);
+			s = "loglevel";
+		}
+		instances++;
+		getRoot().debugStream() << "LoggerManager created, #" << instances << " from " << s;
 	}
 
 
