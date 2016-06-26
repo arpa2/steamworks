@@ -23,7 +23,10 @@ void bitset_destroy (bitset_t *bts) {
 	if ((bts != NULL) && (bts->bits != NULL)) {
 		free (bts->bits);
 	}
-	free (bts);
+	if (bts != NULL)
+	{
+		free (bts);
+	}
 }
 
 type_t *bitset_type (bitset_t *bts) {

@@ -90,6 +90,20 @@ static void *gentab_index (void *data, unsigned int index) {
 	return (void *) (&(((struct gentab *) data)->gens [index]));
 }
 
+/* Fully initialize (to useless values) a generator structure, to avoid
+ * uninitialized-pointers problems.
+ */
+static _gen_init (struct generator *gen)
+{
+	gen->weight = 0.0;
+	gen->source = -1;
+	gen->variables = NULL;
+	gen->driverout = NULL;
+	gen->path_of_least_resistence = NULL;
+	gen->linehash = 0;
+	gen->cogenerate = 0;
+}
+
 gennum_t gen_new (struct gentab *tab, varnum_t source) {
 	struct generator *newgen;
 	if (tab->count_gens >= tab->allocated_gens) {
@@ -99,15 +113,19 @@ gennum_t gen_new (struct gentab *tab, varnum_t source) {
 		if (newgens == NULL) {
 			fatal_error ("Out of memory allocating generator");
 		}
+		for (int i = tab->allocated_gens; i < alloc; i++) {
+			_gen_init(&newgens[i]);
+		}
 		tab->gens = newgens;
 		tab->allocated_gens = alloc;
 	}
 	newgen = &tab->gens [tab->count_gens];	// Incremented on return
-	newgen->source = source;
 	newgen->weight = 100.0;	/* Default weight estimate */
+	newgen->source = source;
 	newgen->variables = bitset_new (tab->vartype);
 	newgen->driverout = bitset_new (tab->drvtype);
 	newgen->path_of_least_resistence = NULL;
+	newgen->linehash = 0;
 	newgen->cogenerate = 0;
 	return tab->count_gens++;
 }
@@ -118,6 +136,9 @@ void gen_cleanup (struct generator *gen) {
 	if (gen->path_of_least_resistence) {
 		path_destroy (gen->path_of_least_resistence);
 	}
+	gen->variables = NULL;
+	gen->driverout = NULL;
+	gen->path_of_least_resistence = NULL;
 }
 
 void gen_set_hash (struct gentab *tab, gennum_t gennum, hash_t genhash) {
