@@ -28,7 +28,7 @@ private:
 	std::unique_ptr<Private> d;
 
 public:
-	enum class State { Initial, Parsing, Analyzed };
+	enum class State { Broken, Initial, Parsing, Analyzed };
 
 	Parser();
 	~Parser();
@@ -55,6 +55,10 @@ public:
 	 */
 	int structural_analysis();
 
+	/**
+	 * Prepare the SQL database belonging to this script;
+	 * ensure that it has the right tables, etc.
+	 */
 	int setup_sql();
 } ;
 

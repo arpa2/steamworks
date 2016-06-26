@@ -48,6 +48,7 @@ public:
 			log.debugStream() << "Closing SQL.";
 
 			squeal_close(m_sql);
+			// Don't unlink, leave DB for debugging purposes.
 			m_sql = nullptr;
 		}
 	}
@@ -73,6 +74,8 @@ public:
 	}
 	~Private()
 	{
+		m_sql.close();
+
 		if (is_valid())
 		{
 			pulley_parser_cleanup_syntax(&m_prs);
@@ -98,6 +101,9 @@ public:
 			break;
 		case State::Analyzed:
 			s = "Analyzed";
+			break;
+		case State::Broken:
+			s = "Broken";
 			break;
 		}
 
@@ -208,7 +214,7 @@ public:
 		return prsret;
 	}
 
-	int generate_sql()
+	int setup_sql()
 	{
 		if (!can_generate_sql())
 		{
@@ -218,6 +224,33 @@ public:
 		{
 			return 1;
 		}
+
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+
+		if (squeal_have_tables(m_sql.m_sql, m_prs.gentab, 0) != 0)
+		{
+			log.errorStream() << "Could not create SQL tables for script.";
+			m_state = State::Broken;
+			return 1;
+		}
+
+		log.debugStream() << "SQL table definitions generated.";
+
+		// This bit copied out of the compiler;
+		gennum_t g, gentabcnt = gentab_count (m_prs.gentab);
+		bitset_t *drv;
+		bitset_iter_t di;
+		drvnum_t d;
+		for (g=0; g<gentabcnt; g++) {
+			drv = gen_share_driverout (m_prs.gentab, g);
+			log.debugStream() << "Found " << bitset_count(drv) << " drivers for generator " << g;
+			bitset_iterator_init (&di, drv);
+			while (bitset_iterator_next_one (&di, NULL)) {
+				d = bitset_iterator_bitnum (&di);
+				log.debugStream() << "Generating for generator " << g << ", driver " << d;
+			}
+		}
+
 		m_sql.close();
 		return 0;
 	}
@@ -281,5 +314,5 @@ int SteamWorks::PulleyScript::Parser::structural_analysis()
 
 int SteamWorks::PulleyScript::Parser::setup_sql()
 {
-	return d->generate_sql();
+	return d->setup_sql();
 }
