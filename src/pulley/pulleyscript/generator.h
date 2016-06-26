@@ -33,7 +33,8 @@ struct gentab;
 
 struct generator {
 	float weight;
-	varnum_t source;
+	varnum_t source;  /* Source variable, e.g. "<- <gen-source>" */
+	varnum_t binding;  /* Binding variable, created from expression */
 	bitset_t *variables;
 	bitset_t *driverout;
 	struct path *path_of_least_resistence;
@@ -60,6 +61,10 @@ unsigned int gentab_count (struct gentab *tab);
 /* Hash handling */
 void gen_set_hash (struct gentab *tab, gennum_t gennum, hash_t genhash);
 hash_t gen_get_hash (struct gentab *tab, gennum_t gennum);
+
+/* Binding source, bind expression, generator */
+void gen_set_binding (struct gentab *tab, gennum_t gennum, varnum_t bindvar);
+varnum_t gen_get_binding (struct gentab *tab, gennum_t gennum);
 
 
 /* Printing functions */

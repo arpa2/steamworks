@@ -97,6 +97,7 @@ static _gen_init (struct generator *gen)
 {
 	gen->weight = 0.0;
 	gen->source = -1;
+	gen->binding = -1;
 	gen->variables = NULL;
 	gen->driverout = NULL;
 	gen->path_of_least_resistence = NULL;
@@ -150,6 +151,11 @@ hash_t gen_get_hash (struct gentab *tab, gennum_t gennum) {
 	return tab->gens [gennum].linehash;
 }
 
+void gen_set_binding(struct gentab *tab, gennum_t gennum, varnum_t bindvar)
+{
+	tab->gens[gennum].binding = bindvar;
+}
+
 void gen_print (struct gentab *tab, gennum_t gennum, FILE *stream, int indent) {
 	fprintf (stream, "G%d, lexhash=", gennum);
 	hash_print (&tab->gens [gennum].linehash, stream);
@@ -178,6 +184,10 @@ void gentab_print (struct gentab *tab, char *head, FILE *stream, int indent) {
 
 varnum_t gen_get_source (struct gentab *tab, gennum_t gennum) {
 	return tab->gens [gennum].source;
+}
+
+varnum_t gen_get_binding (struct gentab *tab, gennum_t gennum) {
+	return tab->gens [gennum].binding;
 }
 
 void gen_set_cogeneration (struct gentab *tab, gennum_t gennum) {

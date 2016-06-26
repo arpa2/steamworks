@@ -179,7 +179,7 @@ void _clrO (struct parser *prs) {
 }
 
 // _flushO stores the action buffer as bnd_<linehash>
-void _flushO (struct parser *prs, hash_t linehash) {
+void _flushO (struct parser *prs, hash_t linehash, gennum_t g) {
 	char bndname [4 + 2 * sizeof (hash_t) + 1];
 	struct var_value varval;
 	varnum_t binding;
@@ -200,13 +200,15 @@ void _flushO (struct parser *prs, hash_t linehash) {
 			varval.typed_blob.len);
 	var_set_value (prs->vartab, binding, &varval);
 //DEBUG//
-printf ("Binding %s created: >>> ", bndname);
+printf ("Binding %s V%d G%d created: >>> ", bndname, binding, g);
 ptr = varval.typed_blob.str;
 len = varval.typed_blob.len;
 while (len-- > 0) {
 	printf ("%02x ", *ptr++);
 }
 printf ("<<<\n");
+
+	gen_set_binding(prs->gentab, g, binding);
 }
 
 %}
@@ -254,7 +256,7 @@ line_generator: binding GEN_FROM _pushV dnvar annotations {
 	gennum_t gennew = gen_new (prs->gentab, dnvar);
 	bitset_iter_t lvi;
 	hash_t linehash;
-printf ("FOUND %d bound variables in generator line\n", bitset_count (bindvars));
+printf ("FOUND %d bound variables in generator line G%d\n", bitset_count (bindvars), gennew);
 	bitset_iterator_init (&lvi, bindvars);
 	while (bitset_iterator_next_one (&lvi, NULL)) {
 		varnum_t varnum = bitset_iterator_bitnum (&lvi);
@@ -268,7 +270,7 @@ printf ("FOUND %d bound variables in generator line\n", bitset_count (bindvars))
 	gen_set_weight (prs->gentab, gennew, prs->weight_set? prs->weight: 250.0);
 	hash_curline (&prs->scanhashbuf, &linehash);
 	gen_set_hash (prs->gentab, gennew, linehash);
-	_flushO (prs, linehash);
+	_flushO (prs, linehash, gennew);
 	_clrV (prs);
 	_clrO (prs);
 }
