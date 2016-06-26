@@ -183,6 +183,8 @@ public:
 			return 1;
 		}
 
+		pulley_parser_hash(&m_prs);
+
 		int prsret = 0;
 
 		// Use conditions to drive variable partitions;
