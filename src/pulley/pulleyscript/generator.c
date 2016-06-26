@@ -106,6 +106,7 @@ static _gen_init (struct generator *gen)
 
 gennum_t gen_new (struct gentab *tab, varnum_t source) {
 	struct generator *newgen;
+	int i;
 	if (tab->count_gens >= tab->allocated_gens) {
 		int alloc = tab->allocated_gens + 100;
 		struct generator *newgens;
@@ -113,7 +114,7 @@ gennum_t gen_new (struct gentab *tab, varnum_t source) {
 		if (newgens == NULL) {
 			fatal_error ("Out of memory allocating generator");
 		}
-		for (int i = tab->allocated_gens; i < alloc; i++) {
+		for (i = tab->allocated_gens; i < alloc; i++) {
 			_gen_init(&newgens[i]);
 		}
 		tab->gens = newgens;
