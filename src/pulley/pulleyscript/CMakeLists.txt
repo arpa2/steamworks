@@ -38,11 +38,17 @@ set(COMPILER_SRC
   compiler.c
   )
 
+set(SIMPLE_SRC
+  simple.cpp
+  parserpp.cpp
+  bindingpp.cpp
+  )
+
 include_directories(${SQLITE3_INCLUDE_DIRS} ${FLEX_INCLUDE_DIRS})
 add_library(pslib STATIC ${SHARED_SRC})
 
 add_executable(compiler ${COMPILER_SRC})
 target_link_libraries(compiler pslib ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES})
 
-add_executable(simple simple.cpp parserpp.cpp)
+add_executable(simple ${SIMPLE_SRC})
 target_link_libraries(simple pslib swcommon ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES} ${LOG4CPP_LIBRARIES})
