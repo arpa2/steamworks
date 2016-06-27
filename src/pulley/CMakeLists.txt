@@ -22,11 +22,10 @@ add_subdirectory(pulleyscript)
 set(PULLEY_SRC
   main.cpp
   pulley.cpp
-  pulleyscript/parserpp.cpp
   )
 
 add_executable(pulley ${PULLEY_SRC})
 target_link_libraries(pulley ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES})
-target_link_libraries(pulley swldap swcommon pslib)
+target_link_libraries(pulley swldap swcommon pslib pspplib)
 target_link_libraries(pulley ${FLEX_LIBRARIES} ${SQLITE3_LIBRARIES})
 

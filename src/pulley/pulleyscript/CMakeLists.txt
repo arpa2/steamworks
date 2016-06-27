@@ -23,7 +23,7 @@ bison_target(bpulley pulley.yacc ${CMAKE_CURRENT_BINARY_DIR}/pulley.tab.cacc
 flex_target(fpulley pulley.lex ${CMAKE_CURRENT_BINARY_DIR}/parser.c)
 add_flex_bison_dependency(fpulley bpulley)
 
-set(SHARED_SRC
+set(PSLIB_SRC
   bitset.c
   condition.c
   driver.c
@@ -34,21 +34,25 @@ set(SHARED_SRC
   variable.c
   ${FLEX_fpulley_OUTPUTS})
 
+set(PSPPLIB_SRC
+  parserpp.cpp
+  bindingpp.cpp
+  )
+
 set(COMPILER_SRC
   compiler.c
   )
 
 set(SIMPLE_SRC
   simple.cpp
-  parserpp.cpp
-  bindingpp.cpp
   )
 
 include_directories(${SQLITE3_INCLUDE_DIRS} ${FLEX_INCLUDE_DIRS})
-add_library(pslib STATIC ${SHARED_SRC})
+add_library(pslib STATIC ${PSLIB_SRC})
+add_library(pspplib STATIC ${PSPPLIB_SRC})
 
 add_executable(compiler ${COMPILER_SRC})
 target_link_libraries(compiler pslib ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES})
 
 add_executable(simple ${SIMPLE_SRC})
-target_link_libraries(simple pslib swcommon ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES} ${LOG4CPP_LIBRARIES})
+target_link_libraries(simple pspplib pslib swcommon ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES} ${LOG4CPP_LIBRARIES})
