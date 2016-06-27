@@ -25,6 +25,7 @@ int main(int argc, char **argv)
 	printf("  .. %s\n", prs.state_string().c_str());
 	printf("Parser SQL setup %d\n", prs.setup_sql());
 	printf("  .. %s\n", prs.state_string().c_str());
+	prs.explain();
 	return 0;
 }
 

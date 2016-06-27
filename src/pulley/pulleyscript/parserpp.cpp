@@ -6,6 +6,7 @@ Adriaan de Groot <groot@kde.org>
 */
 
 #include "parserpp.h"
+#include "bindingpp.h"
 
 #include "condition.h"
 #include "driver.h"
@@ -61,10 +62,9 @@ private:
 	struct parser m_prs;
 	SquealOpener m_sql;
 	bool m_valid;
-
-public:
 	State m_state;
 
+public:
 	Private() : m_valid(false), m_state(Parser::State::Initial)
 	{
 		if (pulley_parser_init(&m_prs))
@@ -86,6 +86,8 @@ public:
 	}
 
 	bool is_valid() const { return m_valid; }
+
+	Parser::State state() const { return m_state; }
 
 	std::string state_string() const
 	{
@@ -256,6 +258,9 @@ public:
 		m_sql.close();
 		return 0;
 	}
+
+	// Testing-function, explains parser results.
+	void explain();
 } ;
 
 SteamWorks::PulleyScript::Parser::Parser() :
@@ -269,7 +274,7 @@ SteamWorks::PulleyScript::Parser::~Parser()
 
 SteamWorks::PulleyScript::Parser::State SteamWorks::PulleyScript::Parser::state() const
 {
-	return d->m_state;
+	return d->state();
 }
 
 std::string SteamWorks::PulleyScript::Parser::state_string() const
@@ -317,4 +322,29 @@ int SteamWorks::PulleyScript::Parser::structural_analysis()
 int SteamWorks::PulleyScript::Parser::setup_sql()
 {
 	return d->setup_sql();
+}
+
+void SteamWorks::PulleyScript::Parser::explain()
+{
+	d->explain();
+}
+
+void SteamWorks::PulleyScript::Parser::Private::explain()
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+	log.debugStream() << "Explaining parser bindings:";
+
+	gennum_t count = gentab_count(m_prs.gentab);
+	for (gennum_t i=0; i<count; i++) {
+		varnum_t v = gen_get_source(m_prs.gentab, i);
+		varnum_t b = gen_get_binding(m_prs.gentab, i);
+		log.debugStream() << "Generator " << i
+			<< " variable " << v << ' ' << var_get_name(m_prs.vartab, v)
+			<< " binding " << b << ' ' << var_get_name(m_prs.vartab, b);
+
+		struct var_value* value = var_share_value(m_prs.vartab, b);
+#ifndef NDEBUG
+		explain_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len);
+#endif
+}
 }

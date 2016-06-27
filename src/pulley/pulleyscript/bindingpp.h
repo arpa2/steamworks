@@ -12,11 +12,22 @@ Adriaan de Groot <groot@kde.org>
 #ifndef STEAMWORKS_PULLEYSCRIPT_BINDINGPP_H
 #define STEAMWORKS_PULLEYSCRIPT_BINDINGPP_H
 
+#include "variable.h"
+
 namespace SteamWorks
 {
 
 namespace PulleyScript
 {
+
+#ifndef NDEBUG
+/**
+ * Explain the coded @p binding (for machine-language explanation,
+ * see binding.h) relative to the variable table @p vars.
+ * Outputs to the logfile.
+ */
+void explain_binding(vartab* vars, uint8_t* binding, uint32_t len);
+#endif
 
 }  // namespace PulleyScript
 }  // namespace

@@ -60,6 +60,11 @@ public:
 	 * ensure that it has the right tables, etc.
 	 */
 	int setup_sql();
+
+	/**
+	 * Testing-function for whatever is next in the C++ parser wrapper.
+	 */
+	void explain();
 } ;
 
 }  // namespace PulleyScript
