@@ -57,28 +57,58 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 		auto d = log.debugStream();
 		_indent(d, indent);
 
-		switch (*p)
+		uint8_t opcode = (*p) & 0xf;
+		uint8_t operand_t = (*p) & 0x30;
+
+		const char* operand_s = nullptr;
+		switch (operand_t)
+		{
+		case BNDO_SUBJ_NONE:
+			operand_s = "None";
+			break;
+		case BNDO_SUBJ_ATTR:
+			operand_s = "attr";
+			break;
+		case BNDO_SUBJ_RDN:
+			operand_s = "RDN";
+			break;
+		case BNDO_SUBJ_DN:
+			operand_s = "DN";
+			break;
+		}
+
+		switch (opcode)
 		{
 		case BNDO_ACT_DOWN:
-			d << "DOWN";
+			d << "DOWN " << operand_s;
 			indent++;
 			p++;
 			break;
 		case BNDO_ACT_HAVE:
-			d << "HAVE " << var_get_name(vars, extract_varnum(p+1));
+			d << "HAVE " << operand_s << ' ' << var_get_name(vars, extract_varnum(p+1));
 			p += 1 + sizeof(varnum_t);
 			break;
 		case BNDO_ACT_BIND:
-			d << "BIND " << var_get_name(vars, extract_varnum(p+1)) << "~" << var_get_name(vars, extract_varnum(p+1+sizeof(varnum_t)));
+			d << "BIND " << operand_s << ' ' << var_get_name(vars, extract_varnum(p+1)) << "~" << var_get_name(vars, extract_varnum(p+1+sizeof(varnum_t)));
 			p += 1 + 2 * sizeof(varnum_t);
 			break;
+		case BNDO_ACT_CMP:
+			d << "CMP  " << operand_s << ' ' << var_get_name(vars, extract_varnum(p+1)) << "~" << var_get_name(vars, extract_varnum(p+1+sizeof(varnum_t)));
+			p += 1 + 2 * sizeof(varnum_t);
+			break;
+		case BNDO_ACT_OBJECT:
+			d << "OBJECT";
+			p += 1;
+			break;
+		case BNDO_ACT_DONE:
+			d << "DONE";
+			goto done;
 		default:
 			d << "UNKNOWN ";
-			dump_blob(d, p, 1);
-			goto fail;
+			dump_blob(d, &opcode, 1);
+			goto done;
 		}
 	}
-fail:
-	// done
+done:
 	log.debugStream() << " ..done binding @" << (void *)binding;
 }
