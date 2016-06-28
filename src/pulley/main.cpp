@@ -10,12 +10,20 @@ Adriaan de Groot <groot@kde.org>
 
 #include "pulley.h"
 
+#include "pulleyscript/parserpp.h"
+
 static const char* copyright = "Copyright (C) 2014-2016 InternetWide.org and the ARPA2.net project";
 
 int main(int argc, char** argv)
 {
 	SteamWorks::Logging::Manager logManager("pulley.properties");
 	SteamWorks::Logging::getRoot().debugStream() << "Steamworks Pulley" << copyright;
+
+	SteamWorks::PulleyScript::Parser prs;
+	for (int i=1; i<argc; i++)
+	{
+		prs.read_file(argv[i]);
+	}
 
 	PulleyDispatcher* dispatcher = new PulleyDispatcher();
 	SteamWorks::FCGI::init_logging("pulley.fcgi");
