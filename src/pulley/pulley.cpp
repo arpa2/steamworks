@@ -6,6 +6,7 @@ Adriaan de Groot <groot@kde.org>
 */
 
 #include "pulley.h"
+#include "pulleyscript/parserpp.h"
 
 #include "swldap/connection.h"
 #include "swldap/serverinfo.h"
@@ -24,9 +25,13 @@ private:
 	using SyncReplUPtr = std::unique_ptr<SteamWorks::LDAP::SyncRepl>;
 	std::vector<SyncReplUPtr> following;
 
+	using ParserUPtr = std::unique_ptr<SteamWorks::PulleyScript::Parser>;
+	ParserUPtr m_parser;
+
 public:
 	Private() :
-		connection(nullptr)
+		connection(nullptr),
+		m_parser(nullptr)
 	{
 	}
 
@@ -84,6 +89,7 @@ int PulleyDispatcher::exec(const std::string& verb, const Values values, Object 
 	else if (verb == "unfollow") return do_unfollow(values, response);
 	else if (verb == "dump_dit") return do_dump_dit(values, response);
 	else if (verb == "resync") return do_resync(values, response);
+	else if (verb == "script") return do_script(values, response);
 	return -1;
 }
 
@@ -180,4 +186,48 @@ int PulleyDispatcher::do_resync(const VerbDispatcher::Values values, VerbDispatc
 {
 	d->resync();
 	return 0;
+}
+
+int PulleyDispatcher::do_script(const char* filename)
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulley");
+
+	// TODO: cleanups when changing scripts?
+	if (m_state != disconnected)
+	{
+		log.errorStream() << "Cannot load a PulleyScript when connected to LDAP server.";
+		return 1;
+	}
+
+	d->m_parser.reset(new SteamWorks::PulleyScript::Parser());
+	if (d->m_parser->read_file(filename))
+	{
+		log.warnStream() << "Parser error on reading " << filename;
+		return 0;
+	}
+
+	d->m_parser->structural_analysis();
+	d->m_parser->setup_sql();
+
+	return 0;
+}
+
+int PulleyDispatcher::do_script(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulley");
+
+	std::string filename = _get_parameter(values, "filename");
+	if (filename.empty())
+	{
+		log.warnStream() << "No filename given.";
+		return 0;
+	}
+	if (m_state != disconnected)
+	{
+		log.warnStream() << "Can't read script file after connecting to server.";
+		return 0;
+	}
+
+	log.debugStream() << "Reading script from '" << filename << '\'';
+	return do_script(filename.c_str());
 }

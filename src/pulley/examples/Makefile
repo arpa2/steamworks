@@ -14,6 +14,9 @@ CMD = SERVER_NAME=$(SERVER_NAME) CONTENT_LENGTH=$(CONTENT_LENGTH) cgi-fcgi -conn
 start:
 	-cat json-connect | $(CMD)
 
+script:
+	-cat json-script | $(CMD)
+
 stop:
 	-cat json-stop | $(CMD)
 

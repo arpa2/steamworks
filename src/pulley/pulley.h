@@ -29,6 +29,12 @@ public:
 
 	State state() const { return m_state; }
 
+	/** Load a PulleyScript script. This overload with a const char *
+	 *  parameter loads a file from the local filesystem, for use
+	 *  before the Pulley connects to the LDAP server.
+	 */
+	int do_script(const char* filename);
+
 protected:
 	/** Connect to the upstream (e.g. source) LDAP server.
 	 *  This is where the pulley gets its information. */
@@ -48,6 +54,9 @@ protected:
 
 	/** Drop all stored state, and restart LDAP SyncRepl. */
 	int do_resync(const Values values, Object response);
+
+	/** Load a PulleyScript script. */
+	int do_script(const Values values, Object response);
 } ;
 
 
