@@ -5,6 +5,8 @@ All rights reserved. See file LICENSE for exact terms (2-clause BSD license).
 Adriaan de Groot <groot@kde.org>
 */
 
+#include <forward_list>
+
 #include "pulley.h"
 #include "pulleyscript/parserpp.h"
 
@@ -23,7 +25,7 @@ private:
 	ConnectionUPtr m_connection;
 
 	using SyncReplUPtr = std::unique_ptr<SteamWorks::LDAP::SyncRepl>;
-	std::vector<SyncReplUPtr> m_following;
+	std::forward_list<SyncReplUPtr> m_following;
 
 	using ParserUPtr = std::unique_ptr<SteamWorks::PulleyScript::Parser>;
 	ParserUPtr m_parser;
@@ -41,8 +43,22 @@ public:
 
 	int add_follower(const std::string& base, const std::string& filter, Object response)
 	{
-		m_following.emplace_back(new SteamWorks::LDAP::SyncRepl(base, filter));
-		m_following.back()->execute(*m_connection, &response);
+		m_following.emplace_front(new SteamWorks::LDAP::SyncRepl(base, filter));
+		m_following.front()->execute(*m_connection, &response);
+		return 0;
+	}
+
+	int remove_follower(const std::string& base, const std::string& filter)
+	{
+		for(auto it = m_following.cbegin(); it != m_following.cend(); it++)
+		{
+			auto& f = *it;
+
+			if ((f->base() == base) && (f->filter() == filter))
+			{
+				m_following.erase_after(it);
+			}
+		}
 		return 0;
 	}
 
@@ -64,7 +80,7 @@ public:
 
 	unsigned int count_followers()
 	{
-		return m_following.size();
+		return std::distance(m_following.cbegin(), m_following.cend());
 	}
 } ;
 
@@ -178,7 +194,16 @@ int PulleyDispatcher::do_unfollow(const VerbDispatcher::Values values, VerbDispa
 		return 0;
 	}
 
-	return 0;
+	std::string base = _get_parameter(values, "base");
+	std::string filter = _get_parameter(values, "filter");
+
+	if (base.empty())
+	{
+		log.warnStream() << "No base given for follow.";
+		return 0;
+	}
+
+	return d->remove_follower(base, filter);
 }
 
 int PulleyDispatcher::do_dump_dit(const VerbDispatcher::Values values, VerbDispatcher::Object response)
