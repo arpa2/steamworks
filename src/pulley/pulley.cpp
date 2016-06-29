@@ -20,17 +20,17 @@ class PulleyDispatcher::Private
 friend class PulleyDispatcher;
 private:
 	using ConnectionUPtr = std::unique_ptr<SteamWorks::LDAP::Connection>;
-	ConnectionUPtr connection;
+	ConnectionUPtr m_connection;
 
 	using SyncReplUPtr = std::unique_ptr<SteamWorks::LDAP::SyncRepl>;
-	std::vector<SyncReplUPtr> following;
+	std::vector<SyncReplUPtr> m_following;
 
 	using ParserUPtr = std::unique_ptr<SteamWorks::PulleyScript::Parser>;
 	ParserUPtr m_parser;
 
 public:
 	Private() :
-		connection(nullptr),
+		m_connection(nullptr),
 		m_parser(nullptr)
 	{
 	}
@@ -41,25 +41,30 @@ public:
 
 	int add_follower(const std::string& base, const std::string& filter, Object response)
 	{
-		following.emplace_back(new SteamWorks::LDAP::SyncRepl(base, filter));
-		following.back()->execute(*connection, &response);
+		m_following.emplace_back(new SteamWorks::LDAP::SyncRepl(base, filter));
+		m_following.back()->execute(*m_connection, &response);
 		return 0;
 	}
 
 	void dump_followers(Object response)
 	{
-		for(auto& f : following)
+		for(auto& f : m_following)
 		{
 			f->dump_dit(&response);
 		}
 	}
 
-	void resync()
+	void resync_followers()
 	{
-		for(auto& f : following)
+		for(auto& f : m_following)
 		{
 			f->resync();
 		}
+	}
+
+	unsigned int count_followers()
+	{
+		return m_following.size();
 	}
 } ;
 
@@ -73,9 +78,9 @@ void PulleyDispatcher::poll()
 {
 	VerbDispatcher::poll();
 
-	for (auto i=d->following.cbegin(); i!=d->following.cend(); ++i)
+	for (auto i=d->m_following.cbegin(); i!=d->m_following.cend(); ++i)
 	{
-		(*i)->poll(*d->connection);
+		(*i)->poll(*d->m_connection);
 	}
 }
 
@@ -98,8 +103,8 @@ int PulleyDispatcher::do_connect(const Values values, Object response)
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 	std::string name = values.get("uri").to_str();
 
-	if (SteamWorks::LDAP::do_connect(d->connection, name, response, log) &&
-	    SteamWorks::LDAP::require_syncrepl(d->connection, response, log)
+	if (SteamWorks::LDAP::do_connect(d->m_connection, name, response, log) &&
+	    SteamWorks::LDAP::require_syncrepl(d->m_connection, response, log)
 	)
 	{
 		m_state = connected;
@@ -111,7 +116,7 @@ int PulleyDispatcher::do_connect(const Values values, Object response)
 int PulleyDispatcher::do_stop(const Values values)
 {
 	m_state = stopped;
-	d->connection.reset(nullptr);
+	d->m_connection.reset(nullptr);
 	return -1;
 }
 
@@ -126,7 +131,7 @@ int PulleyDispatcher::do_serverinfo(const Values values, Object response)
 	}
 
 	SteamWorks::LDAP::ServerControlInfo info;
-	info.execute(*d->connection, &response);
+	info.execute(*d->m_connection, &response);
 
 	return 0;
 }
@@ -184,7 +189,7 @@ int PulleyDispatcher::do_dump_dit(const VerbDispatcher::Values values, VerbDispa
 
 int PulleyDispatcher::do_resync(const VerbDispatcher::Values values, VerbDispatcher::Object response)
 {
-	d->resync();
+	d->resync_followers();
 	return 0;
 }
 
