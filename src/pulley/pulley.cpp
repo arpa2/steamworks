@@ -214,6 +214,10 @@ int PulleyDispatcher::do_script(const char* filename)
 	d->m_parser->structural_analysis();
 	d->m_parser->setup_sql();
 
+#ifndef NDEBUG
+	d->m_parser->explain();
+#endif
+
 	return 0;
 }
 
