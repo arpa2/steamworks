@@ -50,12 +50,15 @@ public:
 
 	int remove_follower(const std::string& base, const std::string& filter)
 	{
+		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
+		log.debugStream() << "Removing SyncRepl base=" << base << " filter=" << filter;
 		for(auto it = m_following.cbegin(); it != m_following.cend(); it++)
 		{
 			auto& f = *it;
 
 			if ((f->base() == base) && (f->filter() == filter))
 			{
+				log.debugStream() << "Found SyncRepl @" << (void *)f.get();
 				m_following.erase_after(it);
 			}
 		}
@@ -180,6 +183,11 @@ int PulleyDispatcher::do_follow(const VerbDispatcher::Values values, VerbDispatc
 		log.warnStream() << "No base given for follow.";
 		return 0;
 	}
+	if (filter.empty())
+	{
+		log.warnStream() << "No filter given for follow.";
+		return 0;
+	}
 
 	return d->add_follower(base, filter, response);
 }
@@ -199,10 +207,16 @@ int PulleyDispatcher::do_unfollow(const VerbDispatcher::Values values, VerbDispa
 
 	if (base.empty())
 	{
-		log.warnStream() << "No base given for follow.";
+		log.warnStream() << "No base given for unfollow.";
+		return 0;
+	}
+	if (filter.empty())
+	{
+		log.warnStream() << "No filter given for unfollow.";
 		return 0;
 	}
 
+	log.debugStream() << "Unfollowing base=" << base << " filter=" << filter;
 	return d->remove_follower(base, filter);
 }
 
