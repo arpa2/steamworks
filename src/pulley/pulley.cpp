@@ -198,7 +198,7 @@ int PulleyDispatcher::do_script(const char* filename)
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 
 	// TODO: cleanups when changing scripts?
-	if (m_state != disconnected)
+	if (d->count_followers())
 	{
 		log.errorStream() << "Cannot load a PulleyScript when connected to LDAP server.";
 		return 1;
@@ -227,7 +227,7 @@ int PulleyDispatcher::do_script(const VerbDispatcher::Values values, VerbDispatc
 		log.warnStream() << "No filename given.";
 		return 0;
 	}
-	if (m_state != disconnected)
+	if (d->count_followers())
 	{
 		log.warnStream() << "Can't read script file after connecting to server.";
 		return 0;
