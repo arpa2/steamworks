@@ -354,7 +354,7 @@ int SteamWorks::LDAP::SyncRepl::Private::sync(::LDAP* ldaphandle)
 	}
 	else
 	{
-		log.debugStream() << "Sync setup O2K.";
+		log.debugStream() << "Sync setup OK.";
 	}
 
 	m_started = true;
