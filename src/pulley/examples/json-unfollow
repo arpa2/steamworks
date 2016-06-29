@@ -1,4 +1,5 @@
 { 
 "verb": "unfollow",
-"base": "dc=example,dc=com"
+"base": "dc=example,dc=com",
+"filter": "(objectclass=device)"
 }
