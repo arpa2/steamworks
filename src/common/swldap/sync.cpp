@@ -445,3 +445,13 @@ void SteamWorks::LDAP::SyncRepl::resync()
 	log.debugStream() << "SyncRepl " << d->base() << " has stopped.";
 	m_valid = true;
 }
+
+std::string SteamWorks::LDAP::SyncRepl::base() const
+{
+	return d->base();
+}
+
+std::string SteamWorks::LDAP::SyncRepl::filter() const
+{
+	return d->filter();
+}

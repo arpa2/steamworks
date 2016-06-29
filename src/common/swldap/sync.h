@@ -36,6 +36,9 @@ public:
 	SyncRepl(const std::string& base, const std::string& filter);
 	~SyncRepl();
 
+	std::string base() const;
+	std::string filter() const;
+	
 	virtual void execute(Connection&, Result result=nullptr);
 	void poll(Connection&);
 	void resync();
