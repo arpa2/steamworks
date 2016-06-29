@@ -51,17 +51,17 @@ public:
 	int remove_follower(const std::string& base, const std::string& filter)
 	{
 		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
-		log.debugStream() << "Removing SyncRepl base=" << base << " filter=" << filter;
+		log.debugStream() << "Looking for SyncRepl base=" << base << " filter=" << filter;
+
+#ifndef NDEBUG
 		for(auto it = m_following.cbegin(); it != m_following.cend(); it++)
 		{
 			auto& f = *it;
-
-			if ((f->base() == base) && (f->filter() == filter))
-			{
-				log.debugStream() << "Found SyncRepl @" << (void *)f.get();
-				m_following.erase_after(it);
-			}
+			log.debugStream() << "  .. SyncRepl @" << (void *)f.get() << " base=" << f->base() << " filter=" << f->filter();
 		}
+#endif
+
+		m_following.remove_if([&](const SyncReplUPtr& f) { return (f->base() == base) && (f->filter() == filter); });
 		return 0;
 	}
 
