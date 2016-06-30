@@ -250,6 +250,21 @@ Logger& getLogger(const std::string& categoryname) { return Manager::getLogger(c
 static inline
 Logger& getRoot() { return Manager::getRoot(); }
 
+/**
+ * Log the hex bytes pointed to by @p p, @p len bytes in a row, to
+ * the given @p stream. Each byte becomes two hex digits followed by
+ * a space.
+ */
+void log_hex(SteamWorks::Logging::LoggerStream& stream, const uint8_t* p, uint32_t len);
+/** Same, but for signed char (exactly the same output, though). */
+void log_hex(SteamWorks::Logging::LoggerStream& stream, const char* p, uint32_t len);
+
+/**
+ * Log a given indent-depth @p indent (one indent-depth is two spaces)
+ * to the given @p stream.
+ */
+void log_indent(SteamWorks::Logging::LoggerStream& stream, unsigned int indent);
+
 } // namespace Logging
 } // namespace
 

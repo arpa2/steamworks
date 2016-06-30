@@ -10,29 +10,6 @@ Adriaan de Groot <groot@kde.org>
 
 #include <logger.h>
 
-static char hex[] = "0123456789ABCDEF";
-
-/**
- * Log a BLOB to the given logging stream.
- */
-static void dump_blob(SteamWorks::Logging::LoggerStream& log, uint8_t *p, uint32_t len)
-{
-	for (uint32_t i=0; i<len; i++, p++)
-	{
-		char c0 = hex[(*p & 0xf0) >> 4];
-		char c1 = hex[*p & 0x0f];
-		log << c0 << c1 << ' ';
-	}
-}
-
-static void _indent(SteamWorks::Logging::LoggerStream& log, unsigned int indent)
-{
-	for (unsigned int i=0; i<indent; i++)
-	{
-		log << ' ' << ' ';
-	}
-}
-
 varnum_t extract_varnum(uint8_t* p)
 {
 	return *(varnum_t *)p;
@@ -45,7 +22,7 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 	{
 		auto d = log.debugStream();
 		d << "Explain binding @" << (void *)binding << ' ';
-		dump_blob(d, binding, len);
+		SteamWorks::Logging::log_hex(d, binding, len);
 	}
 
 	unsigned int indent = 0;
@@ -55,7 +32,7 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 	while (p < end)
 	{
 		auto d = log.debugStream();
-		_indent(d, indent);
+		SteamWorks::Logging::log_indent(d, indent);
 
 		uint8_t opcode = (*p) & 0xf;
 		uint8_t operand_t = (*p) & 0x30;
@@ -134,7 +111,7 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 			goto done;
 		default:
 			d << "UNKNOWN ";
-			dump_blob(d, &opcode, 1);
+			SteamWorks::Logging::log_hex(d, &opcode, 1);
 			goto done;
 		}
 	}

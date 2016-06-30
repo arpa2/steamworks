@@ -34,16 +34,6 @@ static void dump_uuid(std::string& s, struct berval* uuid)
 }
 
 /**
- * Log a BER UUID to the given logging stream.
- */
-static void dump_uuid(SteamWorks::Logging::LoggerStream& log, struct berval* uuid)
-{
-	std::string s(uuid->bv_len * 2, '0');
-	dump_uuid(s, uuid);
-	log << s;
-}
-
-/**
  * Display (non-recursively) the JSON object @p d by printing it to the
  * logger @p log. This only works one level deep; each attribute is logged
  * on one line.  For array or object attributes, they display as [] lists
@@ -225,7 +215,7 @@ static int search_entry_f(ldap_sync_t* ls, LDAPMessage* msg, struct berval* entr
 	{
 		auto stream = log.debugStream();
 		stream << "Entry: " << ldap_get_dn(ls->ls_ld, msg) << " UUID ";
-		dump_uuid(stream, entryUUID);
+		SteamWorks::Logging::log_hex(stream, entryUUID->bv_val, entryUUID->bv_len);
 	}
 #endif
 	reinterpret_cast<DITCore*>(ls->ls_private)->search_entry_f(ls->ls_ld, msg, entryUUID, phase);
@@ -253,7 +243,7 @@ static int search_intermediate_f(ldap_sync_t* ls, LDAPMessage* msg, BerVarray sy
 	{
 		auto stream = log.debugStream();
 		stream << "UUIDs: " << (void *)syncUUIDs << ' ';
-		dump_uuid(stream, syncUUIDs);
+		SteamWorks::Logging::log_hex(stream, syncUUIDs->bv_val, syncUUIDs->bv_len);
 	}
 #endif
 	return 0;
