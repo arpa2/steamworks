@@ -259,8 +259,6 @@ public:
 		return 0;
 	}
 
-	// Testing-function, explains parser results.
-	void explain();
 	// Extract filter-expressions
 	std::forward_list< std::string > find_subscriptions();
 } ;
