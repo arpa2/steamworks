@@ -260,7 +260,7 @@ varnum_t var_add (struct vartab *tab, char *name, varkind_t kind) {
 	return tab->count_vars++;
 }
 
-varnum_t var_find (struct vartab *tab, char *name, varkind_t kind) {
+varnum_t var_find (struct vartab *tab, const char *name, varkind_t kind) {
 	int i;
 	for (i=0; i<tab->count_vars; i++) {
 		if ((tab->vars [i].kind == kind) && (strcmp (tab->vars [i].name, name) == 0)) {

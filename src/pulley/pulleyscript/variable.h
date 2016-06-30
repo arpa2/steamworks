@@ -125,7 +125,7 @@ void var_print (struct vartab *tab, varnum_t varnum, FILE *stream, int indent);
  * whereas the var_have*() functions then create a new variable.
  */
 varnum_t var_add  (struct vartab *tab, char *name, varkind_t kind);
-varnum_t var_find (struct vartab *tab, char *name, varkind_t kind);
+varnum_t var_find (struct vartab *tab, const char *name, varkind_t kind);
 varnum_t var_have (struct vartab *tab, char *name, varkind_t kind);
 #if TODO_OLDER_INFORMATION_IDEA
 varnum_t var_have_for_generator (struct vartab *tab, char *name, gennum_t gennum);
