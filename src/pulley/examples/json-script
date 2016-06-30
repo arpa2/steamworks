@@ -1,4 +1,6 @@
 { 
 "verb": "script",
-"filename": "../pulleyscript/tests/tlspool-issuers.ply"
+"filename": "../pulleyscript/tests/tlspool-issuers.ply",
+"base": "dc=example,dc=com",
+"autofollow": true
 }
