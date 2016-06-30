@@ -17,6 +17,34 @@ Adriaan de Groot <groot@kde.org>
 #include "jsonresponse.h"
 #include "logger.h"
 
+class PulleySyncRepl : public SteamWorks::LDAP::SyncRepl
+{
+protected:
+	std::shared_ptr<SteamWorks::PulleyScript::Parser> m_prs;
+
+public:
+	PulleySyncRepl(const std::string& base, const std::string& filter, std::shared_ptr<SteamWorks::PulleyScript::Parser> parser) :
+		SyncRepl(base, filter),
+		m_prs(parser)
+	{
+	}
+
+protected:
+	virtual void after_modification(const std::string& removed) override;
+	virtual void after_modification(const std::string& modified, const picojson::object& values) override;
+} ;
+
+void PulleySyncRepl::after_modification(const std::string& removed)
+{
+	// SteamWorks::LDAP::SyncRepl::after_modification(removed);
+}
+
+void PulleySyncRepl::after_modification(const std::string& modified, const picojson::object& values)
+{
+	// SteamWorks::LDAP::SyncRepl::after_modification(modified, values);
+}
+
+
 class PulleyDispatcher::Private
 {
 friend class PulleyDispatcher;
@@ -24,11 +52,11 @@ private:
 	using ConnectionUPtr = std::unique_ptr<SteamWorks::LDAP::Connection>;
 	ConnectionUPtr m_connection;
 
-	using SyncReplUPtr = std::unique_ptr<SteamWorks::LDAP::SyncRepl>;
+	using SyncReplUPtr = std::unique_ptr<PulleySyncRepl>;
 	std::forward_list<SyncReplUPtr> m_following;
 
-	using ParserUPtr = std::unique_ptr<SteamWorks::PulleyScript::Parser>;
-	ParserUPtr m_parser;
+	using ParserSPtr = std::shared_ptr<SteamWorks::PulleyScript::Parser>;
+	ParserSPtr m_parser;
 
 public:
 	Private() :
@@ -43,7 +71,7 @@ public:
 
 	int add_follower(const std::string& base, const std::string& filter, Object response)
 	{
-		m_following.emplace_front(new SteamWorks::LDAP::SyncRepl(base, filter));
+		m_following.emplace_front(new PulleySyncRepl(base, filter, m_parser));
 		m_following.front()->execute(*m_connection, &response);
 		return 0;
 	}
