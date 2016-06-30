@@ -16,12 +16,29 @@ Adriaan de Groot <groot@kde.org>
 #include <forward_list>
 #include <memory>
 
+#include <picojson.h>
+
 namespace SteamWorks
 {
 
 namespace PulleyScript
 {
 
+/**
+ * Pulley(script) controller object.
+ *
+ * This is called a parser because it starts off with parsing one
+ * or more PulleyScript files; but once that is done it is
+ * in charge of the SQLite database storing the data generated
+ * by the Pulley middle-end (which consists of the generators
+ * defined by the PulleyScript; they are fed data from the LDAP
+ * front-end, filling the middle-end database which is then
+ * handed off to Pulley back-ends to be consumed locally).
+ *
+ * A Parser instance should have methods called in the right
+ * sequence, first one or more read_file(), then structural_analysis()
+ * and setup_sql(). After that setup-phase, things are more free.
+ */
 class Parser
 {
 private:
@@ -70,6 +87,13 @@ public:
 	 * the script.
 	 */
 	std::forward_list<std::string> find_subscriptions();
+
+
+	/**
+	 * Remove a UUID from the middle-end.
+	 */
+	void remove_entry(const std::string& uuid);
+	void add_entry(const std::string& uuid, const picojson::object& data);
 } ;
 
 }  // namespace PulleyScript

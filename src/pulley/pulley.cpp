@@ -37,11 +37,14 @@ protected:
 void PulleySyncRepl::after_modification(const std::string& removed)
 {
 	// SteamWorks::LDAP::SyncRepl::after_modification(removed);
+	m_prs->remove_entry(removed);
 }
 
 void PulleySyncRepl::after_modification(const std::string& modified, const picojson::object& values)
 {
 	// SteamWorks::LDAP::SyncRepl::after_modification(modified, values);
+	m_prs->remove_entry(modified);
+	m_prs->add_entry(modified, values);
 }
 
 

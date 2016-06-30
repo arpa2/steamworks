@@ -85,6 +85,8 @@ public:
 		m_state = Parser::State::Initial;  // Not really
 	}
 
+	const struct parser* parser() const { return &m_prs; }
+
 	bool is_valid() const { return m_valid; }
 
 	Parser::State state() const { return m_state; }
@@ -261,6 +263,10 @@ public:
 
 	// Extract filter-expressions
 	std::forward_list< std::string > find_subscriptions();
+
+	// Remove an entry from the middle-end (post-SQL)
+	void remove_entry(const std::string& uuid);
+	void add_entry(const std::string& uuid, const picojson::object& data);
 } ;
 
 SteamWorks::PulleyScript::Parser::Parser() :
@@ -343,7 +349,8 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find
 
 	std::forward_list<std::string> filterexps;
 	gennum_t count = gentab_count(m_prs.gentab);
-	for (gennum_t i=0; i<count; i++) {
+	for (gennum_t i=0; i<count; i++)
+	{
 		varnum_t v = gen_get_source(m_prs.gentab, i);
 
 		if (v != world)
@@ -360,4 +367,46 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find
 	}
 
 	return filterexps;
+}
+
+void SteamWorks::PulleyScript::Parser::remove_entry(const std::string& uuid)
+{
+	d->remove_entry(uuid);
+}
+
+void SteamWorks::PulleyScript::Parser::add_entry(const std::string& uuid, const picojson::object& data)
+{
+	d->add_entry(uuid, data);
+}
+
+void SteamWorks::PulleyScript::Parser::Private::remove_entry(const std::string& uuid)
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+	log.debugStream() << "Removing entry:" << uuid;
+
+	gennum_t count = gentab_count(m_prs.gentab);
+	for (gennum_t i=0; i<count; i++)
+	{
+		hash_t h = gen_get_hash(m_prs.gentab, i);
+
+		auto stream = log.debugStream();
+		stream << "  .. generator " << i << " hash ";
+		SteamWorks::Logging::log_hex(stream, (uint8_t *)&h, sizeof(h));
+	}
+}
+
+void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uuid, const picojson::object& data)
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+	log.debugStream() << "Adding entry:" << uuid;
+
+	gennum_t count = gentab_count(m_prs.gentab);
+	for (gennum_t i=0; i<count; i++)
+	{
+		hash_t h = gen_get_hash(m_prs.gentab, i);
+
+		auto stream = log.debugStream();
+		stream << "  .. generator " << i << " hash ";
+		SteamWorks::Logging::log_hex(stream, (uint8_t *)&h, sizeof(h));
+	}
 }
