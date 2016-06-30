@@ -299,7 +299,7 @@ SteamWorks::LDAP::SyncRepl::Private::~Private()
 	if (m_started && m_syncrepl.ls_ld)
 	{
 		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
-		log.debugStream() << "Destroying SyncRepl " << base();
+		log.debugStream() << "Destroying SyncRepl @" << (void *) this;
 		m_syncrepl.ls_base = nullptr;
 		m_syncrepl.ls_filter = nullptr;
 		m_syncrepl.ls_ld = nullptr;
