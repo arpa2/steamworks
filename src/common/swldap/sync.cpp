@@ -68,32 +68,21 @@ static inline void update_dn(::LDAP *ldap, ::LDAPMessage* msg, picojson::object&
  * the tree is keyed by UUIDs of the entries. Each
  * leaf is a JSON object representing the DIT entry.
  */
-class DITCore
+struct DITCore
 {
-private:
 	std::map<std::string, picojson::object> m_dit;  // uuid to object (name/value pairs)
 	std::set<std::string> m_modified;  // uuids modified since last call to reset_modified
 
-public:
 	/** Clear the (cached) DIT */
 	void clear()
 	{
 		m_dit.clear();
+		reset_modified();
 	}
 
 	void reset_modified()
 	{
 		m_modified.clear();
-	}
-
-	std::set<std::string> get_modified()
-	{
-		return m_modified;
-	}
-
-	const std::set<std::string>& get_modified() const
-	{
-		return m_modified;
 	}
 
 	/**
@@ -328,17 +317,15 @@ int SteamWorks::LDAP::SyncRepl::Private::poll(::LDAP* ldaphandle)
 		return -1;
 	}
 
+	m_dit.reset_modified();
+
 	m_syncrepl.ls_ld = ldaphandle;
 	int r = ldap_sync_poll(&m_syncrepl);
 	if (r)
 	{
 		log.errorStream() << "Sync poll result " << r << " " << ldap_err2string(r);
 	}
-	else
-	{
-		const auto& mods = m_dit.get_modified();
-		log.debugStream() << "Poll found " << mods.size() << " modifications.";
-	}
+
 	return r;
 }
 
@@ -351,6 +338,8 @@ int SteamWorks::LDAP::SyncRepl::Private::sync(::LDAP* ldaphandle)
 		log.errorStream() << "SyncRepc for " << base() << " already started.";
 		return -1;
 	}
+
+	m_dit.reset_modified();
 
 	// TODO: settings for timeouts?
 	struct timeval tv;
@@ -373,6 +362,12 @@ int SteamWorks::LDAP::SyncRepl::Private::sync(::LDAP* ldaphandle)
 	}
 
 	m_started = true;
+
+	// Act like everything is new.
+	for (auto i = m_dit.m_dit.cbegin(); i != m_dit.m_dit.cend(); i++)
+	{
+		m_dit.m_modified.insert(i->first);
+	}
 
 	return 0;
 }
@@ -409,10 +404,8 @@ static unsigned int _count_controls(SteamWorks::Logging::Logger& log, ::LDAPCont
 void SteamWorks::LDAP::SyncRepl::execute(Connection& conn, Result results)
 {
 	::LDAP* ldaphandle = handle(conn);
-	if (d->sync(ldaphandle) == 0)
-	{
-		d->poll(ldaphandle);
-	}
+	d->sync(ldaphandle);
+	after_poll();
 }
 
 void SteamWorks::LDAP::SyncRepl::poll(Connection& conn)
@@ -429,6 +422,7 @@ void SteamWorks::LDAP::SyncRepl::poll(Connection& conn)
 	{
 		log.debugStream() << "Polling MSR " <<  (void*)d.get();
 		d->poll(handle(conn));
+		after_poll();
 	}
 	else
 	{
@@ -437,6 +431,24 @@ void SteamWorks::LDAP::SyncRepl::poll(Connection& conn)
 		// but not re-started.
 		log.debugStream() << "Restarting MSR " <<  (void*)d.get();
 		d->sync(handle(conn));
+		after_poll();
+	}
+}
+
+void SteamWorks::LDAP::SyncRepl::after_poll()
+{
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
+
+	for (auto i = d->dit().m_modified.cbegin(); i != d->dit().m_modified.cend(); i++)
+	{
+		if (d->dit().m_dit.count(*i))
+		{
+			log.debugStream() << "  Modified UUID " << *i;
+		}
+		else
+		{
+			log.debugStream() << "  Removed UUID " << *i;
+		}
 	}
 }
 
