@@ -123,7 +123,7 @@ int main(int argc, char **argv)
 	prsret = prs.setup_sql();
 	log.debugStream() << "Parser SQL setup " << prs.setup_sql();
 	log.debugStream() << "  .. " << prs.state_string().c_str();
-	prs.explain();
+	prs.find_subscriptions();
 	return 0;
 }
 

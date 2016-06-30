@@ -247,15 +247,11 @@ int PulleyDispatcher::do_script(const char* filename)
 	if (d->m_parser->read_file(filename))
 	{
 		log.warnStream() << "Parser error on reading " << filename;
-		return 0;
+		return 1;
 	}
 
 	d->m_parser->structural_analysis();
 	d->m_parser->setup_sql();
-
-#ifndef NDEBUG
-	d->m_parser->explain();
-#endif
 
 	return 0;
 }
@@ -277,5 +273,40 @@ int PulleyDispatcher::do_script(const VerbDispatcher::Values values, VerbDispatc
 	}
 
 	log.debugStream() << "Reading script from '" << filename << '\'';
-	return do_script(filename.c_str());
+	auto r = do_script(filename.c_str());
+
+	if (r)
+	{
+		// Still return 0, because we want the pulley to continue.
+		// TODO: error reporting through @p response
+		return 0;
+	}
+
+	std::string base = _get_parameter(values, "base");
+	bool autofollow = false;
+	auto a = values.get("autofollow");
+	if (!a.is<picojson::null>())
+	{
+		autofollow = a.is<bool>() && a.get<bool>();
+	}
+
+	if (autofollow && base.empty())
+	{
+		log.warnStream() << "Pulleyscript autoload is on, but no base is set.";
+	}
+	else if (autofollow)
+	{
+		auto synclist = d->m_parser->find_subscriptions();
+		log.debugStream() << "Pulleyscript adding " << std::distance(synclist.cbegin(), synclist.cend()) << " subscriptions.";
+		for (auto filter : synclist)
+		{
+			d->add_follower(base, filter, response);
+		}
+	}
+	else
+	{
+		log.debugStream() << "Pulleyscript loaded, no autofollow.";
+	}
+
+	return 0;
 }

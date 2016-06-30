@@ -63,11 +63,6 @@ public:
 	int setup_sql();
 
 	/**
-	 * Testing-function for whatever is next in the C++ parser wrapper.
-	 */
-	void explain();
-
-	/**
 	 * Return a list of LDAP filter expressions that correspond
 	 * to the generators in this script that pull from world;
 	 * these generators (and their expressions) correspond to

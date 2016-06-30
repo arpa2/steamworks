@@ -77,6 +77,7 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 			break;
 		}
 
+		varnum_t v0 = VARNUM_BAD, v1 = VARNUM_BAD;
 		switch (opcode)
 		{
 		case BNDO_ACT_DOWN:
@@ -93,7 +94,35 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 			p += 1 + 2 * sizeof(varnum_t);
 			break;
 		case BNDO_ACT_CMP:
-			d << "CMP  " << operand_s << ' ' << var_get_name(vars, extract_varnum(p+1)) << "~" << var_get_name(vars, extract_varnum(p+1+sizeof(varnum_t)));
+			v0 = extract_varnum(p+1);
+			v1 = extract_varnum(p+1+sizeof(varnum_t));
+			d << "CMP  " << operand_s << ' ' << var_get_name(vars, v0) << "~" << var_get_name(vars, v1);
+			if (filterexp && (var_get_kind(vars, v1) == VARKIND_CONSTANT))
+			{
+				// For constants, the name is the value. Due to syntactical oddities
+				// in the pulleyscript, we can have a constant value that is
+				//  - numeric
+				//  - quoted with double-quotes
+				// in the LDAP filter-expression, though, we need to drop those quotes.
+				const char *cval = var_get_name(vars, v1);
+				if (!filterexp->empty())
+				{
+					filterexp->append(1, ',');
+				}
+				filterexp->append(var_get_name(vars, v0));
+				filterexp->append(1, '=');
+				if (cval[0] == '"')
+				{
+					// Avoid the start and end "
+					size_t len = strlen(cval);
+					assert(len >= 2);
+					filterexp->append(cval+1, len-2);
+				}
+				else
+				{
+					filterexp->append(cval);
+				}
+			}
 			p += 1 + 2 * sizeof(varnum_t);
 			break;
 		case BNDO_ACT_OBJECT:

@@ -326,34 +326,9 @@ int SteamWorks::PulleyScript::Parser::setup_sql()
 	return d->setup_sql();
 }
 
-void SteamWorks::PulleyScript::Parser::explain()
-{
-	d->explain();
-}
-
 std::forward_list< std::string > SteamWorks::PulleyScript::Parser::find_subscriptions()
 {
 	return d->find_subscriptions();
-}
-
-void SteamWorks::PulleyScript::Parser::Private::explain()
-{
-	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
-	log.debugStream() << "Explaining parser bindings:";
-
-	gennum_t count = gentab_count(m_prs.gentab);
-	for (gennum_t i=0; i<count; i++) {
-		varnum_t v = gen_get_source(m_prs.gentab, i);
-		varnum_t b = gen_get_binding(m_prs.gentab, i);
-		log.debugStream() << "Generator " << i
-			<< " variable " << v << ' ' << var_get_name(m_prs.vartab, v)
-			<< " binding " << b << ' ' << var_get_name(m_prs.vartab, b);
-
-		struct var_value* value = var_share_value(m_prs.vartab, b);
-#ifndef NDEBUG
-		explain_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len);
-#endif
-	}
 }
 
 std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find_subscriptions()
