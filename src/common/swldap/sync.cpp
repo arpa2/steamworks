@@ -320,9 +320,10 @@ SteamWorks::LDAP::SyncRepl::Private::~Private()
 
 int SteamWorks::LDAP::SyncRepl::Private::poll(::LDAP* ldaphandle)
 {
+	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
+
 	if (!m_started)
 	{
-		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 		log.errorStream() << "Can't poll not-yet-started SyncRepl " << base();
 		return -1;
 	}
@@ -331,8 +332,12 @@ int SteamWorks::LDAP::SyncRepl::Private::poll(::LDAP* ldaphandle)
 	int r = ldap_sync_poll(&m_syncrepl);
 	if (r)
 	{
-		SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.ldap");
 		log.errorStream() << "Sync poll result " << r << " " << ldap_err2string(r);
+	}
+	else
+	{
+		const auto& mods = m_dit.get_modified();
+		log.debugStream() << "Poll found " << mods.size() << " modifications.";
 	}
 	return r;
 }
