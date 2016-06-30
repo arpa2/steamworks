@@ -13,6 +13,7 @@ Adriaan de Groot <groot@kde.org>
 #ifndef STEAMWORKS_PULLEYSCRIPT_PARSERPP_H
 #define STEAMWORKS_PULLEYSCRIPT_PARSERPP_H
 
+#include <forward_list>
 #include <memory>
 
 namespace SteamWorks
@@ -65,6 +66,15 @@ public:
 	 * Testing-function for whatever is next in the C++ parser wrapper.
 	 */
 	void explain();
+
+	/**
+	 * Return a list of LDAP filter expressions that correspond
+	 * to the generators in this script that pull from world;
+	 * these generators (and their expressions) correspond to
+	 * the SyncRepl subscriptions that are necessary to run
+	 * the script.
+	 */
+	std::forward_list<std::string> find_subscriptions();
 } ;
 
 }  // namespace PulleyScript

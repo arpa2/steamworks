@@ -38,7 +38,7 @@ varnum_t extract_varnum(uint8_t* p)
 	return *(varnum_t *)p;
 }
 
-void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, uint32_t len)
+void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, uint32_t len, std::string* filterexp)
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
 

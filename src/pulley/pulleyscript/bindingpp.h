@@ -14,20 +14,24 @@ Adriaan de Groot <groot@kde.org>
 
 #include "variable.h"
 
+#include <string>
+
 namespace SteamWorks
 {
 
 namespace PulleyScript
 {
 
-#ifndef NDEBUG
 /**
  * Explain the coded @p binding (for machine-language explanation,
  * see binding.h) relative to the variable table @p vars.
  * Outputs to the logfile.
+ *
+ * If @p filterexp is not a null-pointer, builds an LDAP filter
+ * expression for this binding based on the constant-comparisons
+ * found in the binding.
  */
-void explain_binding(vartab* vars, uint8_t* binding, uint32_t len);
-#endif
+void explain_binding(vartab* vars, uint8_t* binding, uint32_t len, std::string* filterexp=nullptr);
 
 }  // namespace PulleyScript
 }  // namespace

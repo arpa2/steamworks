@@ -261,6 +261,8 @@ public:
 
 	// Testing-function, explains parser results.
 	void explain();
+	// Extract filter-expressions
+	std::forward_list< std::string > find_subscriptions();
 } ;
 
 SteamWorks::PulleyScript::Parser::Parser() :
@@ -329,6 +331,11 @@ void SteamWorks::PulleyScript::Parser::explain()
 	d->explain();
 }
 
+std::forward_list< std::string > SteamWorks::PulleyScript::Parser::find_subscriptions()
+{
+	return d->find_subscriptions();
+}
+
 void SteamWorks::PulleyScript::Parser::Private::explain()
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
@@ -346,5 +353,38 @@ void SteamWorks::PulleyScript::Parser::Private::explain()
 #ifndef NDEBUG
 		explain_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len);
 #endif
+	}
 }
+
+std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find_subscriptions()
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+	log.debugStream() << "Finding parser subscriptions:";
+
+	varnum_t world = var_find(m_prs.vartab, "world", VARKIND_VARIABLE);
+	if (world == VARNUM_BAD)
+	{
+		log.warnStream() << "Script does not pull from world.";
+		return std::forward_list<std::string>();
+	}
+
+	std::forward_list<std::string> filterexps;
+	gennum_t count = gentab_count(m_prs.gentab);
+	for (gennum_t i=0; i<count; i++) {
+		varnum_t v = gen_get_source(m_prs.gentab, i);
+
+		if (v != world)
+		{
+			// Only look at expressions pulling from world
+			continue;
+		}
+
+		varnum_t b = gen_get_binding(m_prs.gentab, i);
+		struct var_value* value = var_share_value(m_prs.vartab, b);
+
+		filterexps.emplace_front();
+		explain_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, &filterexps.front());
+	}
+
+	return filterexps;
 }
