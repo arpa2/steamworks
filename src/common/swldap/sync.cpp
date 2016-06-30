@@ -72,11 +72,28 @@ class DITCore
 {
 private:
 	std::map<std::string, picojson::object> m_dit;  // uuid to object (name/value pairs)
+	std::set<std::string> m_modified;  // uuids modified since last call to reset_modified
+
 public:
 	/** Clear the (cached) DIT */
 	void clear()
 	{
 		m_dit.clear();
+	}
+
+	void reset_modified()
+	{
+		m_modified.clear();
+	}
+
+	std::set<std::string> get_modified()
+	{
+		return m_modified;
+	}
+
+	const std::set<std::string>& get_modified() const
+	{
+		return m_modified;
 	}
 
 	/**
@@ -111,6 +128,7 @@ public:
 				if (m_dit.count(key))
 				{
 					m_dit.erase(key);
+					m_modified.insert(key);
 				}
 				break;
 			}
@@ -122,6 +140,7 @@ public:
 				update_dn(ldap, msg, new_v);
 				// dump_object(log, new_v);
 				reconcile(m_dit.at(key), new_v);
+				m_modified.insert(key);
 				break;
 			}
 		case LDAP_SYNC_CAPI_ADD:
@@ -132,6 +151,7 @@ public:
 				SteamWorks::LDAP::copy_entry(ldap, msg, &new_v);
 				update_dn(ldap, msg, new_v);
 				// dump_object(log, new_v);
+				m_modified.insert(key);
 				break;
 			}
 		default:
