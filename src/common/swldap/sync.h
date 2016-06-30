@@ -33,7 +33,9 @@ private:
 	std::unique_ptr<Private> d;
 
 protected:
-	virtual void after_poll();
+	void after_poll();
+	virtual void after_modification(const std::string& removed);
+	virtual void after_modification(const std::string& modified, const picojson::object& values);
 
 public:
 	SyncRepl(const std::string& base, const std::string& filter);

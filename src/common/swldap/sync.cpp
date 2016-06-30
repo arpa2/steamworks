@@ -444,12 +444,24 @@ void SteamWorks::LDAP::SyncRepl::after_poll()
 		if (d->dit().m_dit.count(*i))
 		{
 			log.debugStream() << "  Modified UUID " << *i;
+			after_modification(*i, (d->dit().m_dit.find(*i))->second);
 		}
 		else
 		{
 			log.debugStream() << "  Removed UUID " << *i;
+			after_modification(*i);
 		}
 	}
+}
+
+void SteamWorks::LDAP::SyncRepl::after_modification(const std::string& modified, const picojson::object& values)
+{
+	// Do-nothing implementation
+}
+
+void SteamWorks::LDAP::SyncRepl::after_modification(const std::string& removed)
+{
+	// Do-nothing implementation
 }
 
 void SteamWorks::LDAP::SyncRepl::dump_dit(Result result)
