@@ -26,28 +26,52 @@ class MultiIterator
     using inner_iterator = inner_list_t::const_iterator;
     using outer_list_t = std::vector<inner_list_t>;
     using outer_iterator = outer_list_t::const_iterator;
+
     using value_t = std::vector<inner_value_t>;
 
 private:
-    std::vector<inner_iterator> m_begins, m_ends, m_iter;
+    std::vector<bool> m_listy;  // Is the thing in each position list-ish, or a constanct value?
+    value_t m_constants;
+    std::vector<picojson::array::const_iterator> m_begins, m_ends, m_iter;
+    size_t m_size;
 
 public:
-    MultiIterator(const outer_list_t& list_of_lists_of_values)
+    MultiIterator(const picojson::object& object, const std::vector<std::string>& names) :
+        m_listy(names.size()),
+        m_constants(names.size()),
+        m_begins(names.size()),
+        m_ends(names.size()),
+        m_iter(names.size()),
+        m_size(names.size())
     {
-        for (const auto& f : list_of_lists_of_values)
+        unsigned int nameindex = 0;
+        for (const auto& f : names)
         {
-            auto it = f.cbegin();
-            m_begins.push_back(it);
-            m_iter.push_back(it);
-            m_ends.push_back(f.cend());
+            const picojson::value& v = object.at(f);
+            std::cout << "Attr " << f << " val " << v.to_str() << std::endl;
+            if (v.is<picojson::array>())
+            {
+                const picojson::array& vv = v.get<picojson::array>();
+                m_listy[nameindex] = true;
+                // Skip m_constantsp[nameindex]
+                m_begins[nameindex] = vv.begin();
+                m_iter[nameindex] = vv.begin();
+                m_ends[nameindex] = vv.end();
+            }
+            else
+            {
+                m_listy[nameindex] = false;
+                m_constants[nameindex] = v.get<std::string>();
+            }
+            nameindex++;
         }
     }
 
     bool is_done() const
     {
-        for (unsigned int i = 0; i<m_begins.size(); i++)
+        for (unsigned int i = 0; i<m_size; i++)
         {
-            if (m_iter[i] != m_ends[i])
+            if (m_listy[i] && (m_iter[i] != m_ends[i]))
             {
                 return false;
             }
@@ -63,23 +87,28 @@ public:
         }
 
         value_t v;
-        for (unsigned int i = 0; i<m_begins.size(); i++)
+        for (unsigned int i = 0; i<m_size; i++)
         {
-            if (m_iter[i] == m_ends[i])
+            if (m_listy[i])
             {
-                m_iter[i] = m_begins[i];
+                if (m_iter[i] == m_ends[i])
+                {
+                    m_iter[i] = m_begins[i];
+                }
+                v.push_back((*m_iter[i]).get<std::string>());
             }
-            v.push_back(*m_iter[i]);
+            else
+            {
+                v.push_back(m_constants[i]);
+            }
         }
 
-        unsigned int count_wrapped;
-        for (unsigned int i = 0; i<m_begins.size(); i++)
+        for (unsigned int i = 0; i<m_size; i++)
         {
-            if (++m_iter[i] != m_ends[i])
+            if (m_listy[i] && (++m_iter[i] != m_ends[i]))
             {
                 break;
             }
-            count_wrapped++;
         }
         return v;
     }
