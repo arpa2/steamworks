@@ -36,6 +36,7 @@ private:
 	value_t m_constants;
 	std::vector<picojson::array::const_iterator> m_begins, m_ends, m_iter;
 	size_t m_size;
+	bool m_firstly;  // Just in case all dimensions are constants, do at least once.
 
 public:
 	MultiIterator(const picojson::object& object, const std::vector<std::string>& names) :
@@ -44,7 +45,8 @@ public:
 		m_begins(names.size()),
 		m_ends(names.size()),
 		m_iter(names.size()),
-		m_size(names.size())
+		m_size(names.size()),
+		m_firstly(true)
 	{
 		// auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
 
@@ -95,6 +97,11 @@ public:
 
 	bool is_done() const
 	{
+		if (m_firstly)
+		{
+			return false;
+		}
+
 		for (unsigned int i = 0; i<m_size; i++)
 		{
 			if (m_listy[i] && (m_iter[i] != m_ends[i]))
@@ -111,6 +118,8 @@ public:
 		{
 			return value_t();
 		}
+
+		m_firstly = false;
 
 		value_t v;
 		for (unsigned int i = 0; i<m_size; i++)
