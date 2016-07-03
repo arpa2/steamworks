@@ -86,6 +86,8 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab);
  */
 void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_del, int numrecvars, struct squeal_blob *recvars);
 
+void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID, int numrecvars, struct squeal_blob *recvars);
+
 #ifdef __cplusplus
 }
 #endif

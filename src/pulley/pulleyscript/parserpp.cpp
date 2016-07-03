@@ -283,7 +283,7 @@ public:
 			}
 		}
 
-		m_sql.close();
+		// m_sql.close();
 		return 0;
 	}
 
@@ -513,15 +513,21 @@ void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uui
 			log.debugStream() << "  .. generate with " << f;
 		}
 
+		struct squeal_blob blobs[variable_names(i).size()];
 		MultiIterator it(data, variable_names(i));
 
 		while (!it.is_done())
 		{
 			MultiIterator::value_t v = it.next();
+			unsigned int blobnum = 0;
 			for (auto f : v)
 			{
 				log.debugStream() << f;
+				blobs[blobnum].data = (void *)f.c_str();
+				blobs[blobnum].size = f.length();
 			}
+
+			squeal_insert_fork(m_sql.m_sql, i, uuid.c_str(), variable_names(i).size(), blobs);
 		}
 	}
 }
