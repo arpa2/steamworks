@@ -28,6 +28,9 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 	unsigned int indent = 0;
 	uint8_t* p = binding;
 	uint8_t* end = p + len;
+	// Count number of compared-vars; if there is more than one, create
+	// a conjunction-expression for the LDAP search-expression.
+	unsigned int varcount = 0;
 
 	while (p < end)
 	{
@@ -82,10 +85,7 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 				//  - quoted with double-quotes
 				// in the LDAP filter-expression, though, we need to drop those quotes.
 				const char *cval = var_get_name(vars, v1);
-				if (!filterexp->empty())
-				{
-					filterexp->append(1, ',');
-				}
+				filterexp->append(1, '(');
 				filterexp->append(var_get_name(vars, v0));
 				filterexp->append(1, '=');
 				if (cval[0] == '"')
@@ -99,6 +99,8 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 				{
 					filterexp->append(cval);
 				}
+				filterexp->append(1, ')');
+				varcount++;
 			}
 			p += 1 + 2 * sizeof(varnum_t);
 			break;
@@ -116,5 +118,12 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 		}
 	}
 done:
+	if (filterexp && (varcount > 1))
+	{
+		// Turn (v0=c0)(v1=c1)...(vn=cn) into a proper conjunction
+		// according to LDAP filter syntax.
+		filterexp->insert(0, "(&");
+		filterexp->append(1, ')');
+	}
 	log.debugStream() << " ..done binding @" << (void *)binding;
 }
