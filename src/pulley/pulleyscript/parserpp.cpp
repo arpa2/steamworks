@@ -16,6 +16,7 @@ Adriaan de Groot <groot@kde.org>
 #include "variable.h"
 
 #include <logger.h>
+#include <jsoniterator.h>
 
 class SquealOpener
 {
@@ -70,6 +71,10 @@ private:
 
 	bool m_valid;
 	State m_state;
+
+	// Helper in find_subscriptions()
+	std::vector<varnum_t> variables_for_generator(gennum_t g);
+
 
 public:
 	Private() : m_valid(false), m_state(Parser::State::Initial)
@@ -223,12 +228,6 @@ public:
 		//NONEED// gen_push_condition() => gen_share_conditions()
 		//NONEED// gen_push_generator() => gen_share_generators()
 
-		m_variables_per_generator.reset(new std::vector<generator_variablenames_t>);
-		for (gennum_t g = 0; g < gentab_count(m_prs.gentab); g++)
-		{
-			m_variables_per_generator->push_back(variables_for_generator(g));
-		}
-
 		m_state = State::Analyzed;
 		return prsret;
 	}
@@ -282,12 +281,6 @@ public:
 				d = bitset_iterator_bitnum (&di);
 				log.debugStream() << "Generating for generator " << g << ", driver " << d;
 			}
-
-			log.debugStream() << "Variable names for generator " << g;
-			for (const auto& f : m_variables_per_generator->at(g))
-			{
-				log.debugStream() << "    " << f;
-			}
 		}
 
 		m_sql.close();
@@ -297,11 +290,14 @@ public:
 	// Extract filter-expressions
 	std::forward_list< std::string > find_subscriptions();
 
-	generator_variablenames_t variables_for_generator(gennum_t g);
-
 	// Remove an entry from the middle-end (post-SQL)
 	void remove_entry(const std::string& uuid);
 	void add_entry(const std::string& uuid, const picojson::object& data);
+
+	const generator_variablenames_t& variable_names(gennum_t generator)
+	{
+		return m_variables_per_generator->at(generator);
+	}
 } ;
 
 SteamWorks::PulleyScript::Parser::Parser() :
@@ -370,6 +366,31 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::find_subscrip
 	return d->find_subscriptions();
 }
 
+std::vector<varnum_t> SteamWorks::PulleyScript::Parser::Private::variables_for_generator(gennum_t g)
+{
+	bitset *b = gen_share_variables(m_prs.gentab, g);
+	bitset_iter it;
+
+	std::vector<varnum_t> names;
+	names.reserve(bitset_count(b));
+
+	unsigned int varcount = 0;
+
+	bitset_iterator_init(&it, b);
+	while (bitset_iterator_next_one (&it, NULL))
+	{
+		varnum_t v = bitset_iterator_bitnum (&it);
+		if (var_get_kind(m_prs.vartab, v) != VARKIND_VARIABLE)
+		{
+			continue;
+		}
+		names.push_back(v);
+		varcount++;
+	}
+
+	return names;
+}
+
 std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find_subscriptions()
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
@@ -382,23 +403,41 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find
 		return std::forward_list<std::string>();
 	}
 
+	m_variables_per_generator.reset(new std::vector<generator_variablenames_t>);
+
 	std::forward_list<std::string> filterexps;
 	gennum_t count = gentab_count(m_prs.gentab);
 	for (gennum_t i=0; i<count; i++)
 	{
 		varnum_t v = gen_get_source(m_prs.gentab, i);
+		std::string* filterexp = nullptr;
 
 		if (v != world)
 		{
 			// Only look at expressions pulling from world
-			continue;
+			;
+		}
+		else
+		{
+			filterexps.emplace_front();
+			filterexp = &filterexps.front();
 		}
 
 		varnum_t b = gen_get_binding(m_prs.gentab, i);
 		struct var_value* value = var_share_value(m_prs.vartab, b);
 
-		filterexps.emplace_front();
-		explain_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, &filterexps.front());
+		auto bound_varnums = variables_for_generator(i);  // Variables on the right-hand side of binding
+		m_variables_per_generator->emplace_back(bound_varnums.size());  // New vector of names
+
+		explain_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, filterexp, bound_varnums, m_variables_per_generator->back());
+	}
+
+	for (gennum_t g=0; g<count; g++) {
+		log.debugStream() << "Variable names for generator " << g;
+		for (const auto& f : m_variables_per_generator->at(g))
+		{
+			log.debugStream() << "    " << f;
+		}
 	}
 
 	return filterexps;
@@ -445,7 +484,7 @@ void SteamWorks::PulleyScript::Parser::Private::remove_entry(const std::string& 
 void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uuid, const picojson::object& data)
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
-	log.debugStream() << "Adding entry:" << uuid;
+   	log.debugStream() << "Adding entry:" << uuid;
 
 	gennum_t count = gentab_count(m_prs.gentab);
 	for (gennum_t i=0; i<count; i++)
@@ -468,31 +507,21 @@ void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uui
 		//     - execute SQL met parameter rij (->rij')
 		//       - increment use-count voor hash(rij')
 		//       - indien use-count == 1, backend add
-	}
-}
 
-SteamWorks::PulleyScript::Parser::Private::generator_variablenames_t SteamWorks::PulleyScript::Parser::Private::variables_for_generator(gennum_t g)
-{
-	bitset *b = gen_share_variables(m_prs.gentab, g);
-	bitset_iter it;
-
-	generator_variablenames_t names;
-	names.reserve(bitset_count(b));
-
-	unsigned int varcount = 0;
-
-	bitset_iterator_init(&it, b);
-	while (bitset_iterator_next_one (&it, NULL))
-	{
-		varnum_t v = bitset_iterator_bitnum (&it);
-		if (var_get_kind(m_prs.vartab, v) != VARKIND_VARIABLE)
+		for (const auto& f : variable_names(i))
 		{
-			continue;
+			log.debugStream() << "  .. generate with " << f;
 		}
-		names.push_back(var_get_name(m_prs.vartab, v));
 
-		varcount++;
+		MultiIterator it(data, variable_names(i));
+
+		while (!it.is_done())
+		{
+			MultiIterator::value_t v = it.next();
+			for (auto f : v)
+			{
+				log.debugStream() << f;
+			}
+		}
 	}
-
-	return names;
 }

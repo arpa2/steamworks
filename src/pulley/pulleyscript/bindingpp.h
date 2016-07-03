@@ -15,6 +15,7 @@ Adriaan de Groot <groot@kde.org>
 #include "variable.h"
 
 #include <string>
+#include <vector>
 
 namespace SteamWorks
 {
@@ -30,8 +31,19 @@ namespace PulleyScript
  * If @p filterexp is not a null-pointer, builds an LDAP filter
  * expression for this binding based on the constant-comparisons
  * found in the binding.
+ *
+ * The vector @p bound_varnums lists the bound variables for
+ * this generator (e.g. the variables associated with the generator
+ * being explained), and the vector @p variable_names (which is
+ * assumed to be the same size) is filled with the attributes
+ * bound to those variables.
  */
-void explain_binding(vartab* vars, uint8_t* binding, uint32_t len, std::string* filterexp=nullptr);
+void explain_binding(vartab* vars,
+		     uint8_t* binding,
+		     uint32_t len,
+		     std::string* filterexp,
+		     const std::vector<varnum_t>& bound_varnums,
+		     std::vector<std::string>& variable_names);
 
 }  // namespace PulleyScript
 }  // namespace

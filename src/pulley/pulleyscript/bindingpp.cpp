@@ -15,7 +15,12 @@ varnum_t extract_varnum(uint8_t* p)
 	return *(varnum_t *)p;
 }
 
-void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, uint32_t len, std::string* filterexp)
+void SteamWorks::PulleyScript::explain_binding(vartab* vars,
+					       uint8_t* binding,
+					       uint32_t len,
+					       std::string* filterexp,
+					       const std::vector<varnum_t>& bound_varnums,
+					       std::vector<std::string>& variable_names)
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
 
@@ -70,7 +75,16 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars, uint8_t* binding, u
 			p += 1 + sizeof(varnum_t);
 			break;
 		case BNDO_ACT_BIND:
-			d << "BIND " << operand_s << ' ' << var_get_name(vars, extract_varnum(p+1)) << "~" << var_get_name(vars, extract_varnum(p+1+sizeof(varnum_t)));
+			v0 = extract_varnum(p+1);
+			v1 = extract_varnum(p+1+sizeof(varnum_t));
+			d << "BIND " << operand_s << ' ' << var_get_name(vars, v0) << "~" << var_get_name(vars, v1);
+			for (unsigned int i=0; i < bound_varnums.size(); i++)
+			{
+				if (v1 == bound_varnums[i])
+				{
+					variable_names[i] = var_get_name(vars, v0);
+				}
+			}
 			p += 1 + 2 * sizeof(varnum_t);
 			break;
 		case BNDO_ACT_CMP:
