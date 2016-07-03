@@ -350,6 +350,8 @@ static int s3ins_run_uuid(sqlite3 *s3db, sqlite3_stmt *s3in, const char *uuid,
 	char drvid [20];
 	int i;
 	int idx;
+	int sqlret;
+
 	assert (s3in != NULL);
 	assert (numparm <= SQLITE_LIMIT_VARIABLE_NUMBER);
 	//
@@ -360,17 +362,25 @@ static int s3ins_run_uuid(sqlite3 *s3db, sqlite3_stmt *s3in, const char *uuid,
 	// Setup the prepared statement with the entryUUID value, if it asks for it
 	idx = sqlite3_bind_parameter_index (s3in, ":uuid");
 	if (idx != 0) {
-		sqlite3_bind_text(s3in, idx, uuid, -1, SQLITE_STATIC);
+		sqlret = sqlite3_bind_text(s3in, idx, uuid, -1, SQLITE_STATIC);
+		if (sqlret != SQLITE_OK)
+		{
+			fprintf(stderr,"Binding :uuid yields %d %s\n", sqlret, sqlite3_errmsg(s3db));
+		}
 	}
 	//
 	// Setup the prepared statement with the output variable blobs
-	for (i=1; i < numparm; i++) {
-		snprintf (drvid, sizeof (drvid)-1, "?%03d", idx);
+	for (i=0; i < numparm; i++) {
+		snprintf (drvid, sizeof (drvid)-1, "?%03d", i+2);
 		idx = sqlite3_bind_parameter_index (s3in, drvid);
 		if (idx != 0) {
-			sqlite3_bind_blob64 (s3in, idx,
+			sqlret = sqlite3_bind_blob64 (s3in, idx,
 					parm [i].data, parm [i].size,
 					SQLITE_STATIC);
+			if (sqlret != SQLITE_OK)
+			{
+				fprintf(stderr,"Binding %s yields %d %s\n", drvid, sqlret, sqlite3_errmsg(s3db));
+			}
 		}
 	}
 	//
@@ -514,7 +524,12 @@ void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entr
 	struct s3ins_generator* genfront = &(squeal->gens[gennum]);
 	assert (genfront->numrecvars == numrecvars);
 
-	s3ins_run_uuid(squeal->s3db, genfront->opt_gen_add_record, entryUUID, numrecvars, recvars);
+	int sqlret = s3ins_run_uuid(squeal->s3db, genfront->opt_gen_add_record, entryUUID, numrecvars, recvars);
+
+	if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_DONE))
+	{
+		fprintf(stderr, "Can't insert fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
+	}
 }
 
 
@@ -820,7 +835,7 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab)
 	int gennum, drvnum;
 	int varnum;
 	int sqlretval;
-
+	char paramstr[20];
 
 	for (gennum=0; gennum < squeal->numgens; gennum++)
 	{
@@ -845,7 +860,8 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab)
 		sqlbuf_write(&sql, " VALUES (:uuid");  // One parameter is always the entryUUID
 		for (varnum=0; varnum < gen->numrecvars; varnum++)
 		{
-			sqlbuf_write(&sql, ",?");
+			snprintf (paramstr, sizeof (paramstr)-1, ",?%03d", varnum+2);
+			sqlbuf_write(&sql, paramstr);
 		}
 		sqlbuf_write(&sql, ")");
 
