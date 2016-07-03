@@ -110,13 +110,24 @@ struct s3ins_gen2drv {
 	sqlite3_stmt *gen2drv_produce;	// Supply gen variables: ?x, ?y, ...
 };
 
-/* The "s3ins_generator" structure holds information for a generator.  If it is/has
- * no co-generators, then opt_gen_add_record and opt_gen_del_record are NULL; but
- * normally, these two are setup for storage of new records.  Calling these routines
- * will modify the generator's gen_xxx table for future use as a co-generator.
+/* The "s3ins_generator" structure holds information for a generator.
  *
- * Furthermore, an array driveout with numdriveout entries details how to deal
- * with individual drivers when this generator forks a record.
+ * numrecvars is the number of variable names (or the number of variables)
+ * expected in a forked record; 0 would be unexpected, since a generator
+ * without variables is useless. The names of the variables are placed
+ * sequentially into the char buffer recvars, NUL-separated (currently
+ * not implemented).
+ *
+ * Prepared statements opt_gen_add_record and opt_gen_del_record are (if
+ * not NULL) used to store variable (tuples) in the database, before
+ * forking those variables.
+ *
+ * For co-generators, the opt_gen_{add,del}_record statements are used
+ * to provide variable (tuples) to the co-generators.
+ *
+ * numdriveout is the number of output-driver records that immediately
+ * follow this structure. The driveout array may be indexed from 0 to
+ * numdriveout-1.
  */
 struct s3ins_generator {
 	int numrecvars;			  // Number of variable names in forked record
