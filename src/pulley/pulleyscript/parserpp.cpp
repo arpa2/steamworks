@@ -64,6 +64,10 @@ class SteamWorks::PulleyScript::Parser::Private
 private:
 	struct parser m_prs;
 	SquealOpener m_sql;
+
+	using generator_variablenames_t = std::vector<std::string>;
+	std::unique_ptr<std::vector<generator_variablenames_t> > m_variables_per_generator;
+
 	bool m_valid;
 	State m_state;
 
@@ -219,6 +223,12 @@ public:
 		//NONEED// gen_push_condition() => gen_share_conditions()
 		//NONEED// gen_push_generator() => gen_share_generators()
 
+		m_variables_per_generator.reset(new std::vector<generator_variablenames_t>);
+		for (gennum_t g = 0; g < gentab_count(m_prs.gentab); g++)
+		{
+			m_variables_per_generator->push_back(variables_for_generator(g));
+		}
+
 		m_state = State::Analyzed;
 		return prsret;
 	}
@@ -272,6 +282,12 @@ public:
 				d = bitset_iterator_bitnum (&di);
 				log.debugStream() << "Generating for generator " << g << ", driver " << d;
 			}
+
+			log.debugStream() << "Variable names for generator " << g;
+			for (const auto& f : m_variables_per_generator->at(g))
+			{
+				log.debugStream() << "    " << f;
+			}
 		}
 
 		m_sql.close();
@@ -280,6 +296,8 @@ public:
 
 	// Extract filter-expressions
 	std::forward_list< std::string > find_subscriptions();
+
+	generator_variablenames_t variables_for_generator(gennum_t g);
 
 	// Remove an entry from the middle-end (post-SQL)
 	void remove_entry(const std::string& uuid);
@@ -438,6 +456,7 @@ void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uui
 		stream << "  .. generator " << i << " hash ";
 		SteamWorks::Logging::log_hex(stream, (uint8_t *)&h, sizeof(h));
 
+
 		// TODO: addition algorithm
 		//
 		// - generate list of tuples (a1) x (a2) x .. x (an)
@@ -450,4 +469,30 @@ void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uui
 		//       - increment use-count voor hash(rij')
 		//       - indien use-count == 1, backend add
 	}
+}
+
+SteamWorks::PulleyScript::Parser::Private::generator_variablenames_t SteamWorks::PulleyScript::Parser::Private::variables_for_generator(gennum_t g)
+{
+	bitset *b = gen_share_variables(m_prs.gentab, g);
+	bitset_iter it;
+
+	generator_variablenames_t names;
+	names.reserve(bitset_count(b));
+
+	unsigned int varcount = 0;
+
+	bitset_iterator_init(&it, b);
+	while (bitset_iterator_next_one (&it, NULL))
+	{
+		varnum_t v = bitset_iterator_bitnum (&it);
+		if (var_get_kind(m_prs.vartab, v) != VARKIND_VARIABLE)
+		{
+			continue;
+		}
+		names.push_back(var_get_name(m_prs.vartab, v));
+
+		varcount++;
+	}
+
+	return names;
 }
