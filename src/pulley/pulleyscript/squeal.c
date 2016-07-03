@@ -748,10 +748,9 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 
 
 int squeal_configure (struct squeal *squeal) {
-	int s3inctr = 0;
 	struct sqlbuf sql;
-	int retval;
-	int sqlretval;
+	int retval = 0;
+	int sqlretval = -1;
 
 	//
 	// Grab an SQL buffer
