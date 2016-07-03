@@ -69,6 +69,8 @@ int squeal_have_tables (struct squeal *s3db, struct gentab *gentab, bool may_reu
  */
 int squeal_configure (struct squeal *squeal);
 
+int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab);
+
 #ifdef __cplusplus
 }
 #endif

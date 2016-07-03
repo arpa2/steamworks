@@ -654,6 +654,8 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 	gennum_t numgens, g;
 	varnum_t v;
 	struct vartab *vartab;
+	int varcount = 0;  // For each generator, the number of columns in gen_<hash> table
+
 	//
 	// Fetch a SQL write buffer
 	sqlbuf_exchg (&sql, BUF_GET);
@@ -698,6 +700,7 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 	numgens = gentab_count (gentab);
 	for (g=0; g<numgens; g++) {
 		itbits = gen_share_variables (gentab, g);
+		varcount = 0;
 #if 0
 // In light of the considerations about the resync logic, store all generator records
 // even when they are directly transformed into driver output and never used as/with
@@ -729,6 +732,7 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 			sqlbuf_write (&sql, ",\n\tvar_");
 			sqlbuf_write (&sql, var_get_name (vartab, v));
 			sqlbuf_write (&sql, " BLOB NOT NULL");
+			varcount++;
 		}
 		sqlbuf_write (&sql, ")");
 		retval = retval || sqlbuf_run (&sql, squeal->s3db);
@@ -737,6 +741,8 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 		sqlbuf_lexhash2name (&sql, "\n\tON gen_", gen_get_hash (gentab, g));
 		sqlbuf_write (&sql, " (entryUUID)");
 		retval = retval || sqlbuf_run (&sql, squeal->s3db);
+
+		squeal->gens[g].numrecvars = varcount;
 	}
 	//
 	// Release the SQL buffer
@@ -744,6 +750,57 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 	//
 	// Provide the return value
 	return retval;
+}
+
+
+int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab)
+{
+	int gennum, drvnum;
+	int varnum;
+	int sqlretval;
+
+
+	for (gennum=0; gennum < squeal->numgens; gennum++)
+	{
+		struct s3ins_generator* gen = &(squeal->gens[gennum]);
+
+		struct sqlbuf sql;
+		sqlbuf_exchg (&sql, BUF_GET);
+
+		sqlbuf_write (&sql, "DELETE FROM ");
+		sqlbuf_lexhash2name(&sql, "gen_", gen_get_hash(gentab, gennum));
+		sqlbuf_write(&sql, " WHERE entryUUID = ?");
+
+		if ((sqlretval = sqlite3_prepare(squeal->s3db, sql.buf, sql.ofs, &gen->opt_gen_del_record, NULL)) != SQLITE_OK)
+		{
+			printf("PREP ERROR delete in generator SQL %d\n", sqlretval);
+			goto fail;
+		}
+
+		sql.ofs = 0;
+		sqlbuf_write(&sql, "INSERT INTO ");
+		sqlbuf_lexhash2name(&sql, "gen_", gen_get_hash(gentab, gennum));
+		sqlbuf_write(&sql, " VALUES (?");  // One parameter is always the entryUUID
+		for (varnum=0; varnum < gen->numrecvars; varnum++)
+		{
+			sqlbuf_write(&sql, ",?");
+		}
+		sqlbuf_write(&sql, ")");
+
+		if ((sqlretval = sqlite3_prepare(squeal->s3db, sql.buf, sql.ofs, &gen->opt_gen_add_record, NULL)) != SQLITE_OK)
+		{
+			sqlite3_finalize(gen->opt_gen_del_record);
+			gen->opt_gen_del_record = NULL;
+			printf("PREP ERROR insert in generator SQL %d\n", sqlretval);
+			goto fail;
+		}
+	}
+
+	return 0;
+
+fail:
+	// TODO: cleanup already-prepared statements up to gennum-1
+	return 1;
 }
 
 
@@ -797,6 +854,7 @@ cleanup:
 	//
 	// Release the SQL buffer
 	sqlbuf_exchg (&sql, BUF_GET);
+
 	//
 	// Provide the return value
 	return retval;
