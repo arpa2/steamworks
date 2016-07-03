@@ -17,19 +17,20 @@ Adriaan de Groot <groot@kde.org>
 #ifndef STEAMWORKS_COMMON_JSONITERATOR_H
 #define STEAMWORKS_COMMON_JSONITERATOR_H
 
-#include "picojson.h"
+#include <picojson.h>
 
 class MultiIterator
 {
+public:
     using inner_value_t = std::string;
+    using value_t = std::vector<inner_value_t>;
+
+private:
     using inner_list_t = std::forward_list<inner_value_t>;
     using inner_iterator = inner_list_t::const_iterator;
     using outer_list_t = std::vector<inner_list_t>;
     using outer_iterator = outer_list_t::const_iterator;
 
-    using value_t = std::vector<inner_value_t>;
-
-private:
     std::vector<bool> m_listy;  // Is the thing in each position list-ish, or a constanct value?
     value_t m_constants;
     std::vector<picojson::array::const_iterator> m_begins, m_ends, m_iter;
@@ -48,7 +49,6 @@ public:
         for (const auto& f : names)
         {
             const picojson::value& v = object.at(f);
-            std::cout << "Attr " << f << " val " << v.to_str() << std::endl;
             if (v.is<picojson::array>())
             {
                 const picojson::array& vv = v.get<picojson::array>();
