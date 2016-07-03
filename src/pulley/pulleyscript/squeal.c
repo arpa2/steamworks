@@ -289,11 +289,11 @@ void fnv1a_add_bytes (fnv1a_t *hash, const uint8_t *data, size_t len) {
 	*hash = h;
 }
 
-inline void s3key_add_lexhash (s3key_t *hash, hash_t lexhash) {
+void s3key_add_lexhash (s3key_t *hash, hash_t lexhash) {
 	fnv1a_add_bytes (hash, (uint8_t *) &lexhash, sizeof (lexhash));
 }
 
-inline void s3key_add_blob (s3key_t *hash, struct squeal_blob *blob) {
+void s3key_add_blob (s3key_t *hash, struct squeal_blob *blob) {
 	uint32_t size2 = htonl (blob->size);
 	fnv1a_add_bytes (hash, (uint8_t *) &size2, 4);
 	fnv1a_add_bytes (hash, blob->data, blob->size);
