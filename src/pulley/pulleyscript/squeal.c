@@ -345,6 +345,39 @@ static int s3ins_run (sqlite3 *s3db, sqlite3_stmt *s3in, s3key_t hash,
 	return sqlite3_step (s3in);
 }
 
+static int s3ins_run_uuid(sqlite3 *s3db, sqlite3_stmt *s3in, const char *uuid,
+			int numparm, struct squeal_blob *parm) {
+	char drvid [20];
+	int i;
+	int idx;
+	assert (s3in != NULL);
+	assert (numparm <= SQLITE_LIMIT_VARIABLE_NUMBER);
+	//
+	// Cleanup the prepared statement for fresh bindings (also before 1st call)
+	sqlite3_reset (s3in);
+	sqlite3_clear_bindings (s3in);
+	//
+	// Setup the prepared statement with the entryUUID value, if it asks for it
+	idx = sqlite3_bind_parameter_index (s3in, ":uuid");
+	if (idx != 0) {
+		sqlite3_bind_text(s3in, idx, uuid, -1, SQLITE_STATIC);
+	}
+	//
+	// Setup the prepared statement with the output variable blobs
+	for (i=1; i < numparm; i++) {
+		snprintf (drvid, sizeof (drvid)-1, "?%03d", idx);
+		idx = sqlite3_bind_parameter_index (s3in, drvid);
+		if (idx != 0) {
+			sqlite3_bind_blob64 (s3in, idx,
+					parm [i].data, parm [i].size,
+					SQLITE_STATIC);
+		}
+	}
+	//
+	// Run the actual process and return the result
+	return sqlite3_step (s3in);
+}
+
 /* Consider passing a series of blobs to a driver as output, either add or delete.
  * Avoid this when multiplicity dictates; that is, already added or not ready for
  * deletion yet, due to other existing instances.  Only when there are no other
@@ -476,6 +509,13 @@ void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_d
 	_squeal_generator_fork(squeal, &(squeal->gens[gennum]), add_not_del, numrecvars, recvars);
 }
 
+void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID, int numrecvars, struct squeal_blob *recvars)
+{
+	struct s3ins_generator* genfront = &(squeal->gens[gennum]);
+	assert (genfront->numrecvars == numrecvars);
+
+	s3ins_run_uuid(squeal->s3db, genfront->opt_gen_add_record, entryUUID, numrecvars, recvars);
+}
 
 
 /********** BACKEND STRUCTURE CREATION **********/
@@ -802,7 +842,7 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab)
 		sql.ofs = 0;
 		sqlbuf_write(&sql, "INSERT INTO ");
 		sqlbuf_lexhash2name(&sql, "gen_", gen_get_hash(gentab, gennum));
-		sqlbuf_write(&sql, " VALUES (?");  // One parameter is always the entryUUID
+		sqlbuf_write(&sql, " VALUES (:uuid");  // One parameter is always the entryUUID
 		for (varnum=0; varnum < gen->numrecvars; varnum++)
 		{
 			sqlbuf_write(&sql, ",?");
