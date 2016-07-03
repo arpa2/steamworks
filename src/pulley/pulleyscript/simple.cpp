@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 	log.debugStream() << "Parser analysis " << prsret;
 	log.debugStream() << "  .. " << prs.state_string().c_str();
 	prsret = prs.setup_sql();
-	log.debugStream() << "Parser SQL setup " << prs.setup_sql();
+	log.debugStream() << "Parser SQL setup " << prsret;
 	log.debugStream() << "  .. " << prs.state_string().c_str();
 	prs.find_subscriptions();
 	return 0;

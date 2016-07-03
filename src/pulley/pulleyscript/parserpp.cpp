@@ -243,6 +243,13 @@ public:
 			return 1;
 		}
 
+		if (squeal_configure(m_sql.m_sql) != 0)
+		{
+			log.errorStream() << "Could not prepare SQL statements for drv_all.";
+			m_state = State::Broken;
+			return 1;
+		}
+
 		log.debugStream() << "SQL table definitions generated.";
 
 		// This bit copied out of the compiler;

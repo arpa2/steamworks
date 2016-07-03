@@ -63,6 +63,12 @@ void squeal_unlink_in_dbdir (hash_t lexhash, const char *dbdir);
  */
 int squeal_have_tables (struct squeal *s3db, struct gentab *gentab, bool may_reuse);
 
+/**
+ * Prepare statements that manipulate the drv_all table;
+ * these count the number of uses of each out_hash.
+ */
+int squeal_configure (struct squeal *squeal);
+
 #ifdef __cplusplus
 }
 #endif

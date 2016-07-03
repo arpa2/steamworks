@@ -225,7 +225,7 @@ static int sqlbuf_run (struct sqlbuf *sql, sqlite3 *s3db) {
 	int retval = 0;
 	int sqlretval = 0;
 	sqlite3_stmt *s3in;
-	printf ("sql>\n%.*s\n", (int) sql->ofs, sql->buf);
+	printf ("exec sql>\n%.*s\n", (int) sql->ofs, sql->buf);
 	sqlretval = sqlite3_prepare (s3db, sql->buf, sql->ofs, &s3in, NULL);
 	if ((sqlretval != SQLITE_OK)) {
 		/* TODO: Report error in more detail */
@@ -629,7 +629,7 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 		goto cleanup;
 	}
 #else
-printf ("sql>\n%.*s\n\n", (int) sql.ofs, sql.buf);
+printf ("prep sql>\n%.*s\n\n", (int) sql.ofs, sql.buf);
 #endif
 cleanup:
 	//
@@ -690,7 +690,7 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 		retval = retval || sqlbuf_run (&sql, squeal->s3db);
 	}
 	sqlbuf_write (&sql, "CREATE TABLE IF NOT EXISTS syncrepl_cookie (\n"
-				"\ttimestamp INTEGER PRIMARY KEY NOT NULL\n"
+				"\ttimestamp INTEGER PRIMARY KEY NOT NULL,\n"
 				"\tcookie BLOB)");
 	retval = retval || sqlbuf_run (&sql, squeal->s3db);
 	//
@@ -751,6 +751,8 @@ int squeal_configure (struct squeal *squeal) {
 	int s3inctr = 0;
 	struct sqlbuf sql;
 	int retval;
+	int sqlretval;
+
 	//
 	// Grab an SQL buffer
 	sqlbuf_exchg (&sql, BUF_GET);
@@ -759,10 +761,10 @@ int squeal_configure (struct squeal *squeal) {
 	sqlbuf_write (&sql, "SELECT max (out_repeat)\n"
 			    "FROM ( SELECT out_repeat\n"
 			    "       FROM drv_all\n"
-			    "       WHERE out_hash = ?hash\n"
+			    "       WHERE out_hash = ?\n"
 			    "       UNION VALUES (0) )");
-	if (sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->get_drv_all, NULL) != SQLITE_OK) {
-		//TODO// Report SQLite3 error
+	if ((sqlretval = sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->get_drv_all, NULL)) != SQLITE_OK) {
+		printf ("PREP ERROR select in SQL %d\n", sqlretval);
 		retval = 1;
 		goto cleanup;
 	}
@@ -773,10 +775,10 @@ int squeal_configure (struct squeal *squeal) {
 			    "SELECT ?hash, 1 + max (out_repeat)\n"
 			    "FROM ( SELECT out_repeat\n"
 			    "       FROM drv_all\n"
-			    "       WHERE out_hash = ?hash\n"
+			    "       WHERE out_hash = ?\n"
 			    "       UNION VALUES (0) )");
-	if (sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->inc_drv_all, NULL) != SQLITE_OK) {
-		//TODO// Report SQLite3 error
+	if ((sqlretval = sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->inc_drv_all, NULL)) != SQLITE_OK) {
+		printf ("PREP ERROR insert in SQL %d\n", sqlretval);
 		retval = 1;
 		goto cleanup;
 	}
@@ -785,9 +787,9 @@ int squeal_configure (struct squeal *squeal) {
 	// Decrement a drv_all's out_repeat for a given out_hash:
 	sqlbuf_write (&sql, "UPDATE drv_all\n"
 				"SET out_repeat = out_repeat - 1\n"
-				"WHERE out_hash = ?hash");
-	if (sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->dec_drv_all, NULL) != SQLITE_OK) {
-		//TODO// Report SQLite3 error
+				"WHERE out_hash = ?");
+	if ((sqlretval = sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->dec_drv_all, NULL)) != SQLITE_OK) {
+		printf ("PREP ERROR update in SQL %d\n", sqlretval);
 		retval = 1;
 		goto cleanup;
 	}
