@@ -86,7 +86,15 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab);
  */
 void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_del, int numrecvars, struct squeal_blob *recvars);
 
+/**
+ * Add one tuple of variables (a fork) to the database. This does not
+ * generate any output (driver) records.
+ */
 void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID, int numrecvars, struct squeal_blob *recvars);
+/**
+ * Remove all the tuples (forks) for the given UUID.
+ */
+void squeal_delete_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID);
 
 #ifdef __cplusplus
 }

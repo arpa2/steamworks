@@ -532,6 +532,17 @@ void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entr
 	}
 }
 
+void squeal_delete_forks(struct squeal *squeal, gennum_t gennum, const char *entryUUID)
+{
+	struct s3ins_generator* genfront = &(squeal->gens[gennum]);
+
+	int sqlret = s3ins_run_uuid(squeal->s3db, genfront->opt_gen_del_record, entryUUID, 0, NULL);
+
+	if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_DONE))
+	{
+		fprintf(stderr, "Can't delete fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
+	}
+}
 
 /********** BACKEND STRUCTURE CREATION **********/
 
@@ -846,7 +857,7 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab)
 
 		sqlbuf_write (&sql, "DELETE FROM ");
 		sqlbuf_lexhash2name(&sql, "gen_", gen_get_hash(gentab, gennum));
-		sqlbuf_write(&sql, " WHERE entryUUID = ?");
+		sqlbuf_write(&sql, " WHERE entryUUID = :uuid");
 
 		if ((sqlretval = sqlite3_prepare(squeal->s3db, sql.buf, sql.ofs, &gen->opt_gen_del_record, NULL)) != SQLITE_OK)
 		{
