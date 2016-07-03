@@ -69,7 +69,22 @@ int squeal_have_tables (struct squeal *s3db, struct gentab *gentab, bool may_reu
  */
 int squeal_configure (struct squeal *squeal);
 
+/**
+ * Prepare SQL statements that manipulate the gen_<hash>
+ * tables, (one table for each generator). This should be
+ * called after squeal_configure() and before calling
+ * squeal_generator_fork().
+ */
 int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab);
+
+/**
+ * Run generator @p gennum with a new tuple of variables. The operation
+ * may be an add (@p add_not_del == 1) or delete (@p add_not_del == 0).
+ * The variable tuple is described as an array of squeal_blob structures
+ * in an array starting at @p recvars. There are @p numrecvars blobs
+ * in the array, which must match what the generator expects.
+ */
+void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_del, int numrecvars, struct squeal_blob *recvars);
 
 #ifdef __cplusplus
 }

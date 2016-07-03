@@ -432,12 +432,16 @@ static void squeal_produce_output (struct squeal *squeal, int add_not_del,
  * and removing the record to its own gen_xxx table, it will invoke the respective
  * routine to be of use for its future role as a co-generator.
  */
-static void squeal_generator_fork (struct squeal *squeal,
+static void _squeal_generator_fork (struct squeal *squeal,
 			struct s3ins_generator *genfront, int add_not_del,
 			int numrecvars, struct squeal_blob *recvars) {
 	int d;
 	int i;
 	assert (genfront->numrecvars == numrecvars);
+
+	printf("Generator fork @%p add?%d\n", (void *)genfront, add_not_del);
+	printf("  .. adding %d variables.", numrecvars);
+
 	//
 	// Produce the generator hash over the blobs holding the record variables
 	s3key_t genhash = S3KEY_INIT;
@@ -465,6 +469,13 @@ static void squeal_generator_fork (struct squeal *squeal,
 			genhash, numrecvars, recvars);
 	}
 }
+
+
+void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_del, int numrecvars, struct squeal_blob *recvars)
+{
+	_squeal_generator_fork(squeal, &(squeal->gens[gennum]), add_not_del, numrecvars, recvars);
+}
+
 
 
 /********** BACKEND STRUCTURE CREATION **********/
