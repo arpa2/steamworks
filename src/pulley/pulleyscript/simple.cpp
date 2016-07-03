@@ -124,6 +124,18 @@ int main(int argc, char **argv)
 	log.debugStream() << "Parser SQL setup " << prsret;
 	log.debugStream() << "  .. " << prs.state_string().c_str();
 	prs.find_subscriptions();
+
+	picojson::value v;
+	picojson::parse(v, R"({
+	"TlsPoolTrustAnchor": "o=Verishot primary root,ou=Trust Contestors,dc=test,dc=example,dc=com",
+	"TlsPoolValidationExpression": "1",
+	"TlsPoolSupportedRole": "server"
+})"
+	);
+	log.debugStream() << "JSON object is object?" << v.is<picojson::object>();
+
+	const picojson::value::object& obj = v.get<picojson::object>();
+	prs.add_entry("1234", obj);
 	return 0;
 }
 
