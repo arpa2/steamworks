@@ -10,7 +10,7 @@
 # attribute, while using (lower case) objectClass in
 # the PulleyScript expression is a syntax error.
 
-ObjectClass: "tlsPoolTrustedIssuer" + TlsPoolCredentialType: "x509" + TlsPoolTrustAnchor: x509anchordn + TlsPoolValidationExpression: x509valexp + TlsPoolSupportedRole: x509role, Cn=_, Ou="In ARPA2 we Trust" <- world
+ObjectClass: "tlsPoolTrustedIssuer" + TlsPoolCredentialType: "x509" + TlsPoolTrustAnchor: x509anchordn + TlsPoolValidationExpression: x509valexp + TlsPoolSupportedRole: x509role <- world
 
 x509ca,x509valexp,x509role -> tlspool (config="../etc/tlspool.conf", type="trust", args="cred,valexp,role", subtype="authority,x509")
 
