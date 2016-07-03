@@ -520,11 +520,11 @@ void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uui
 		{
 			MultiIterator::value_t v = it.next();
 			unsigned int blobnum = 0;
-			for (auto f : v)
+			for (const auto& f : v)
 			{
-				log.debugStream() << f;
 				blobs[blobnum].data = (void *)f.c_str();
 				blobs[blobnum].size = f.length();
+				blobnum++;
 			}
 
 			squeal_insert_fork(m_sql.m_sql, i, uuid.c_str(), variable_names(i).size(), blobs);
