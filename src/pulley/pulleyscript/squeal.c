@@ -914,6 +914,7 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, st
 		unsigned int drvindex = 0;
 		bitset_iterator_init(&it, drvs);
 		while (bitset_iterator_next_one (&it, NULL)) {
+			gen->driveout[drvindex].driver = &(squeal->drivers[bitset_iterator_bitnum(&it)]);
 			gen->driveout[drvindex].gen2drv_produce = squeal_produce_outputs(squeal, drvtab, gennum, bitset_iterator_bitnum(&it));
 			drvindex++;
 		}
