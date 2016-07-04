@@ -430,7 +430,7 @@ static void squeal_driver_callback_demult (struct squeal *squeal,
 			hash, drvback->cbnumparm, drvback->cbparm);
 	//
 	// Possibly invoke the callback on the backend driver
-	if (drive) {
+	if (drive && drvback->cbfun) {
 		drvback->cbfun (drvback->cbdata, add_not_del,
 				drvback->cbnumparm, drvback->cbparm);
 	}
@@ -530,22 +530,28 @@ void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entr
 		fprintf(stderr, "Can't insert fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
 	}
 
-	sqlite3_stmt *statement = genfront->driveout->gen2drv_produce;
-	unsigned int rowcount = 1;
-	sqlret = s3ins_run_uuid(squeal->s3db, statement, entryUUID, 0, NULL);
-	while (sqlret != SQLITE_DONE) {
-		if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_ROW))
-		{
-			fprintf (stderr, "SQLite3 ERROR while producing output for uuid %s sql %d %s\n", entryUUID, sqlret, sqlite3_errmsg(squeal->s3db));
-			break;
-		}
+	for (unsigned int driveridx=0; driveridx < genfront->numdriveout; driveridx++)
+	{
+		sqlite3_stmt *statement = genfront->driveout[driveridx].gen2drv_produce;
+		struct squeal_blob *params = genfront->driveout[driveridx].driver->cbparm;
+		unsigned int rowcount = 1;
+		sqlret = s3ins_run_uuid(squeal->s3db, statement, entryUUID, 0, NULL);
+		while (sqlret != SQLITE_DONE) {
+			if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_ROW))
+			{
+				fprintf (stderr, "SQLite3 ERROR while producing output for uuid %s sql %d %s\n", entryUUID, sqlret, sqlite3_errmsg(squeal->s3db));
+				break;
+			}
 
-		printf("Output row %d\n", rowcount);
-		for (unsigned int i=0; i < sqlite3_column_count(statement); i++) {
-			printf("  .. column %d size %d %10s\n", i, sqlite3_column_bytes(statement, i), sqlite3_column_blob(statement, i));
-		}
+			printf("Output row %d\n", rowcount);
+			for (unsigned int i=0; i < sqlite3_column_count(statement); i++) {
+				params[i].data = (void *)sqlite3_column_blob(statement, i);
+				params[i].size = sqlite3_column_bytes(statement, i);
+			}
 
-		sqlret = sqlite3_step(statement);
+			squeal_driver_callback_demult(squeal, genfront->driveout[driveridx].driver, 1);
+			sqlret = sqlite3_step(statement);
+		}
 	}
 }
 
@@ -675,6 +681,13 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 	// First, construct "SELECT v0,v1,v2" -- the driver's output but not guards
 	//TODO: Use driver parameter names: "SELECT v0 AS p0,v1 AS p1, v2 AS p2"
 	drv_share_output_variable_table (drvtab, drvnum, &outarray, &outcount);
+
+	// In passing, allocate space for the output parameters now we know
+	// how many they'll be.
+	squeal->drivers[drvnum].cbparm = calloc(outcount, sizeof(struct squeal_blob));
+	squeal->drivers[drvnum].cbnumparm = outcount;
+	squeal->drivers[drvnum].drvall_prehash = drv_get_hash(drvtab, drvnum);
+
 	/* There should always be at least one output variable */
 	assert (outcount > 0);
 	comma = "SELECT ";
