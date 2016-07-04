@@ -467,17 +467,7 @@ void SteamWorks::PulleyScript::Parser::Private::remove_entry(const std::string& 
 		stream << "  .. generator " << i << " hash ";
 		SteamWorks::Logging::log_hex(stream, (uint8_t *)&h, sizeof(h));
 
-		// TODO: deletion algoritme
-		//
-		// - heeft tabel gen_<hash> deze UUID?
-		//   - ja, levert SQL rijen op (->rij)
-		//     - voor elke backend (->b)
-		//       - roep backend aan voor (g, b) om SQL te krijgen (?)
-		//       - execute SQL met parameter rij (->rij')
-		//         - decrement use-count voor hash(rij')
-		//         - indien use-count 0, backend delete
-		//   - delete all rows w/ UUID
-
+		squeal_delete_forks(m_sql.m_sql, i, uuid.c_str());
 	}
 }
 
@@ -494,19 +484,6 @@ void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uui
 		auto stream = log.debugStream();
 		stream << "  .. generator " << i << " hash ";
 		SteamWorks::Logging::log_hex(stream, (uint8_t *)&h, sizeof(h));
-
-
-		// TODO: addition algorithm
-		//
-		// - generate list of tuples (a1) x (a2) x .. x (an)
-		//   where (ai) is the set of all values attribute ai
-		//   takes in @p data (->rij)
-		//   - insert UUID, rij into table gen_<hash>
-		//   - voor elke backend (->b)
-		//     - roep backend aan voor (g, b) om SQL te krijgen (?)
-		//     - execute SQL met parameter rij (->rij')
-		//       - increment use-count voor hash(rij')
-		//       - indien use-count == 1, backend add
 
 		for (const auto& f : variable_names(i))
 		{

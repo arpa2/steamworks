@@ -94,7 +94,7 @@ void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entr
 /**
  * Remove all the tuples (forks) for the given UUID.
  */
-void squeal_delete_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID);
+void squeal_delete_forks(struct squeal *squeal, gennum_t gennum, const char *entryUUID);
 
 #ifdef __cplusplus
 }
