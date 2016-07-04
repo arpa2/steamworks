@@ -530,6 +530,24 @@ void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entr
 	{
 		fprintf(stderr, "Can't insert fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
 	}
+
+	sqlite3_stmt *statement = genfront->driveout->gen2drv_produce;
+	unsigned int rowcount = 1;
+	sqlret = s3ins_run_uuid(squeal->s3db, statement, entryUUID, 0, NULL);
+	while (sqlret != SQLITE_DONE) {
+		if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_ROW))
+		{
+			fprintf (stderr, "SQLite3 ERROR while producing output for uuid %s sql %d %s\n", entryUUID, sqlret, sqlite3_errmsg(squeal->s3db));
+			break;
+		}
+
+		printf("Output row %d\n", rowcount);
+		for (unsigned int i=0; i < sqlite3_column_count(statement); i++) {
+			printf("  .. column %d size %d %10s\n", i, sqlite3_column_bytes(statement, i), sqlite3_column_blob(statement, i));
+		}
+
+		sqlret = sqlite3_step(statement);
+	}
 }
 
 void squeal_delete_forks(struct squeal *squeal, gennum_t gennum, const char *entryUUID)
