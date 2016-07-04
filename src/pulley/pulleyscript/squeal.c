@@ -324,7 +324,7 @@ static int s3ins_run (sqlite3 *s3db, sqlite3_stmt *s3in, s3key_t hash,
 	sqlite3_clear_bindings (s3in);
 	//
 	// Setup the prepared statement with the hash value, if it asks for it
-	idx = sqlite3_bind_parameter_index (s3in, "?hash");
+	idx = sqlite3_bind_parameter_index (s3in, ":hash");
 	if (idx != 0) {
 		sqlite3_bind_int64 (s3in, idx, hash);
 	}
@@ -412,6 +412,7 @@ static void squeal_driver_callback_demult (struct squeal *squeal,
 	if (s3rv == SQLITE_OK) {
 		repeats = sqlite3_column_int (squeal->get_drv_all, 0);
 	}
+
 	//
 	// See if the current number hints at not making the callback
 	if (s3rv != SQLITE_OK) {
@@ -953,7 +954,7 @@ int squeal_configure (struct squeal *squeal) {
 	sqlbuf_write (&sql, "SELECT max (out_repeat)\n"
 			    "FROM ( SELECT out_repeat\n"
 			    "       FROM drv_all\n"
-			    "       WHERE out_hash = ?\n"
+			    "       WHERE out_hash = :hash\n"
 			    "       UNION VALUES (0) )");
 	if ((sqlretval = sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->get_drv_all, NULL)) != SQLITE_OK) {
 		printf ("PREP ERROR select in SQL %d\n", sqlretval);
@@ -964,10 +965,10 @@ int squeal_configure (struct squeal *squeal) {
 	//
 	// Increment a drv_all's out_repeat for a given out_hash:
 	sqlbuf_write (&sql, "INSERT OR REPLACE INTO drv_all\n"
-			    "SELECT ?hash, 1 + max (out_repeat)\n"
+			    "SELECT :hash, 1 + max (out_repeat)\n"
 			    "FROM ( SELECT out_repeat\n"
 			    "       FROM drv_all\n"
-			    "       WHERE out_hash = ?\n"
+			    "       WHERE out_hash = :hash\n"
 			    "       UNION VALUES (0) )");
 	if ((sqlretval = sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->inc_drv_all, NULL)) != SQLITE_OK) {
 		printf ("PREP ERROR insert in SQL %d\n", sqlretval);
@@ -979,7 +980,7 @@ int squeal_configure (struct squeal *squeal) {
 	// Decrement a drv_all's out_repeat for a given out_hash:
 	sqlbuf_write (&sql, "UPDATE drv_all\n"
 				"SET out_repeat = out_repeat - 1\n"
-				"WHERE out_hash = ?");
+				"WHERE out_hash = :hash");
 	if ((sqlretval = sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->dec_drv_all, NULL)) != SQLITE_OK) {
 		printf ("PREP ERROR update in SQL %d\n", sqlretval);
 		retval = 1;
