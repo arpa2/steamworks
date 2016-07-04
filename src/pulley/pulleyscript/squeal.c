@@ -519,16 +519,20 @@ void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_d
 	_squeal_generator_fork(squeal, &(squeal->gens[gennum]), add_not_del, numrecvars, recvars);
 }
 
-void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID, int numrecvars, struct squeal_blob *recvars)
+static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID, int add_not_del, int numrecvars, struct squeal_blob *recvars)
 {
+	int sqlret;
 	struct s3ins_generator* genfront = &(squeal->gens[gennum]);
-	assert (genfront->numrecvars == numrecvars);
 
-	int sqlret = s3ins_run_uuid(squeal->s3db, genfront->opt_gen_add_record, entryUUID, numrecvars, recvars);
-
-	if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_DONE))
+	if (add_not_del)
 	{
-		fprintf(stderr, "Can't insert fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
+		assert (genfront->numrecvars == numrecvars);
+		sqlret = s3ins_run_uuid(squeal->s3db, genfront->opt_gen_add_record, entryUUID, numrecvars, recvars);
+
+		if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_DONE))
+		{
+			fprintf(stderr, "Can't insert fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
+		}
 	}
 
 	for (unsigned int driveridx=0; driveridx < genfront->numdriveout; driveridx++)
@@ -550,22 +554,30 @@ void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entr
 				params[i].size = sqlite3_column_bytes(statement, i);
 			}
 
-			squeal_driver_callback_demult(squeal, genfront->driveout[driveridx].driver, 1);
+			squeal_driver_callback_demult(squeal, genfront->driveout[driveridx].driver, add_not_del);
 			sqlret = sqlite3_step(statement);
+		}
+	}
+
+	if (!add_not_del)
+	{
+		int sqlret = s3ins_run_uuid(squeal->s3db, genfront->opt_gen_del_record, entryUUID, 0, NULL);
+
+		if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_DONE))
+		{
+			fprintf(stderr, "Can't delete fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
 		}
 	}
 }
 
+void squeal_insert_fork(struct squeal* squeal, gennum_t gennum, const char* entryUUID, int numrecvars, struct squeal_blob* recvars)
+{
+	_squeal_fork(squeal, gennum, entryUUID, 1 /* add */, numrecvars, recvars);
+}
+
 void squeal_delete_forks(struct squeal *squeal, gennum_t gennum, const char *entryUUID)
 {
-	struct s3ins_generator* genfront = &(squeal->gens[gennum]);
-
-	int sqlret = s3ins_run_uuid(squeal->s3db, genfront->opt_gen_del_record, entryUUID, 0, NULL);
-
-	if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_DONE))
-	{
-		fprintf(stderr, "Can't delete fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
-	}
+	_squeal_fork(squeal, gennum, entryUUID, 0 /* delete */, 0, NULL);
 }
 
 /********** BACKEND STRUCTURE CREATION **********/
