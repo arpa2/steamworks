@@ -137,7 +137,7 @@ struct s3ins_generator {
 	sqlite3_stmt *opt_gen_add_record; // Supply ?hash + gen variables: ?x, ?y,...
 	sqlite3_stmt *opt_gen_del_record; // Supply ?hash + gen variables: ?x, ?y,...
 	int numdriveout;		  // Number of driveout[] records
-	struct s3ins_gen2drv driveout [1];// Driver instructions for this generator
+	struct s3ins_gen2drv* driveout;// Driver instructions for this generator
 };
 
 /* The "squeal" structure holds the overall information for a SQLite3 engine instance.
@@ -841,7 +841,7 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 }
 
 
-int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab)
+int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, struct drvtab* drvtab)
 {
 	int gennum, drvnum;
 	int varnum;
@@ -882,6 +882,19 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab)
 			gen->opt_gen_del_record = NULL;
 			printf("PREP ERROR insert in generator SQL %d\n", sqlretval);
 			goto fail;
+		}
+
+		bitset_t *drvs = gen_share_driverout(gentab, gennum);
+		unsigned int numdrivers = bitset_count(drvs);
+		gen->driveout = calloc(numdrivers, sizeof(struct s3ins_gen2drv));
+		gen->numdriveout = numdrivers;
+
+		bitset_iter_t it;
+		unsigned int drvindex = 0;
+		bitset_iterator_init(&it, drvs);
+		while (bitset_iterator_next_one (&it, NULL)) {
+			gen->driveout[drvindex].gen2drv_produce = squeal_produce_outputs(squeal, drvtab, gennum, bitset_iterator_bitnum(&it));
+			drvindex++;
 		}
 	}
 

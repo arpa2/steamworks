@@ -75,7 +75,7 @@ int squeal_configure (struct squeal *squeal);
  * called after squeal_configure() and before calling
  * squeal_generator_fork().
  */
-int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab);
+int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, struct drvtab* drvtab);
 
 /**
  * Run generator @p gennum with a new tuple of variables. The operation

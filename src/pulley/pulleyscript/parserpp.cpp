@@ -259,7 +259,7 @@ public:
 			return 1;
 		}
 
-		if (squeal_configure_generators(m_sql.m_sql, m_prs.gentab) != 0)
+		if (squeal_configure_generators(m_sql.m_sql, m_prs.gentab, m_prs.drvtab) != 0)
 		{
 			log.errorStream() << "Could not configure generator SQL statements.";
 			m_state = State::Broken;
