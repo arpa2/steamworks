@@ -572,12 +572,12 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 
 void squeal_insert_fork(struct squeal* squeal, gennum_t gennum, const char* entryUUID, int numrecvars, struct squeal_blob* recvars)
 {
-	_squeal_fork(squeal, gennum, entryUUID, 1 /* add */, numrecvars, recvars);
+	_squeal_fork(squeal, gennum, entryUUID, PULLEY_RECORD_ADD, numrecvars, recvars);
 }
 
 void squeal_delete_forks(struct squeal *squeal, gennum_t gennum, const char *entryUUID)
 {
-	_squeal_fork(squeal, gennum, entryUUID, 0 /* delete */, 0, NULL);
+	_squeal_fork(squeal, gennum, entryUUID, PULLEY_RECORD_DEL, 0, NULL);
 }
 
 /********** BACKEND STRUCTURE CREATION **********/
