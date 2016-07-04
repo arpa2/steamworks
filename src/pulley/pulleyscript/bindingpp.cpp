@@ -77,7 +77,7 @@ void SteamWorks::PulleyScript::explain_binding(vartab* vars,
 		case BNDO_ACT_BIND:
 			v0 = extract_varnum(p+1);
 			v1 = extract_varnum(p+1+sizeof(varnum_t));
-			d << "BIND " << operand_s << ' ' << var_get_name(vars, v0) << "~" << var_get_name(vars, v1);
+			d << "BIND " << operand_s << ' ' << var_get_name(vars, v0) << " (" << v0 << ") ~ " << var_get_name(vars, v1) << " (" << v1 << ')';
 			for (unsigned int i=0; i < bound_varnums.size(); i++)
 			{
 				if (v1 == bound_varnums[i])
