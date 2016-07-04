@@ -1008,7 +1008,7 @@ struct squeal *squeal_open_in_dbdir (hash_t lexhash, gennum_t numgens, drvnum_t 
 		return NULL;
 	}
 	work->numgens = numgens;
-	work->drivers = calloc (sizeof (struct s3ins_driver) * numdrvs, 1);
+	work->drivers = calloc (numdrvs, sizeof (struct s3ins_driver));
 	work->numdrivers = numdrvs;
 	if (work->drivers == NULL) {
 		free (work);
