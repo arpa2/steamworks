@@ -663,7 +663,7 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 	comma = "SELECT ";
 	for (i=0; i<outcount; i++) {
 		sqlbuf_write (&sql, comma);
-		if (bitset_test (params, outarray [i])) {
+		if (0 && bitset_test (params, outarray [i])) {
 			/* No need to prefix var_ or anything, separate id space */
 			snprintf (varid, sizeof (varid)-1, "?%03d", outarray [i]);
 			sqlbuf_write (&sql, varid);
@@ -681,6 +681,10 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 	// Without any co-generators, there will be no FROM clause in this SQL query
 	assert (!bitset_isempty (itbits));
 	comma = "\nFROM   ";
+
+	sqlbuf_write(&sql, comma);
+	sqlbuf_lexhash2name (&sql, "gen_", gen_get_hash(gentab, gennum));
+
 	bitset_iterator_init (&it, itbits);
 	while (bitset_iterator_next_one (&it, NULL)) {
 		cogen = bitset_iterator_bitnum (&it);
@@ -700,15 +704,14 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 	//
 	// Third, iterate over varpartitions and find their associated conditions
 	itbits = drv_share_conditions (drvtab, drvnum); /* 0 conditions is acceptable */
-	comma = "\nWHERE  ";
+	sqlbuf_write(&sql, "\nWHERE  entryUUID = :uuid");
+	comma = "\nAND    ";
 	bitset_iterator_init (&it, itbits);
 	while (bitset_iterator_next_one (&it, NULL)) {
 		sqlbuf_write (&sql, comma);
 		cnd_share_expression (cndtab, bitset_iterator_bitnum (&it), &exp, &explen);
 		squeal_produce_expression (&sql, vartab, params, exp, explen);
-		comma = "\nAND    ";
 	}
-#ifdef TODO_ACTUALLY_PREPARE_SQLITE3_STMT
 	//
 	// Based on the generated SQL string, prepare a statement
 	if (sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &retval, NULL) != SQLITE_OK) {
@@ -716,9 +719,9 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 		retval = NULL;
 		goto cleanup;
 	}
-#else
-printf ("prep sql>\n%.*s\n\n", (int) sql.ofs, sql.buf);
-#endif
+
+	printf ("prep sql>\n%.*s\n\n", (int) sql.ofs, sql.buf);
+
 cleanup:
 	//
 	// Release the SQL buffer
