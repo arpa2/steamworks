@@ -41,7 +41,7 @@ public:
 		stream << "Opening SQL for ";
 		SteamWorks::Logging::log_hex(stream, (uint8_t *)&h, sizeof(h));
 
-		m_sql = squeal_open_in_dbdir (prs->scanhash, gentab_count (prs->gentab), drvtab_count (prs->drvtab), "/tmp/");
+		m_sql = squeal_open(prs->scanhash, gentab_count (prs->gentab), drvtab_count (prs->drvtab));
 		return m_sql != nullptr;
 	}
 

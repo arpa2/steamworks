@@ -243,7 +243,7 @@ int generate_squeal (struct parser *prs) {
 	int TODO_produce_outputs (struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum);
 	struct squeal *s3db;
 
-	s3db = squeal_open_in_dbdir (prs->scanhash, gentab_count (prs->gentab), drvtab_count (prs->drvtab), "/tmp/");
+	s3db = squeal_open(prs->scanhash, gentab_count (prs->gentab), drvtab_count (prs->drvtab));
 	assert (s3db != NULL);
 	gennum_t g, gentabcnt = gentab_count (prs->gentab);
 	bitset_t *drv;
