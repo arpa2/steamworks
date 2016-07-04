@@ -125,9 +125,8 @@ struct s3ins_gen2drv {
  * For co-generators, the opt_gen_{add,del}_record statements are used
  * to provide variable (tuples) to the co-generators.
  *
- * numdriveout is the number of output-driver records that immediately
- * follow this structure. The driveout array may be indexed from 0 to
- * numdriveout-1.
+ * numdriveout is the number of output-driver records in the driveout
+ * array. The driveout array may be indexed from 0 to numdriveout-1.
  */
 struct s3ins_generator {
 	int numrecvars;			  // Number of variable names in forked record
