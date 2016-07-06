@@ -1,6 +1,7 @@
 The documentation for SteamWorks is written entirely in Markdown [1].
-Two tools are used for transforming the documentation into publishable
-content: markdown(1) for HTML output and ronn [2] for manpage output.
+The Makefile in this directory uses ronn [2] to produce HTML and
+manpage output in html.d/ and man.d/ respectively. The manpages
+end up in man.d/man8/, for system utilities.
 
 [1] http://daringfireball.net/projects/markdown/syntax
 [2] http://rtomayko.github.io/ronn/
