@@ -31,3 +31,10 @@ target_link_libraries(pulley ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${F
 target_link_libraries(pulley swldap swcommon pspplib pslib)
 target_link_libraries(pulley ${FLEX_LIBRARIES} ${SQLITE3_LIBRARIES})
 
+add_definitions(-DNO_SECURITY=1)
+add_executable(pulleyback_test backend.cpp pulleyback_test.cpp)
+target_link_libraries(pulleyback_test swcommon)
+# We need to link this executable such that the plugins can get
+# at the write_logger() symbol from the executable -- otherwise
+# the plugin can't produce logging output.
+set_target_properties(pulleyback_test PROPERTIES LINK_FLAGS -rdynamic)
