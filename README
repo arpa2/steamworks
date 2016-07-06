@@ -4,19 +4,24 @@ Pulley parts of that system.
 
     docs/                Holds project documentation
     src/                 Project sources
-    src/3rdparty         3rd-party imported sources
+    src/3rdparty         Third-party imported sources
     src/common           Support code, common components
     src/crank            Steamworks Crank component
 
-See LICENSE for overall licensing information, and a README in each
-subdirectory for local details. See README.<os> for details regarding
-SteamWorks on a particular operating system and for build dependencies.
-For a quick start (assuming the build dependencies are met; otherwise
+See LICENSE for overall licensing information, and a README in each 
+subdirectory for local details. See README.<os> for details regarding 
+SteamWorks on a particular operating system and for build dependencies. 
+For a quick start (assuming the build dependencies are met; otherwise 
 you will get error messages that point out what is missing), just run
 
     make
 
-to create a build directory, configure and build the system. For example
-usage of the system, see the examples/ directories in the various
-components directories.
+to create a build directory, configure and build the system.
 
+The documentation is written in MarkDown. There is a docs/Makefile that 
+will produce nicer output using ronn(1).
+
+For example usage of the system, see the examples/ directories in the 
+various components directories. These contain example data and scenario's 
+to demonstrate the system; you will need to read some of the documentation 
+in docs/ to know what to do with them.

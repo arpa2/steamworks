@@ -1,11 +1,12 @@
 This SteamWorks software is compatible with Linux and has been
-tested on OpenSUSE OpenSUSE 13.2. In order to build SteamWorks,
+tested on OpenSUSE 13.2 and Leap 42. In order to build SteamWorks,
 you will need to install the following packages:
 
  - OpenSUSE
    - Packages (use zypper install)
      - gcc-c++
      - openldap-client, openldap-client-devel
+     - sqlite3-devel
    - From source:
      - log4cpp, see http://log4cpp.sourceforge.net/ .
        This is optional.
