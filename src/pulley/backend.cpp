@@ -66,7 +66,7 @@ public:
 } ;
 
 
-class BackEnd::Private
+class SteamWorks::PulleyBack::Loader::Private
 {
 private:
 	std::string m_name;
@@ -76,6 +76,8 @@ private:
 public:
 	decltype(pulleyback_open)* m_pulleyback_open;
 	decltype(pulleyback_close)* m_pulleyback_close;
+	decltype(pulleyback_add)* m_pulleyback_add;
+	decltype(pulleyback_del)* m_pulleyback_del;
 
 public:
 	Private(const std::string& name) :
@@ -117,6 +119,8 @@ public:
 		{
 			FuncKeeper<decltype(pulleyback_open)> fk0(m_handle, "pulleyback_open", m_valid, m_pulleyback_open);
 			FuncKeeper<decltype(pulleyback_close)> fk1(m_handle, "pulleyback_close", m_valid, m_pulleyback_close);
+			FuncKeeper<decltype(pulleyback_add)> fk2(m_handle, "pulleyback_add", m_valid, m_pulleyback_add);
+			FuncKeeper<decltype(pulleyback_del)> fk3(m_handle, "pulleyback_del", m_valid, m_pulleyback_del);
 		}
 
 		// If any function has not been resolved, the FuncKeeper will have set m_valid to false
@@ -140,7 +144,7 @@ public:
 	bool is_valid() const { return m_valid; }
 } ;
 
-BackEnd::BackEnd(const std::string& name) :
+SteamWorks::PulleyBack::Loader::Loader(const std::string& name) :
 	d(new Private(name))
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
@@ -148,27 +152,31 @@ BackEnd::BackEnd(const std::string& name) :
 	log.debugStream() << "  .. open @" << (void *)d->m_pulleyback_open << " close @" << (void *)d->m_pulleyback_close;
 }
 
-BackEnd::~BackEnd()
+SteamWorks::PulleyBack::Loader::~Loader()
 {
 
 }
 
-void* BackEnd::open(int argc, char** argv, int varc)
+SteamWorks::PulleyBack::Instance SteamWorks::PulleyBack::Loader::get_instance(int argc, char** argv, int varc)
 {
-	if (!d->is_valid())
-	{
-		return nullptr;
-	}
-	else
-	{
-		return d->m_pulleyback_open(argc, argv, varc);
-	}
+	return Instance(d, argc, argv, varc);
 }
 
-void BackEnd::close(void* handle)
+
+SteamWorks::PulleyBack::Instance::Instance(std::shared_ptr<Loader::Private>& parent_d, int argc, char** argv, int varc) :
+	d(parent_d),
+	m_handle(nullptr)
 {
 	if (d->is_valid())
 	{
-		d->m_pulleyback_close(handle);
+		m_handle = d->m_pulleyback_open(argc, argv, varc);
+	}
+}
+
+SteamWorks::PulleyBack::Instance::~Instance()
+{
+	if (m_handle and d->is_valid())
+	{
+		d->m_pulleyback_close(m_handle);
 	}
 }

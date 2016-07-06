@@ -23,9 +23,9 @@ int main(int argc, char **argv)
 
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
 
-	BackEnd* b = new BackEnd(argv[1]);
-
-	void *p = b->open(1, argv, 0);
-	b->close(p);
-	delete b;
+	SteamWorks::PulleyBack::Loader* plugin = new SteamWorks::PulleyBack::Loader(argv[1]);
+	{
+	auto b(plugin->get_instance(1, argv, 0));
+	}
+	delete plugin;
 }

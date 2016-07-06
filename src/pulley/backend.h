@@ -23,19 +23,53 @@ Adriaan de Groot <groot@kde.org>
 
 #include <memory>
 
+namespace SteamWorks
+{
+
+namespace PulleyBack
+{
+
+class Instance;
+
 /**
  * Loader for named Pulley backends.
  */
-class BackEnd
+class Loader
 {
+friend class Instance;
 private:
 	class Private;
-	std::unique_ptr<Private> d;
+	std::shared_ptr<Private> d;
 
 public:
-	BackEnd(const std::string& name);
-	~BackEnd();
+	Loader(const std::string& name);
+	~Loader();
 
+	/**
+	 * Gets an (open) instance of a plugin. This calls
+	 * pulleyback_open() on the plugin and returns an
+	 * Instance which can be used to call the other
+	 * API functions of the plugin.
+	 */
+	Instance get_instance(int argc, char** argv, int varc);
+} ;
+
+
+class Instance
+{
+friend class Loader;
+private:
+	std::shared_ptr<Loader::Private> d;
+	void* m_handle;
+
+	Instance(std::shared_ptr<Loader::Private>& loader, int argc, char** argv, int varc);
+
+public:
+	/**
+	 * Close this instance of a Pulley backend-plugin api.
+	 */
+	~Instance();
+	
 	/**
 	 * The following functions correspond with the pulleyback_*()
 	 * functions in pulleyback.h. Calling one of these functions
@@ -45,8 +79,9 @@ public:
 	 * If the backend has failed to load, calling any of these
 	 * functions will return NULL or a suitable error value.
 	 */
-	void *open(int argc, char **argv, int varc);
-	void close(void *);
 } ;
+
+}  // namespace PulleyBack
+}  // namespace
 
 #endif
