@@ -78,6 +78,11 @@ public:
 	decltype(pulleyback_close)* m_pulleyback_close;
 	decltype(pulleyback_add)* m_pulleyback_add;
 	decltype(pulleyback_del)* m_pulleyback_del;
+	decltype(pulleyback_reset)* m_pulleyback_reset;
+	decltype(pulleyback_prepare)* m_pulleyback_prepare;  // OPTIONAL
+	decltype(pulleyback_commit)* m_pulleyback_commit;
+	decltype(pulleyback_rollback)* m_pulleyback_rollback;
+	decltype(pulleyback_collaborate) *m_pulleyback_collaborate;
 
 public:
 	Private(const std::string& name) :
@@ -117,10 +122,19 @@ public:
 		// so that their destructors have run before we (possibly) dlclose the
 		// shared library their function-pointers point into.
 		{
+			bool optionalvalid = true;
+
 			FuncKeeper<decltype(pulleyback_open)> fk0(m_handle, "pulleyback_open", m_valid, m_pulleyback_open);
 			FuncKeeper<decltype(pulleyback_close)> fk1(m_handle, "pulleyback_close", m_valid, m_pulleyback_close);
 			FuncKeeper<decltype(pulleyback_add)> fk2(m_handle, "pulleyback_add", m_valid, m_pulleyback_add);
 			FuncKeeper<decltype(pulleyback_del)> fk3(m_handle, "pulleyback_del", m_valid, m_pulleyback_del);
+			FuncKeeper<decltype(pulleyback_reset)> fk4(m_handle, "pulleyback_reset", m_valid, m_pulleyback_reset);
+			FuncKeeper<decltype(pulleyback_prepare)> fk5(m_handle, "pulleyback_prepare", optionalvalid, m_pulleyback_prepare);
+			FuncKeeper<decltype(pulleyback_commit)> fk6(m_handle, "pulleyback_commit", m_valid, m_pulleyback_commit);
+			FuncKeeper<decltype(pulleyback_rollback)> fk7(m_handle, "pulleyback_rollback", m_valid, m_pulleyback_rollback);
+			FuncKeeper<decltype(pulleyback_collaborate)> fk8(m_handle, "pulleyback_collaborate", m_valid, m_pulleyback_collaborate);
+
+			optionalvalid &= m_valid;  // If any required func missing, the optionals are invalid too
 		}
 
 		// If any function has not been resolved, the FuncKeeper will have set m_valid to false
