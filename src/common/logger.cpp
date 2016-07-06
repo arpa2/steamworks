@@ -39,3 +39,9 @@ void SteamWorks::Logging::log_indent(SteamWorks::Logging::LoggerStream& log, uns
 	}
 }
 
+extern "C" void write_logger(const char* logname, const char* message)
+{
+	SteamWorks::Logging::getLogger(std::string(logname)).debugStream() << message;
+}
+
+
