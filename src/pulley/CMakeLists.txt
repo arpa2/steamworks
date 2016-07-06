@@ -18,6 +18,7 @@ find_package(SQLite3 REQUIRED)
 include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../common ../3rdparty)
 
 add_subdirectory(pulleyscript)
+add_subdirectory(pulleyback)
 
 set(PULLEY_SRC
   backend.cpp
