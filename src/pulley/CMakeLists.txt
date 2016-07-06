@@ -20,6 +20,7 @@ include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../common ../3r
 add_subdirectory(pulleyscript)
 
 set(PULLEY_SRC
+  backend.cpp
   main.cpp
   pulley.cpp
   )
