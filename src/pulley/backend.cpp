@@ -25,6 +25,47 @@ static const char plugindir[] = PULLEY_BACKEND_DIR;
 // static_assert(plugindir[0] == '/', "Backend must be absolute dir.");
 // static_assert(plugindir[sizeof(plugindir)-1] == '/', "Backend must end in /.");
 
+/**
+ * Helper class when loading the API from a DLL. Uses dlfunc()
+ * to resolve functions and stores them in referenced function
+ * pointers. If any of the name-resolvings fails, the referenced
+ * boolean valid is set to false. Use multiple FuncKeepers
+ * all referencing the same valid bool to load an entire
+ * API and check if it's valid.
+ */
+template<typename funcptr> class FuncKeeper {
+private:
+	bool& m_valid;
+	funcptr*& m_func;
+public:
+	FuncKeeper(void *handle, const char *name, bool& valid, funcptr*& func) :
+		m_valid(valid),
+		m_func(func)
+	{
+		dlfunc_t f = dlfunc(handle, name);
+		if (f)
+		{
+			func = reinterpret_cast<funcptr*>(f);
+		}
+		else
+		{
+			func = nullptr;
+			auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
+			log.warnStream() << "Function " << name << " not found.";
+			valid = false;
+		}
+	}
+
+	~FuncKeeper()
+	{
+		if (!m_valid)
+		{
+			m_func = nullptr;
+		}
+	}
+} ;
+
+
 class BackEnd::Private
 {
 private:
@@ -69,20 +110,16 @@ public:
 			return;
 		}
 
-		m_pulleyback_open = reinterpret_cast<decltype(pulleyback_open)*>(dlfunc(m_handle, "pulleyback_open"));
-		m_pulleyback_close= reinterpret_cast<decltype(pulleyback_close)*>(dlfunc(m_handle, "pulleyback_close"));
-
-		if (!(m_pulleyback_close && m_pulleyback_open))
+		m_valid = true;
+		// As far as we know .. the FuncKeepers can modify it. Put them in a block
+		// so that their destructors have run before we (possibly) dlclose the
+		// shared library their function-pointers point into.
 		{
-			m_pulleyback_close = nullptr;
-			m_pulleyback_open = nullptr;
-			m_valid = false;
-		}
-		else
-		{
-			m_valid = true;
+			FuncKeeper<decltype(pulleyback_open)> fk0(m_handle, "pulleyback_open", m_valid, m_pulleyback_open);
+			FuncKeeper<decltype(pulleyback_close)> fk1(m_handle, "pulleyback_close", m_valid, m_pulleyback_close);
 		}
 
+		// If any function has not been resolved, the FuncKeeper will have set m_valid to false
 		if (!m_valid)
 		{
 			dlclose(m_handle);
