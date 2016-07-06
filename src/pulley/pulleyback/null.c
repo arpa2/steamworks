@@ -18,7 +18,7 @@ typedef struct {
 	int varc;
 } handle_t;
 
-void *pulleyback_open (int argc, char **argv, int varc)
+void *pulleyback_open(int argc, char **argv, int varc)
 {
 	char ibuf[64];
 
@@ -50,7 +50,7 @@ void *pulleyback_open (int argc, char **argv, int varc)
 	}
 }
 
-void pulleyback_close (void *pbh)
+void pulleyback_close(void *pbh)
 {
 	char ibuf[64];
 	handle_t* handle = pbh;
@@ -63,7 +63,7 @@ void pulleyback_close (void *pbh)
 	free(pbh);
 }
 
-int pulleyback_add (void *pbh, der_t *forkdata)
+int pulleyback_add(void *pbh, der_t *forkdata)
 {
 	char ibuf[64];
 	handle_t* handle = pbh;
@@ -76,7 +76,7 @@ int pulleyback_add (void *pbh, der_t *forkdata)
 	return 1;
 }
 
-int pulleyback_del (void *pbh, der_t *forkdata)
+int pulleyback_del(void *pbh, der_t *forkdata)
 {
 	char ibuf[64];
 	handle_t* handle = pbh;
@@ -87,5 +87,61 @@ int pulleyback_del (void *pbh, der_t *forkdata)
 	write_logger(logger, ibuf);
 
 	return 1;
+}
+
+int pulleyback_reset(void *pbh)
+{
+	char ibuf[64];
+	handle_t* handle = pbh;
+
+	snprintf(ibuf, sizeof(ibuf), "NULL backend reset %p", (void *)handle);
+	write_logger(logger, ibuf);
+
+	return 1;
+}
+
+int pulleyback_prepare(void *pbh)
+{
+	char ibuf[64];
+	handle_t* handle = pbh;
+
+	snprintf(ibuf, sizeof(ibuf), "NULL backend prepare %p", (void *)handle);
+	write_logger(logger, ibuf);
+
+	return 1;
+}
+
+int pulleyback_commit(void *pbh)
+{
+	char ibuf[64];
+	handle_t* handle = pbh;
+
+	snprintf(ibuf, sizeof(ibuf), "NULL backend commit %p", (void *)handle);
+	write_logger(logger, ibuf);
+
+	return 1;
+}
+
+void pulleyback_rollback(void *pbh)
+{
+	char ibuf[64];
+	handle_t* handle = pbh;
+
+	snprintf(ibuf, sizeof(ibuf), "NULL backend rollback %p", (void *)handle);
+	write_logger(logger, ibuf);
+}
+
+int pulleyback_collaborate(void *pbh1, void *pbh2)
+{
+	char ibuf[64];
+	handle_t* handle = pbh1;
+
+	snprintf(ibuf, sizeof(ibuf), "NULL backend collaborate %p", (void *)handle);
+	write_logger(logger, ibuf);
+
+	snprintf(ibuf, sizeof(ibuf), "  .. joining @%p and @%p", (void *)handle, pbh2);
+	write_logger(logger, ibuf);
+
+	return 0;
 }
 
