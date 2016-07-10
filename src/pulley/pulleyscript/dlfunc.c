@@ -1,5 +1,6 @@
 #ifndef HAVE_DLFUNC
 
+#include <dlfcn.h>
 #include "dlfunc.h"
 
 /* Answer from StackOverflow.com, 1144107. */
@@ -10,7 +11,7 @@ dlfunc_t dlfunc(const void *handle, const void *symbol) {
 		void *d;
 		dlfunc_t f;
 	} rv;
-	rv.d = dlsym(handle, symbol); /* Conversion warning */
+	rv.d = dlsym((void *)handle, (void *)symbol); /* Conversion warning */
 	return rv.f;
 }
 #endif
