@@ -5,6 +5,8 @@ All rights reserved. See file LICENSE for exact terms (2-clause BSD license).
 Adriaan de Groot <groot@kde.org>
 */
 
+#include <set>
+
 #include "sync.h"
 
 #include "serverinfo.h"

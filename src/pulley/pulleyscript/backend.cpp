@@ -9,6 +9,10 @@ Adriaan de Groot <groot@kde.org>
 #include "parserpp.h"
 #include "../pulleyback.h"
 
+#ifndef HAVE_DLFUNC
+#include "dlfunc.h"
+#endif
+
 #include <assert.h>
 #include <dlfcn.h>
 #include <stdio.h>
@@ -23,18 +27,6 @@ Adriaan de Groot <groot@kde.org>
 #define PREFIX "/usr/local"
 #endif
 #define PULLEY_BACKEND_DIR PREFIX "/share/steamworks/pulleyback/"
-#endif
-
-#ifndef HAVE_DLFUNC
-/* copied from FreeBSD, lib/libc/gen/dlfunc.c */
-dlfunc_t dlfunc(void *restrict handle, void *restrict symbol) {
-	union {
-		void *d;
-		dlfunc_t f;
-	} rv;
-	rv.d = dlsym(handle, symbol);
-	return rv.f;
-}
 #endif
 
 static const char plugindir[] = PULLEY_BACKEND_DIR;

@@ -10,6 +10,8 @@ Adriaan de Groot <groot@kde.org>
 
 #include <logger.h>
 
+#include <assert.h>
+
 varnum_t extract_varnum(uint8_t* p)
 {
 	return *(varnum_t *)p;

@@ -18,6 +18,8 @@ Adriaan de Groot <groot@kde.org>
 #include <logger.h>
 #include <jsoniterator.h>
 
+#include <assert.h>
+
 class SquealOpener
 {
 public:

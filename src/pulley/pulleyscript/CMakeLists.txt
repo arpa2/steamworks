@@ -23,6 +23,11 @@ bison_target(bpulley pulley.yacc ${CMAKE_CURRENT_BINARY_DIR}/pulley.tab.cacc
 flex_target(fpulley pulley.lex ${CMAKE_CURRENT_BINARY_DIR}/parser.c)
 add_flex_bison_dependency(fpulley bpulley)
 
+check_function_exists(dlfunc HAVE_FUN_DLFUNC)
+if(HAVE_FUN_DLFUNC)
+  add_definitions(-DHAVE_DLFUNC)
+endif()
+
 set(PSLIB_SRC
   bitset.c
   condition.c
@@ -39,6 +44,9 @@ set(PSPPLIB_SRC
   bindingpp.cpp
   parserpp.cpp
   )
+if(NOT HAVE_FUN_DLFUNC)
+  set(PSPPLIB_SRC ${PSPPLIB_SRC} dlfunc.c)
+endif()
 
 set(COMPILER_SRC
   compiler.c

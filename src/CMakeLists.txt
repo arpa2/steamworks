@@ -27,11 +27,6 @@ if(NOT LOG4CPP_FOUND)
   set(LOG4CPP_FOUND TRUE)
 endif()
 
-check_function_exists(dlfunc HAVE_FUN_DLFUNC)
-if(HAVE_FUN_DLFUNC)
-  add_definitions(-DHAVE_DLFUNC)
-endif()
-
 add_subdirectory(common)
 add_subdirectory(crank)
 add_subdirectory(shaft)
