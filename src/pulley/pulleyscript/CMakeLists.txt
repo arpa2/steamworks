@@ -8,6 +8,8 @@
 cmake_minimum_required(VERSION 2.8.11)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../../../cmake)
 
+include(CheckSymbolExists)
+
 find_package(SQLite3 REQUIRED)
 find_package(BISON 3 REQUIRED)
 find_package(FLEX REQUIRED)
@@ -73,6 +75,17 @@ endif()
 include_directories(${SQLITE3_INCLUDE_DIRS} ${FLEX_INCLUDE_DIRS})
 add_library(pslib STATIC ${PSLIB_SRC})
 add_library(pspplib STATIC ${PSPPLIB_SRC})
+
+check_symbol_exists(dlclose dlfcn.h HAVE_FUN_DLCLOSE)
+if(NOT HAVE_FUN_DLCLOSE)
+  message("   .. Checking for dlclose in -ldl")
+  set(_CRL ${CMAKE_REQUIRED_LIBRARIES})
+  set(CMAKE_REQUIRED_LIBRARIES -ldl)
+  check_symbol_exists(dlclose dlfcn.h HAVE_FUN_DLCLOSE2)
+  if(HAVE_FUN_DLCLOSE2)  # Now it needs -ldl
+    target_link_libraries(pspplib dl)
+  endif()
+endif()
 
 add_executable(compiler ${COMPILER_SRC})
 target_link_libraries(compiler pslib ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES})
