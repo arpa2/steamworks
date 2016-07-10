@@ -75,6 +75,8 @@ endif()
 
 include_directories(${SQLITE3_INCLUDE_DIRS} ${FLEX_INCLUDE_DIRS})
 add_library(pslib STATIC ${PSLIB_SRC})
+target_compile_definitions(pslib PUBLIC -D_GNU_SOURCE=1)
+
 add_library(pspplib STATIC ${PSPPLIB_SRC})
 
 check_symbol_exists(dlclose dlfcn.h HAVE_FUN_DLCLOSE)
