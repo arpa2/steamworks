@@ -63,6 +63,10 @@ static const char rcsid[] = "$Id: os_unix.c,v 1.37 2002/03/05 19:14:49 robs Exp 
 #define INADDR_NONE ((unsigned long) -1)
 #endif
 
+#ifndef h_addr
+#define h_addr h_addr_list[0]
+#endif
+
 /*
  * This structure holds an entry for each oustanding async I/O operation.
  */

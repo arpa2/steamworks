@@ -10,6 +10,7 @@ project(steamworks)
 
 include(MacroEnsureOutOfSourceBuild)
 include(CheckCXX11Flags)
+include(CheckC99Flags)
 
 MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
   "Do not build Steamworks in the source directory.")

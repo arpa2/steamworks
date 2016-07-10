@@ -11,6 +11,8 @@ cmake_minimum_required(VERSION 2.8.11)
 
 include_directories(include .)
 
+add_definitions(-D_POSIX_C_SOURCE=1)
+
 set(LIBFCGI_SRC
   libfcgi/fcgiapp.c
   libfcgi/fcgio.cpp
