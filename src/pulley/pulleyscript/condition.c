@@ -656,7 +656,7 @@ bool cnd_estimate_total_cost (struct cndtab *cctab, cndnum_t cndnum,
 	qsort_r (soln_generators,
 			*soln_generator_count,
 			sizeof (struct generator *),
-			gentab,
+			(void *)gentab,
 			gen_cmp_weight);
 	//
 	// From the sorted soln_generators list, subtract generated variables
