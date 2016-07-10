@@ -741,6 +741,7 @@ SteamWorks::PulleyScript::BackendParameters::~BackendParameters()
 	}
 }
 
+#ifndef NDEBUG
 std::ostringstream& SteamWorks::PulleyScript::operator<<(std::ostringstream& s, const SteamWorks::PulleyScript::BackendParameters& b)
 {
 	s << b.name << '(' ;
@@ -755,3 +756,5 @@ std::ostringstream& SteamWorks::PulleyScript::operator<<(std::ostringstream& s, 
 	s << ')';
 	return s;
 }
+#endif
+
