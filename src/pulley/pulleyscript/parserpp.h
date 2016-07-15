@@ -46,7 +46,7 @@ private:
 	std::unique_ptr<Private> d;
 
 public:
-	enum class State { Broken, Initial, Parsing, Analyzed };
+	enum class State { Broken, Initial, Parsing, Analyzed, Ready };
 
 	Parser();
 	~Parser();

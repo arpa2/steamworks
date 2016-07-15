@@ -123,6 +123,10 @@ int main(int argc, char **argv)
 	prsret = prs.setup_sql();
 	log.debugStream() << "Parser SQL setup " << prsret;
 	log.debugStream() << "  .. " << prs.state_string().c_str();
+	if (prs.state() == SteamWorks::PulleyScript::Parser::State::Broken)
+	{
+		return 1;
+	}
 	prs.find_subscriptions();
 
 	picojson::value v;
@@ -132,7 +136,7 @@ int main(int argc, char **argv)
 	"TlsPoolSupportedRole": "server"
 })"
 	);
-	log.debugStream() << "JSON object is object?" << v.is<picojson::object>();
+	log.debugStream() << "JSON object is object? " << (v.is<picojson::object>() ? "yes" : "no");
 
 	const picojson::value::object& obj = v.get<picojson::object>();
 	prs.add_entry("1234", obj);

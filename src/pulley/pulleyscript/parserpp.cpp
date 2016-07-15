@@ -118,6 +118,9 @@ public:
 		case State::Analyzed:
 			s = "Analyzed";
 			break;
+		case State::Ready:
+			s = "Ready";
+			break;
 		case State::Broken:
 			s = "Broken";
 			break;
@@ -240,6 +243,7 @@ public:
 		}
 		if (!m_sql.open(&m_prs))
 		{
+			m_state = State::Broken;
 			return 1;
 		}
 
@@ -284,6 +288,7 @@ public:
 		}
 
 		// m_sql.close();
+		m_state = State::Ready;
 		return 0;
 	}
 
@@ -445,11 +450,25 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find
 
 void SteamWorks::PulleyScript::Parser::remove_entry(const std::string& uuid)
 {
+	if (state() != State::Ready)
+	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+		log.errorStream() << "Pulley setup was incomplete or failed (" << d->state_string() << "). " << "Cannot remove entry.";
+		return;
+	}
+
 	d->remove_entry(uuid);
 }
 
 void SteamWorks::PulleyScript::Parser::add_entry(const std::string& uuid, const picojson::object& data)
 {
+	if (state() != State::Ready)
+	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+		log.errorStream() << "Pulley setup was incomplete or failed (" << d->state_string() << "). " << "Cannot add entry.";
+		return;
+	}
+
 	d->add_entry(uuid, data);
 }
 
