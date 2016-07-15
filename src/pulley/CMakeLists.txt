@@ -38,3 +38,7 @@ target_link_libraries(pulleyback_test swcommon)
 # at the write_logger() symbol from the executable -- otherwise
 # the plugin can't produce logging output.
 set_target_properties(pulleyback_test PROPERTIES LINK_FLAGS -rdynamic)
+
+install(TARGETS pulley
+  RUNTIME DESTINATION bin
+  )

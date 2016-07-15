@@ -22,3 +22,6 @@ set(SHAFT_SRC
 add_executable(shaft ${SHAFT_SRC})
 target_link_libraries(shaft ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES} swldap swcommon)
 
+install(TARGETS shaft
+  RUNTIME DESTINATION bin
+  )

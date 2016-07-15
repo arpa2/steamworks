@@ -22,3 +22,6 @@ set(CRANK_SRC
 add_executable(crank ${CRANK_SRC})
 target_link_libraries(crank ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES} swldap swcommon)
 
+install(TARGETS crank
+  RUNTIME DESTINATION bin
+  )

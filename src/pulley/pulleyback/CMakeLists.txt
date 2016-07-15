@@ -9,3 +9,7 @@ set(NULL_SRC
 
 add_library(pulleyback_null MODULE ${NULL_SRC})
 set_target_properties(pulleyback_null PROPERTIES PREFIX "")
+
+install(TARGETS pulleyback_null
+  LIBRARY DESTINATION share/steamworks/pulleyback
+  )
