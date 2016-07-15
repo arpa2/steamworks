@@ -23,9 +23,14 @@ int main(int argc, char **argv)
 
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
 
-	SteamWorks::PulleyBack::Loader* plugin = new SteamWorks::PulleyBack::Loader(argv[1]);
+	std::vector<std::shared_ptr<SteamWorks::PulleyBack::Loader> > backends;
+
+	for (int c=1; c < argc; c++)
 	{
-	auto b(plugin->get_instance(1, argv, 0));
+		backends.emplace_back(new SteamWorks::PulleyBack::Loader(argv[c]));
+		auto& plugin = backends.back();
+		{
+		auto b(plugin->get_instance(1, argv, 0));
+		}
 	}
-	delete plugin;
 }
