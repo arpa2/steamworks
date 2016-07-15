@@ -155,6 +155,9 @@ public:
 
 	~Private()
 	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
+		log.debugStream() << "Unloaded priv " << name();
+
 		if (m_handle != nullptr)
 		{
 			dlclose(m_handle);
@@ -164,6 +167,7 @@ public:
 	}
 
 	bool is_valid() const { return m_valid; }
+	std::string name() const { return m_name; }
 } ;
 
 SteamWorks::PulleyBack::Loader::Loader(const std::string& name) :
@@ -176,7 +180,8 @@ SteamWorks::PulleyBack::Loader::Loader(const std::string& name) :
 
 SteamWorks::PulleyBack::Loader::~Loader()
 {
-
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
+	log.debugStream() << "Unloaded " << d->name();
 }
 
 SteamWorks::PulleyBack::Instance SteamWorks::PulleyBack::Loader::get_instance(int argc, char** argv, int varc)
