@@ -93,7 +93,7 @@ static void *gentab_index (void *data, unsigned int index) {
 /* Fully initialize (to useless values) a generator structure, to avoid
  * uninitialized-pointers problems.
  */
-static _gen_init (struct generator *gen)
+static void _gen_init (struct generator *gen)
 {
 	gen->weight = 0.0;
 	gen->source = -1;
