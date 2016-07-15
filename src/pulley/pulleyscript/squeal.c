@@ -44,8 +44,11 @@
 
 /* TODO: Make the database directory a configurable entity.
  */
-static const char *default_dbdir = "/var/db/pulley/";
-
+#ifdef PULLEY_SQUEAL_DIR
+static const char default_dbdir[] = PULLEY_SQUEAL_DIR;
+#else
+static const char default_dbdir[] = "/var/db/pulley/";
+#endif
 
 /* Definitions for FNV-1a hashing */
 

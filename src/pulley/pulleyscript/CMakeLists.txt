@@ -47,6 +47,9 @@ set(SIMPLE_SRC
   simple.cpp
   )
 
+# Adding -DPULLEY_SQUEAL_DIR will change where the Squeal databases are created.
+#
+# add_definitions(-DPULLEY_SQUEAL_DIR="${CMAKE_INSTALL_PREFIX}/var/db/")
 include_directories(${SQLITE3_INCLUDE_DIRS} ${FLEX_INCLUDE_DIRS})
 add_library(pslib STATIC ${PSLIB_SRC})
 add_library(pspplib STATIC ${PSPPLIB_SRC})
