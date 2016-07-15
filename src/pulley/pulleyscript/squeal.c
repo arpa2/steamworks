@@ -1067,10 +1067,11 @@ struct squeal *squeal_open_in_dbdir (hash_t lexhash, gennum_t numgens, drvnum_t 
 	if (s3rv != SQLITE_OK) {
 		/* TODO: Report detailed error */
 		if (s3db != NULL) {
-			free (work->drivers);
-			free (work);
-			retval = NULL;
+			sqlite3_close(s3db);
 		}
+		free (work->drivers);
+		free (work);
+		retval = NULL;
 	} else {
 		work->s3db = s3db;
 		retval = work;
