@@ -17,10 +17,15 @@ Adriaan de Groot <groot@kde.org>
 #include "logger.h"
 
 #ifndef PULLEY_BACKEND_DIR
-#define PULLEY_BACKEND_DIR "/usr/share/steamworks/pulleyback/"
+#ifndef PREFIX
+#define PREFIX "/usr/local"
+#endif
+#define PULLEY_BACKEND_DIR PREFIX "/share/steamworks/pulleyback/"
 #endif
 
 static const char plugindir[] = PULLEY_BACKEND_DIR;
+
+static_assert(sizeof(plugindir) > 1, "Prefix / plugin directory path is weird.");
 
 // static_assert(plugindir[0] == '/', "Backend must be absolute dir.");
 // static_assert(plugindir[sizeof(plugindir)-1] == '/', "Backend must end in /.");
@@ -91,24 +96,27 @@ public:
 		m_handle(nullptr)
 	{
 		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
-		log.debugStream() << "Trying to load backend " << name;
+		log.debugStream() << "Trying to load backend '" << name << '\'';
 
 #ifdef NO_SECURITY
 		char soname[128];
 		snprintf(soname, sizeof(soname), "%s", name.c_str());
 #else
 		assert(plugindir[0] == '/');
-		assert(plugindir[sizeof(plugindir)-1] == '/');
+		assert(plugindir[sizeof(plugindir)-2] == '/');  // -1 is the NUL, -2 is trailing /
 
-		if (name.find('/'))
+		if (name.find('/') != std::string::npos)
 		{
 			log.errorStream() << "  .. illegal / in backend-name.";
 			return;
 		}
 
 		char soname[sizeof(plugindir) + 128];
-		snprintf(soname, sizeof(soname), "%s%s.so", plugindir, name.c_str());
+		snprintf(soname, sizeof(soname), "%spulleyback_%s.so", plugindir, name.c_str());
 #endif
+
+		soname[sizeof(soname)-1] = 0;
+		log.debugStream() << "Trying to load '" << soname << '\'';
 
 		m_handle = dlopen(soname, RTLD_NOW | RTLD_LOCAL);
 		if (m_handle == nullptr)
@@ -162,7 +170,7 @@ SteamWorks::PulleyBack::Loader::Loader(const std::string& name) :
 	d(new Private(name))
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
-	log.debugStream() << "Loaded " << name << " valid?" << d->is_valid();
+	log.debugStream() << "Loaded " << name << " valid? " << (d->is_valid() ? "yes" : "no");
 	log.debugStream() << "  .. open @" << (void *)d->m_pulleyback_open << " close @" << (void *)d->m_pulleyback_close;
 }
 

@@ -26,12 +26,17 @@ set(PULLEY_SRC
   pulley.cpp
   )
 
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
 add_executable(pulley ${PULLEY_SRC})
 target_link_libraries(pulley ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES})
 target_link_libraries(pulley swldap swcommon pspplib pslib)
 target_link_libraries(pulley ${FLEX_LIBRARIES} ${SQLITE3_LIBRARIES})
 
-add_definitions(-DNO_SECURITY=1)
+# Adding -DNO_SECURITY will allow the pulleyback_test to load a library
+# from any given path, not just paths inside the PREFIX/share/steamworks/pulleyback/
+# directory.
+#
+# add_definitions(-DNO_SECURITY=1)
 add_executable(pulleyback_test backend.cpp pulleyback_test.cpp)
 target_link_libraries(pulleyback_test swcommon)
 # We need to link this executable such that the plugins can get
