@@ -48,6 +48,7 @@ void drv_print (struct drvtab *tab, drvnum_t drv, FILE *stream, int indent);
 #endif
 
 void drv_set_module (struct drvtab *tab, drvnum_t drvnum, char *module);
+const char *drv_get_module (struct drvtab *tab, drvnum_t drvnum);
 
 void drv_set_weight (struct drvtab *tab, drvnum_t drvnum, float weight);
 float drv_get_weight (struct drvtab *tab, drvnum_t drvnum);

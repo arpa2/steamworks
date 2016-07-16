@@ -219,6 +219,10 @@ void drv_set_module (struct drvtab *tab, drvnum_t drvnum, char *module) {
 	}
 }
 
+const char *drv_get_module (struct drvtab *tab, drvnum_t drvnum) {
+	return tab->drvs [drvnum].module;
+}
+
 void drv_set_weight (struct drvtab *tab, drvnum_t drvnum, float weight) {
 	tab->drvs [drvnum].weight = weight;
 }
