@@ -98,24 +98,24 @@ void drv_print (struct drvtab *tab, drvnum_t drv, FILE *stream, int indent) {
 	char *comma;
 	fprintf (stream, "D%d, lexhash=", drv);
 	hash_print (&tab->drvs [drv].linehash, stream);
-	fprintf (stream, ", name=%s\nproduced_vars=",
+	fprintf (stream, ", name=%s\n  produced_vars=",
 		tab->drvs [drv].module?
 			tab->drvs [drv].module:
 			"(undef)");
 	bitset_print (tab->drvs [drv].produced_vars, "V", stream);
-	fprintf (stream, "\nexplicit_guards=");
+	fprintf (stream, "\n  explicit_guards=");
 	bitset_print (tab->drvs [drv].explicit_guards, "V", stream);
-	fprintf (stream, "\nimplicit_guards=");
+	fprintf (stream, "\n  implicit_guards=");
 	bitset_print (tab->drvs [drv].implicit_guards, "V", stream);
-	fprintf (stream, "\nall_guards=");
+	fprintf (stream, "\n  all_guards=");
 	bitset_print (tab->drvs [drv].all_guards, "V", stream);
-	fprintf (stream, "\nrelevant_vars=");
+	fprintf (stream, "\n  relevant_vars=");
 	bitset_print (tab->drvs [drv].relevant_vars, "V", stream);
-	fprintf (stream, "\ngenerators=");
+	fprintf (stream, "\n  generators=");
 	bitset_print (tab->drvs [drv].generators, "G", stream);
-	fprintf (stream, "\nconditions=");
+	fprintf (stream, "\n  conditions=");
 	bitset_print (tab->drvs [drv].conditions, "C", stream);
-	fprintf (stream, "\noutputs=");
+	fprintf (stream, "\n  outputs=");
 	bra = '[';
 	comma = "";
 	for (i=0; i<tab->drvs [drv].outputs_count; i++) {
