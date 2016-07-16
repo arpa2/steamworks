@@ -231,6 +231,13 @@ public:
 		//NONEED// gen_push_condition() => gen_share_conditions()
 		//NONEED// gen_push_generator() => gen_share_generators()
 
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+		log.debugStream() << "Drivers: " << drvtab_count(m_prs.drvtab);
+		for (unsigned int drvidx=0; drvidx < drvtab_count(m_prs.drvtab); drvidx++)
+		{
+			log.debugStream() << "  .. " << drvidx << ' ' << drv_get_module(m_prs.drvtab, drvidx);
+		}
+
 		m_state = State::Analyzed;
 		return prsret;
 	}
@@ -284,6 +291,8 @@ public:
 			while (bitset_iterator_next_one (&di, NULL)) {
 				d = bitset_iterator_bitnum (&di);
 				log.debugStream() << "Generating for generator " << g << ", driver " << d;
+
+				// TODO: is there anything to do here?
 			}
 		}
 
