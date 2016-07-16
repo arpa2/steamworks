@@ -525,6 +525,7 @@ void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_d
 static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID, int add_not_del, int numrecvars, struct squeal_blob *recvars)
 {
 	int sqlret;
+	unsigned int driveridx, columnidx;
 	struct s3ins_generator* genfront = &(squeal->gens[gennum]);
 
 	if (add_not_del)
@@ -538,7 +539,7 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 		}
 	}
 
-	for (unsigned int driveridx=0; driveridx < genfront->numdriveout; driveridx++)
+	for (driveridx=0; driveridx < genfront->numdriveout; driveridx++)
 	{
 		sqlite3_stmt *statement = genfront->driveout[driveridx].gen2drv_produce;
 		struct squeal_blob *params = genfront->driveout[driveridx].driver->cbparm;
@@ -552,9 +553,9 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 			}
 
 			printf("Output row %d\n", rowcount);
-			for (unsigned int i=0; i < sqlite3_column_count(statement); i++) {
-				params[i].data = (void *)sqlite3_column_blob(statement, i);
-				params[i].size = sqlite3_column_bytes(statement, i);
+			for (columnidx=0; columnidx < sqlite3_column_count(statement); columnidx++) {
+				params[columnidx].data = (void *)sqlite3_column_blob(statement, columnidx);
+				params[columnidx].size = sqlite3_column_bytes(statement, columnidx);
 			}
 
 			squeal_driver_callback_demult(squeal, genfront->driveout[driveridx].driver, add_not_del);
