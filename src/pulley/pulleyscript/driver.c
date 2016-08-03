@@ -3,6 +3,7 @@
  * From: Rick van Rein <rick@openfortress.nl>
  */
 
+#include <assert.h>
 
 #include "types.h"
 #include "bitset.h"
@@ -19,6 +20,7 @@ struct driverout {
 	char *module;
 	float weight;
 	hash_t linehash;
+	varnum_t module_parameter_binding;
 	varnum_t *outputs;
 	varnum_t outputs_count;
 	varnum_t outputs_allocated;
@@ -196,6 +198,7 @@ drvnum_t drv_new (struct drvtab *tab) {
 	newdrv->outputs_allocated = 0;
 	newdrv->outputs_count = 0;
 	newdrv->module = NULL;
+	newdrv->module_parameter_binding = VARNUM_BAD;
 	newdrv->weight = 1.0;
 	newdrv->produced_vars   = bitset_new (tab->vartype);
 	newdrv->explicit_guards = bitset_new (tab->vartype);
@@ -221,6 +224,16 @@ void drv_set_module (struct drvtab *tab, drvnum_t drvnum, char *module) {
 
 const char *drv_get_module (struct drvtab *tab, drvnum_t drvnum) {
 	return tab->drvs [drvnum].module;
+}
+
+void drv_set_module_parameters(struct drvtab* tab, drvnum_t drvnum, varnum_t varnum) {
+	struct vartab *vartab = vartab_from_type (tab->vartype);
+	assert((varnum == VARNUM_BAD) || (var_get_kind(vartab, varnum) == VARKIND_BINDING));
+	tab->drvs [drvnum].module_parameter_binding = varnum;
+}
+
+varnum_t drv_get_module_parameters(struct drvtab* tab, drvnum_t drvnum) {
+	return tab->drvs [drvnum].module_parameter_binding;
 }
 
 void drv_set_weight (struct drvtab *tab, drvnum_t drvnum, float weight) {

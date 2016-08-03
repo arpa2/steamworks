@@ -337,8 +337,10 @@ line_driverout: drvout_vallist_s DRIVE_TO {
 } OPEN parmlist CLOSE {
 	char bndname [7 + 2 * sizeof (hash_t) + 1];
 	struct var_value varval;
+	varnum_t binding;
 	snprintf (bndname, sizeof(bndname), "bnd_DRV%d", prs->newdrv);
-	_store_binding (prs, bndname, &varval);
+	binding = _store_binding (prs, bndname, &varval);
+	drv_set_module_parameters (prs->drvtab, prs->newdrv, binding);
 	bitset_t *params = _tosV (prs);
 	_clrV (prs);
 } annotations {

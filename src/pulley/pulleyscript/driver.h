@@ -50,6 +50,19 @@ void drv_print (struct drvtab *tab, drvnum_t drv, FILE *stream, int indent);
 void drv_set_module (struct drvtab *tab, drvnum_t drvnum, char *module);
 const char *drv_get_module (struct drvtab *tab, drvnum_t drvnum);
 
+/**
+ * A driver may have 0 or more parameters; these are stored as a binding
+ * variable (to associate parameter-names with constant-values). Set
+ * the binding-variable of driver @p drvnum to @p varnum.
+ */
+void drv_set_module_parameters (struct drvtab *tab, drvnum_t drvnum, varnum_t varnum);
+/**
+ * Returns the binding-variable that associates parameter-names with
+ * constant-values for the driver @p drvnum. This may be VARNUM_BAD,
+ * if there are no parameters.
+ */
+varnum_t drv_get_module_parameters (struct drvtab *tab, drvnum_t drvnum);
+
 void drv_set_weight (struct drvtab *tab, drvnum_t drvnum, float weight);
 float drv_get_weight (struct drvtab *tab, drvnum_t drvnum);
 
