@@ -279,10 +279,6 @@ bitset_t *drv_share_conditions (struct drvtab *tab, drvnum_t drvnum) {
 	return tab->drvs [drvnum].conditions;
 }
 
-void drv_setup_param (struct drvtab *tab, drvnum_t drvnum, char *param, varnum_t const_varnum) {
-	printf ("TODO: Callback to setup driver output constant setting\n");
-}
-
 /* Collect all variables that impact the driver's output.  These include more
  * than just the produced output variables and explicit guards; any extra
  * ones are stored as implicit guards.  Such implicit guards are used for

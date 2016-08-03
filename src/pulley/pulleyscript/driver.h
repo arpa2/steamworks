@@ -63,8 +63,6 @@ void drv_share_output_variable_table (struct drvtab *tab, drvnum_t drvnum,
 			varnum_t **out_array, varnum_t *out_count);
 bitset_t *drv_share_conditions (struct drvtab *tab, drvnum_t drvnum);
 
-void drv_setup_param (struct drvtab *tab, drvnum_t drvnum, char *param, varnum_t const_varnum);
-
 void drvtab_collect_varpartitions (struct drvtab *tab);
 void drvtab_collect_genvariables (struct drvtab *tab);
 void drvtab_collect_conditions (struct drvtab *tab);

@@ -178,6 +178,22 @@ void _clrO (struct parser *prs) {
 	prs->action_sp = sizeof (prs->action) -1;
 }
 
+// Stores the action buffer as a variable called @p bndname,
+// using the struct @p varval for intermediate storage.
+// Returns the variable number of the stored action buffer.
+varnum_t _store_binding (struct parser *prs, char *bndname, struct var_value *varval) {
+	varnum_t binding = var_have (prs->vartab, bndname, VARKIND_BINDING);
+	varval->type = VARTP_BLOB;
+	varval->typed_blob.len = sizeof (prs->action) - prs->action_sp;
+	varval->typed_blob.str = malloc (varval->typed_blob.len);
+	assert (varval->typed_blob.str != NULL);
+	memcpy (varval->typed_blob.str, &prs->action [prs->action_sp],
+			varval->typed_blob.len);
+	var_set_value (prs->vartab, binding, varval);
+
+	return binding;
+}
+
 // _flushO stores the action buffer as bnd_<linehash>
 void _flushO (struct parser *prs, hash_t linehash, gennum_t g) {
 	char bndname [4 + 2 * sizeof (hash_t) + 1];
@@ -191,14 +207,7 @@ void _flushO (struct parser *prs, hash_t linehash, gennum_t g) {
 		sprintf (hexstr, "%02x", *ptr++);
 		hexstr += 2;
 	}
-	binding = var_have (prs->vartab, bndname, VARKIND_BINDING);
-	varval.type = VARTP_BLOB;
-	varval.typed_blob.len = sizeof (prs->action) - prs->action_sp;
-	varval.typed_blob.str = malloc (varval.typed_blob.len);
-	assert (varval.typed_blob.str != NULL);
-	memcpy (varval.typed_blob.str, &prs->action [prs->action_sp],
-			varval.typed_blob.len);
-	var_set_value (prs->vartab, binding, &varval);
+	binding = _store_binding (prs, bndname, &varval);
 //DEBUG//
 printf ("Binding %s V%d G%d created: >>> ", bndname, binding, g);
 ptr = varval.typed_blob.str;
@@ -324,7 +333,12 @@ line_driverout: drvout_vallist_s DRIVE_TO {
 	drv_set_module (prs->drvtab, prs->newdrv, module);
 	bitset_t *driver = _tosV (prs);
 	_clrV (prs);
+	_clrO (prs);
 } OPEN parmlist CLOSE {
+	char bndname [7 + 2 * sizeof (hash_t) + 1];
+	struct var_value varval;
+	snprintf (bndname, sizeof(bndname), "bnd_DRV%d", prs->newdrv);
+	_store_binding (prs, bndname, &varval);
 	bitset_t *params = _tosV (prs);
 	_clrV (prs);
 } annotations {
@@ -483,8 +497,9 @@ const: STRING | INTEGER | FLOAT | BLOB
 parmlist: parmlist COMMA parm
 parmlist: parm
 parm: PARAMETER CMP_EQ const {
-	char *paramname = var_get_name (prs->vartab, $1);
-	drv_setup_param (prs->drvtab, prs->newdrv, paramname, $3);
+	_varO (prs, $3);
+	_varO (prs, $1);
+	_actO (prs, BNDO_ACT_CMP);  /* Not really a comparison, but assignment */
 }
 
 %%
