@@ -236,6 +236,14 @@ public:
 		for (unsigned int drvidx=0; drvidx < drvtab_count(m_prs.drvtab); drvidx++)
 		{
 			log.debugStream() << "  .. " << drvidx << ' ' << drv_get_module(m_prs.drvtab, drvidx);
+			varnum_t binding = drv_get_module_parameters(m_prs.drvtab, drvidx);
+			if (binding != VARNUM_BAD)
+			{
+				struct var_value* value = var_share_value(m_prs.vartab, binding);
+				std::vector<varnum_t> variables;
+				std::vector<std::string> values;
+				explain_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, nullptr, variables, values);
+			}
 		}
 
 		m_state = State::Analyzed;
