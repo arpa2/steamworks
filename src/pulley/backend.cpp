@@ -30,6 +30,40 @@ static_assert(sizeof(plugindir) > 1, "Prefix / plugin directory path is weird.")
 // static_assert(plugindir[0] == '/', "Backend must be absolute dir.");
 // static_assert(plugindir[sizeof(plugindir)-1] == '/', "Backend must end in /.");
 
+
+SteamWorks::PulleyBack::Parameters::Parameters(const std::vector<std::string>& expressions) :
+	varc(0),
+	argc(expressions.size()),
+	argv(nullptr)
+{
+	if (argc > 0)
+	{
+		argv = (char **)calloc(argc, sizeof(char *));
+	}
+	if (argv)
+	{
+		unsigned int i = 0;
+		for (const auto& s : expressions)
+		{
+			argv[i++] = strdup(s.c_str());
+		}
+	}
+}
+
+SteamWorks::PulleyBack::Parameters::~Parameters()
+{
+	if (argv)
+	{
+		for (unsigned int i=0; i < argc; i++)
+		{
+			free(argv[i]);
+		}
+		free(argv);
+		argv = nullptr;
+	}
+}
+
+
 /**
  * Helper class when loading the API from a DLL. Uses dlfunc()
  * to resolve functions and stores them in referenced function

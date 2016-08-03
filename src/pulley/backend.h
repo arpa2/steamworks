@@ -21,6 +21,7 @@ Adriaan de Groot <groot@kde.org>
 #ifndef STEAMWORKS_PULLEY_BACKEND_H
 #define STEAMWORKS_PULLEY_BACKEND_H
 
+#include <vector>
 #include <memory>
 
 namespace SteamWorks
@@ -28,6 +29,17 @@ namespace SteamWorks
 
 namespace PulleyBack
 {
+
+struct Parameters
+{
+	int varc;
+	int argc;
+	char** argv;
+
+	Parameters(const std::vector<std::string>& expressions);
+	~Parameters();
+} ;
+
 
 class Instance;
 
@@ -69,7 +81,7 @@ public:
 	 * Close this instance of a Pulley backend-plugin api.
 	 */
 	~Instance();
-	
+
 	/**
 	 * The following functions correspond with the pulleyback_*()
 	 * functions in pulleyback.h. Calling one of these functions

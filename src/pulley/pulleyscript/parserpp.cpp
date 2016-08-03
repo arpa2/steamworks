@@ -18,45 +18,6 @@ Adriaan de Groot <groot@kde.org>
 #include <logger.h>
 #include <jsoniterator.h>
 
-struct BackendParms
-{
-	int varc;
-	int argc;
-	char** argv;
-
-	BackendParms(const std::vector<std::string>& expressions) :
-		varc(0),
-		argc(expressions.size()),
-		argv(nullptr)
-	{
-		if (argc > 0)
-		{
-			argv = (char **)calloc(argc, sizeof(char *));
-		}
-		if (argv)
-		{
-			unsigned int i = 0;
-			for (const auto& s : expressions)
-			{
-				argv[i++] = strdup(s.c_str());
-			}
-		}
-	}
-
-	~BackendParms()
-	{
-		if (argv)
-		{
-			for (unsigned int i=0; i < argc; i++)
-			{
-				free(argv[i]);
-			}
-			free(argv);
-			argv = nullptr;
-		}
-	}
-} ;
-
 class SquealOpener
 {
 public:
@@ -107,7 +68,6 @@ private:
 
 	using generator_variablenames_t = std::vector<std::string>;
 	std::vector<generator_variablenames_t> m_variables_per_generator;
-	std::vector<BackendParms> m_parameters_per_driver;
 
 	bool m_valid;
 	State m_state;
@@ -273,7 +233,6 @@ public:
 
 		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
 		log.debugStream() << "Drivers: " << drvtab_count(m_prs.drvtab);
-		m_parameters_per_driver.clear();
 		for (unsigned int drvidx=0; drvidx < drvtab_count(m_prs.drvtab); drvidx++)
 		{
 			log.debugStream() << "  .. " << drvidx << " name " << drv_get_module(m_prs.drvtab, drvidx);
@@ -283,9 +242,6 @@ public:
 				struct var_value* value = var_share_value(m_prs.vartab, binding);
 				std::vector<std::string> expressions;
 				decode_parameter_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, expressions);
-
-				BackendParms parms(expressions);
-				m_parameters_per_driver.push_back(parms);
 
 				for (auto s : expressions)
 				{
