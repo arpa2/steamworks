@@ -14,5 +14,6 @@ ObjectClass: "tlsPoolTrustedIssuer" + TlsPoolCredentialType: "x509" + TlsPoolTru
 
 x509valexp,x509role -> tlspool (config="../etc/tlspool.conf", type="trust", args="cred,valexp,role", subtype="authority,x509")
 
-x509role,x509anchordn -> null (config="dummy")
 
+x509role,x509anchordn -> null (config="dummy")
+x509role,x509anchordn -> null (config="dummy2")
