@@ -67,7 +67,7 @@ private:
 	SquealOpener m_sql;
 
 	using generator_variablenames_t = std::vector<std::string>;
-	std::unique_ptr<std::vector<generator_variablenames_t> > m_variables_per_generator;
+	std::vector<generator_variablenames_t> m_variables_per_generator;
 
 	bool m_valid;
 	State m_state;
@@ -321,7 +321,7 @@ public:
 
 	const generator_variablenames_t& variable_names(gennum_t generator)
 	{
-		return m_variables_per_generator->at(generator);
+		return m_variables_per_generator.at(generator);
 	}
 } ;
 
@@ -428,7 +428,7 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find
 		return std::forward_list<std::string>();
 	}
 
-	m_variables_per_generator.reset(new std::vector<generator_variablenames_t>);
+	m_variables_per_generator.clear();
 
 	std::forward_list<std::string> filterexps;
 	gennum_t count = gentab_count(m_prs.gentab);
@@ -452,14 +452,14 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find
 		struct var_value* value = var_share_value(m_prs.vartab, b);
 
 		auto bound_varnums = variables_for_generator(i);  // Variables on the right-hand side of binding
-		m_variables_per_generator->emplace_back(bound_varnums.size());  // New vector of names
+		m_variables_per_generator.emplace_back(bound_varnums.size());  // New vector of names
 
-		explain_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, filterexp, bound_varnums, m_variables_per_generator->back());
+		explain_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, filterexp, bound_varnums, m_variables_per_generator.back());
 	}
 
 	for (gennum_t g=0; g<count; g++) {
 		log.debugStream() << "Variable names for generator " << g;
-		for (const auto& f : m_variables_per_generator->at(g))
+		for (const auto& f : m_variables_per_generator.at(g))
 		{
 			log.debugStream() << "    " << f;
 		}
