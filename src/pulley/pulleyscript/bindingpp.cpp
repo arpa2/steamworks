@@ -15,6 +15,58 @@ varnum_t extract_varnum(uint8_t* p)
 	return *(varnum_t *)p;
 }
 
+void SteamWorks::PulleyScript::decode_parameter_binding(vartab* vars, uint8_t* binding, uint32_t len, std::vector< std::string >& expressions)
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+
+	{
+		auto d = log.debugStream();
+		d << "Decode binding @" << (void *)binding << ' ';
+		SteamWorks::Logging::log_hex(d, binding, len);
+	}
+
+	unsigned int indent = 0;
+	uint8_t* p = binding;
+	uint8_t* end = p + len;
+	// Count number of compared-vars; if there is more than one, create
+	// a conjunction-expression for the LDAP search-expression.
+	unsigned int varcount = 0;
+
+	while (p < end)
+	{
+		auto d = log.debugStream();
+		SteamWorks::Logging::log_indent(d, indent);
+
+		uint8_t opcode = (*p) & 0xf;
+		uint8_t operand_t = (*p) & 0x30;
+
+		varnum_t v0 = VARNUM_BAD, v1 = VARNUM_BAD;
+
+		std::string s;
+		switch (opcode)
+		{
+		case BNDO_ACT_CMP:
+			v0 = extract_varnum(p+1);
+			v1 = extract_varnum(p+1+sizeof(varnum_t));
+
+			s = var_get_name(vars, v0);
+			s.append(1, '=');
+			s.append(var_get_name(vars, v1));
+			expressions.push_back(s);
+			p += 1 + 2 * sizeof(varnum_t);
+			break;
+		case BNDO_ACT_DONE:
+			goto done;
+		default:
+			d << "BAD OPCODE ";
+			SteamWorks::Logging::log_hex(d, &opcode, 1);
+			goto done;
+		}
+	}
+done:
+	;
+}
+
 void SteamWorks::PulleyScript::explain_binding(vartab* vars,
 					       uint8_t* binding,
 					       uint32_t len,

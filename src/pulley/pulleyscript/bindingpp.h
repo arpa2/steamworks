@@ -45,6 +45,20 @@ void explain_binding(vartab* vars,
 		     const std::vector<varnum_t>& bound_varnums,
 		     std::vector<std::string>& variable_names);
 
+/**
+ * Decode the coded @p binding (for machine-language explanation,
+ * see binding.h) relative to the variable table @p vars. This is
+ * assumed to be a binding program for backend-parameters (e.g. only
+ * CMP statements).
+ *
+ * As a side-effect, adds strings to @p expressions for each
+ * binding, in the original syntax.
+ */
+void decode_parameter_binding(vartab* vars,
+		     uint8_t* binding,
+		     uint32_t len,
+		     std::vector<std::string>& expressions);
+
 }  // namespace PulleyScript
 }  // namespace
 
