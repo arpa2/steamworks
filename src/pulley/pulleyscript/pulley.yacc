@@ -202,7 +202,7 @@ void _flushO (struct parser *prs, hash_t linehash, gennum_t g) {
 	int len = sizeof (hash_t);
 	uint8_t *ptr = (uint8_t *) &linehash;
 	memcpy (bndname, "bnd_", 4);
-	uint8_t *hexstr = bndname + 4;
+	char *hexstr = bndname + 4;
 	while (len-- > 0) {
 		sprintf (hexstr, "%02x", *ptr++);
 		hexstr += 2;
