@@ -16,4 +16,4 @@ x509valexp,x509role -> tlspool (config="../etc/tlspool.conf", type="trust", args
 
 
 x509role,x509anchordn -> null (config="dummy")
-x509role,x509anchordn -> null (config="dummy2")
+x509role,x509anchordn -> null (config="dummy2",count=12)
