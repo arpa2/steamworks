@@ -49,10 +49,18 @@ set(SIMPLE_SRC
   )
 
 # Adding -DPULLEY_SQUEAL_DIR will change where the Squeal databases are created.
+# Adding -DPULLEY_BACKEND_DIR will change where the Pulley backends are searched.
 #
 if(NOT "${PULLEY_SQUEAL_DIR}" STREQUAL "")
+  message("   Using SQL directory '${PULLEY_SQUEAL_DIR}'")
   add_definitions(-DPULLEY_SQUEAL_DIR="${PULLEY_SQUEAL_DIR}")
 endif()
+if(NOT "${PULLEY_BACKEND_DIR}" STREQUAL "")
+  message("   Using backend directory '${PULLEY_BACKEND_DIR}'")
+  add_definitions(-DPULLEY_BACKEND_DIR="${PULLEY_BACKEND_DIR}")
+endif()
+
+
 include_directories(${SQLITE3_INCLUDE_DIRS} ${FLEX_INCLUDE_DIRS})
 add_library(pslib STATIC ${PSLIB_SRC})
 add_library(pspplib STATIC ${PSPPLIB_SRC})
@@ -62,3 +70,4 @@ target_link_libraries(compiler pslib ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES})
 
 add_executable(simple ${SIMPLE_SRC})
 target_link_libraries(simple pspplib pslib swcommon ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES} ${LOG4CPP_LIBRARIES})
+set_target_properties(simple PROPERTIES LINK_FLAGS -rdynamic)
