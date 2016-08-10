@@ -436,6 +436,7 @@ static void squeal_driver_callback_demult (struct squeal *squeal,
 			hash, drvback->cbnumparm, drvback->cbparm);
 	//
 	// Possibly invoke the callback on the backend driver
+	printf("  DEMULT rpt=%d drive=%d cbfun=%p cbdata=%p\n", repeats, drive, (void *)drvback->cbfun, drvback->cbdata);
 	if (drive && drvback->cbfun) {
 		drvback->cbfun (drvback->cbdata, add_not_del,
 				drvback->cbnumparm, drvback->cbparm);
@@ -554,7 +555,7 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 				break;
 			}
 
-			printf("Output row %d\n", rowcount);
+			printf("Output row %d to driver %d\n", rowcount, driveridx);
 			for (columnidx=0; columnidx < sqlite3_column_count(statement); columnidx++) {
 				params[columnidx].data = (void *)sqlite3_column_blob(statement, columnidx);
 				params[columnidx].size = sqlite3_column_bytes(statement, columnidx);
@@ -562,6 +563,8 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 
 			squeal_driver_callback_demult(squeal, genfront->driveout[driveridx].driver, add_not_del);
 			sqlret = sqlite3_step(statement);
+
+			rowcount++;
 		}
 	}
 
@@ -960,6 +963,7 @@ fail:
 
 int squeal_configure_driver(struct squeal* squeal, drvnum_t drv, squeal_driverfun_t cbfun, void* cbdata)
 {
+	printf("DRV configured %d %p %p\n", drv, (void *)cbfun, cbdata);
 	squeal->drivers[drv].cbdata = cbdata;
 	squeal->drivers[drv].cbfun = cbfun;
 	return 0;
@@ -1023,6 +1027,14 @@ cleanup:
 	return retval;
 }
 
+void errorLogCallback(void *pArg, int iErrCode, const char *zMsg){
+	fprintf(stderr, "(%d) %s\n", iErrCode, zMsg);
+}
+
+void traceLogCallback(void *pData, const char *stmt)
+{
+	fprintf(stderr, "(%p) %s\n", pData, stmt);
+}
 
 /* Open a SQLite3 engine for a given Pulley script.  The lexhash is used to name the
  * database in the configured database directory.  The database is created if it does
@@ -1089,6 +1101,8 @@ struct squeal *squeal_open_in_dbdir (hash_t lexhash, gennum_t numgens, drvnum_t 
 	} else {
 		work->s3db = s3db;
 		retval = work;
+		sqlite3_config(SQLITE_CONFIG_LOG, errorLogCallback, NULL);
+		// sqlite3_trace(s3db, traceLogCallback, NULL);
 	}
 	sqlbuf_exchg (&dbname, BUF_PUT);
 	//
