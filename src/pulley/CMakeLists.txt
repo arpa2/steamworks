@@ -26,6 +26,12 @@ set(PULLEY_SRC
   pulley.cpp
   )
 
+# Adding -DPULLEY_BACKEND_DIR will change where the Pulley backends are searched.
+#
+if(NOT "${PULLEY_BACKEND_DIR}" STREQUAL "")
+  add_definitions(-DPULLEY_BACKEND_DIR="${PULLEY_BACKEND_DIR}")
+endif()
+
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
 add_executable(pulley ${PULLEY_SRC})
 target_link_libraries(pulley ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES})
