@@ -25,6 +25,35 @@ namespace PulleyScript
 {
 
 /**
+ * Parameters to pass to a backend instance. This is basically a
+ * C-array version of vector<std::string>, clumsily constructed.
+ * Memory is owned by the Parameters object.
+ */
+struct BackendParameters
+{
+	std::string name; // Only used for logging
+	int varc;
+	int argc;
+	char** argv;
+
+	/**
+	 * Create a Parameters object from a vector of C++
+	 * strings. Creates copies of the c_str() data of each
+	 * string in the vector.
+	 *
+	 * The name of the backend is passed in @p n ; this is only
+	 * used for logging.
+	 */
+	BackendParameters(std::string n, const std::vector<std::string>& expressions);
+	~BackendParameters();
+} ;
+
+/**
+ * Logging support for BackendParameters.
+ */
+std::ostringstream& operator <<(std::ostringstream&, const BackendParameters&);
+
+/**
  * Pulley(script) controller object.
  *
  * This is called a parser because it starts off with parsing one
@@ -88,6 +117,12 @@ public:
 	 */
 	std::forward_list<std::string> find_subscriptions();
 
+
+	/**
+	 * Return a list of BackendParameters objects, one for
+	 * each output line.
+	 */
+	std::forward_list<BackendParameters> find_backends();
 
 	/**
 	 * Remove a UUID from the middle-end.

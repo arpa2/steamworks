@@ -315,6 +315,7 @@ public:
 
 	// Extract filter-expressions
 	std::forward_list< std::string > find_subscriptions();
+	std::forward_list< SteamWorks::PulleyScript::BackendParameters > find_backends();
 
 	// Remove an entry from the middle-end (post-SQL)
 	void remove_entry(const std::string& uuid);
@@ -392,6 +393,11 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::find_subscrip
 	return d->find_subscriptions();
 }
 
+std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::PulleyScript::Parser::find_backends()
+{
+	return d->find_backends();
+}
+
 std::vector<varnum_t> SteamWorks::PulleyScript::Parser::Private::variables_for_generator(gennum_t g)
 {
 	bitset *b = gen_share_variables(m_prs.gentab, g);
@@ -467,6 +473,29 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find
 	}
 
 	return filterexps;
+}
+
+std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::PulleyScript::Parser::Private::find_backends()
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+	log.debugStream() << "Finding backend outputs:";
+
+	std::forward_list<BackendParameters> backends;
+	drvnum_t count = drvtab_count(m_prs.drvtab);
+	for (drvnum_t drvidx=0; drvidx < count; drvidx++)
+	{
+		const char *name = drv_get_module(m_prs.drvtab, drvidx);
+		log.debugStream() << "  .. parameters for driver " << drvidx << ' ' << name;
+		varnum_t binding = drv_get_module_parameters(m_prs.drvtab, drvidx);
+		if (binding != VARNUM_BAD)
+		{
+			struct var_value* value = var_share_value(m_prs.vartab, binding);
+			std::vector<std::string> expressions;
+			decode_parameter_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, expressions);
+			backends.emplace_front(name, expressions);
+		}
+	}
+	return backends;
 }
 
 void SteamWorks::PulleyScript::Parser::remove_entry(const std::string& uuid)
@@ -547,4 +576,52 @@ void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uui
 			squeal_insert_fork(m_sql.m_sql, i, uuid.c_str(), variable_names(i).size(), blobs);
 		}
 	}
+}
+
+SteamWorks::PulleyScript::BackendParameters::BackendParameters(std::string n, const std::vector<std::string>& expressions) :
+	name(n),
+	varc(0),
+	argc(expressions.size()),
+	argv(nullptr)
+{
+	if (argc > 0)
+	{
+		argv = (char **)calloc(argc, sizeof(char *));
+	}
+	if (argv)
+	{
+		unsigned int i = 0;
+		for (const auto& s : expressions)
+		{
+			argv[i++] = strdup(s.c_str());
+		}
+	}
+}
+
+SteamWorks::PulleyScript::BackendParameters::~BackendParameters()
+{
+	if (argv)
+	{
+		for (unsigned int i=0; i < argc; i++)
+		{
+			free(argv[i]);
+		}
+		free(argv);
+		argv = nullptr;
+	}
+}
+
+std::ostringstream& SteamWorks::PulleyScript::operator<<(std::ostringstream& s, const SteamWorks::PulleyScript::BackendParameters& b)
+{
+	s << b.name << '(' ;
+	for (unsigned int i=0; i < b.argc; i++)
+	{
+		s << b.argv[i];
+		if (i < (b.argc-1))
+		{
+			s << ", ";
+		}
+	}
+	s << ')';
+	return s;
 }

@@ -6,6 +6,7 @@ Adriaan de Groot <groot@kde.org>
 */
 
 #include "backend.h"
+#include "pulleyscript/parserpp.h"
 #include "pulleyback.h"
 
 #include <assert.h>
@@ -29,39 +30,6 @@ static_assert(sizeof(plugindir) > 1, "Prefix / plugin directory path is weird.")
 
 // static_assert(plugindir[0] == '/', "Backend must be absolute dir.");
 // static_assert(plugindir[sizeof(plugindir)-1] == '/', "Backend must end in /.");
-
-
-SteamWorks::PulleyBack::Parameters::Parameters(const std::vector<std::string>& expressions) :
-	varc(0),
-	argc(expressions.size()),
-	argv(nullptr)
-{
-	if (argc > 0)
-	{
-		argv = (char **)calloc(argc, sizeof(char *));
-	}
-	if (argv)
-	{
-		unsigned int i = 0;
-		for (const auto& s : expressions)
-		{
-			argv[i++] = strdup(s.c_str());
-		}
-	}
-}
-
-SteamWorks::PulleyBack::Parameters::~Parameters()
-{
-	if (argv)
-	{
-		for (unsigned int i=0; i < argc; i++)
-		{
-			free(argv[i]);
-		}
-		free(argv);
-		argv = nullptr;
-	}
-}
 
 
 /**
@@ -223,7 +191,7 @@ SteamWorks::PulleyBack::Instance SteamWorks::PulleyBack::Loader::get_instance(in
 	return Instance(d, argc, argv, varc);
 }
 
-SteamWorks::PulleyBack::Instance SteamWorks::PulleyBack::Loader::get_instance(SteamWorks::PulleyBack::Parameters& parameters)
+SteamWorks::PulleyBack::Instance SteamWorks::PulleyBack::Loader::get_instance(SteamWorks::PulleyScript::BackendParameters& parameters)
 {
 	return Instance(d, parameters.argc, parameters.argv, parameters.varc);
 }

@@ -27,29 +27,11 @@ Adriaan de Groot <groot@kde.org>
 namespace SteamWorks
 {
 
+// Forward declare; see pulleyscript/parserpp.h
+namespace PulleyScript { class BackendParameters; }
+
 namespace PulleyBack
 {
-
-/**
- * Parameters to pass to a backend instance. This is basically a
- * C-array version of vector<std::string>, clumsily constructed.
- * Memory is owned by the Parameters object.
- */
-struct Parameters
-{
-	int varc;
-	int argc;
-	char** argv;
-
-	/**
-	 * Create a Parameters object from a vector of C++
-	 * strings. Creates copies of the c_str() data of each
-	 * string in the vector.
-	 */
-	Parameters(const std::vector<std::string>& expressions);
-	~Parameters();
-} ;
-
 
 class Instance;
 
@@ -77,7 +59,7 @@ public:
 	/**
 	 * See above, using a Parameters instance instead.
 	 */
-	Instance get_instance(Parameters& parameters);
+	Instance get_instance(PulleyScript::BackendParameters& parameters);
 } ;
 
 

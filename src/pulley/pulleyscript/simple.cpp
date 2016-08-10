@@ -128,6 +128,12 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	prs.find_subscriptions();
+	auto l = prs.find_backends();
+	log.debugStream() << "Parser found backends:";
+	for (const auto& be : l)
+	{
+		log.debugStream() << "  .. " << be;
+	}
 
 	picojson::value v;
 	picojson::parse(v, R"({
