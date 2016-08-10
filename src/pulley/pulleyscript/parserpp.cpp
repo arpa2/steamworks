@@ -475,6 +475,12 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find
 	return filterexps;
 }
 
+static void ceebee(void *cbdata, int add_not_del, int numactpart, struct squeal_blob* actparm)
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+	log.debugStream() << "Callback called " << cbdata << ' ' << add_not_del << ' ' << numactpart;
+}
+
 std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::PulleyScript::Parser::Private::find_backends()
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
@@ -497,6 +503,10 @@ std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::Pul
 			const auto& b = backends.begin();
 			b->driver = drvidx;
 			b->instance.reset(new PulleyBack::Instance(PulleyBack::Loader(b->name).get_instance(*b)));
+			if (b->instance->is_valid())
+			{
+				squeal_configure_driver(m_sql.m_sql, drvidx, ceebee, b->instance.get());
+			}
 		}
 	}
 	return backends;

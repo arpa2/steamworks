@@ -956,6 +956,14 @@ fail:
 	return 1;
 }
 
+int squeal_configure_driver(struct squeal* squeal, drvnum_t drv, squeal_driverfun_t cbfun, void* cbdata)
+{
+	squeal->drivers[drv].cbdata = cbdata;
+	squeal->drivers[drv].cbfun = cbfun;
+	return 0;
+}
+
+
 
 int squeal_configure (struct squeal *squeal) {
 	struct sqlbuf sql;

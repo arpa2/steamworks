@@ -78,6 +78,12 @@ int squeal_configure (struct squeal *squeal);
 int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, struct drvtab* drvtab);
 
 /**
+ * Setup the driver to call(back) the given @p cbfun with @p cbdata as
+ * the first argument.
+ */
+int squeal_configure_driver(struct squeal* squeal, drvnum_t drv, squeal_driverfun_t cbfun, void* cbdata);
+
+/**
  * Run generator @p gennum with a new tuple of variables. The operation
  * may be an add (@p add_not_del == 1) or delete (@p add_not_del == 0).
  * The variable tuple is described as an array of squeal_blob structures
