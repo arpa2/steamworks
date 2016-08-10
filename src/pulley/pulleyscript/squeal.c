@@ -412,13 +412,15 @@ static void squeal_driver_callback_demult (struct squeal *squeal,
 	// Fetch the current number of values for the blobs
 	s3rv = s3ins_run (squeal->s3db, squeal->get_drv_all,
 			hash, drvback->cbnumparm, drvback->cbparm);
-	if (s3rv == SQLITE_OK) {
+	if (s3rv == SQLITE_ROW) {
 		repeats = sqlite3_column_int (squeal->get_drv_all, 0);
+	} else {
+		fprintf(stderr, "  SQLERR %d %s\n", s3rv, sqlite3_errmsg(squeal->s3db));
 	}
 
 	//
 	// See if the current number hints at not making the callback
-	if (s3rv != SQLITE_OK) {
+	if (repeats < 0) {
 		drive = 0;
 	} else if (add_not_del == PULLEY_RECORD_ADD) {
 		drive = (repeats == 0);
