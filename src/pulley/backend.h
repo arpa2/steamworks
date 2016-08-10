@@ -30,12 +30,22 @@ namespace SteamWorks
 namespace PulleyBack
 {
 
+/**
+ * Parameters to pass to a backend instance. This is basically a
+ * C-array version of vector<std::string>, clumsily constructed.
+ * Memory is owned by the Parameters object.
+ */
 struct Parameters
 {
 	int varc;
 	int argc;
 	char** argv;
 
+	/**
+	 * Create a Parameters object from a vector of C++
+	 * strings. Creates copies of the c_str() data of each
+	 * string in the vector.
+	 */
 	Parameters(const std::vector<std::string>& expressions);
 	~Parameters();
 } ;
@@ -64,6 +74,10 @@ public:
 	 * API functions of the plugin.
 	 */
 	Instance get_instance(int argc, char** argv, int varc);
+	/**
+	 * See above, using a Parameters instance instead.
+	 */
+	Instance get_instance(Parameters& parameters);
 } ;
 
 

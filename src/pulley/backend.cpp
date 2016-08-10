@@ -223,6 +223,12 @@ SteamWorks::PulleyBack::Instance SteamWorks::PulleyBack::Loader::get_instance(in
 	return Instance(d, argc, argv, varc);
 }
 
+SteamWorks::PulleyBack::Instance SteamWorks::PulleyBack::Loader::get_instance(SteamWorks::PulleyBack::Parameters& parameters)
+{
+	return Instance(d, parameters.argc, parameters.argv, parameters.varc);
+}
+
+
 
 SteamWorks::PulleyBack::Instance::Instance(std::shared_ptr<Loader::Private>& parent_d, int argc, char** argv, int varc) :
 	d(parent_d),
