@@ -6,13 +6,14 @@ Adriaan de Groot <groot@kde.org>
 */
 
 #include "backend.h"
-#include "pulleyscript/parserpp.h"
-#include "pulleyback.h"
+#include "parserpp.h"
+#include "../pulleyback.h"
 
 #include <assert.h>
 #include <dlfcn.h>
 #include <stdio.h>
 
+#include <unordered_map>
 #include <string>
 
 #include "logger.h"
@@ -91,7 +92,6 @@ public:
 	decltype(pulleyback_rollback)* m_pulleyback_rollback;
 	decltype(pulleyback_collaborate) *m_pulleyback_collaborate;
 
-public:
 	Private(const std::string& name) :
 		m_name(name),
 		m_valid(false),
@@ -170,10 +170,27 @@ public:
 
 	bool is_valid() const { return m_valid; }
 	std::string name() const { return m_name; }
+
+	static std::shared_ptr<Private> get_loader_private(const std::string& name);
 } ;
 
+
+std::shared_ptr< SteamWorks::PulleyBack::Loader::Private > SteamWorks::PulleyBack::Loader::Private::get_loader_private(const std::string& name)
+{
+	static std::unordered_map<std::string, std::weak_ptr<SteamWorks::PulleyBack::Loader::Private> > loaders;
+
+	auto p = loaders[name].lock();
+	if (!p)
+	{
+		p = std::make_shared<SteamWorks::PulleyBack::Loader::Private>(name);
+		loaders[name] = p;
+	}
+
+	return p;
+}
+
 SteamWorks::PulleyBack::Loader::Loader(const std::string& name) :
-	d(new Private(name))
+	d(Private::get_loader_private(name))
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
 	log.debugStream() << "Loaded " << name << " valid? " << (d->is_valid() ? "yes" : "no");
@@ -196,6 +213,11 @@ SteamWorks::PulleyBack::Instance SteamWorks::PulleyBack::Loader::get_instance(St
 	return Instance(d, parameters.argc, parameters.argv, parameters.varc);
 }
 
+bool SteamWorks::PulleyBack::Loader::is_valid() const
+{
+	return d->is_valid();
+}
+
 
 
 SteamWorks::PulleyBack::Instance::Instance(std::shared_ptr<Loader::Private>& parent_d, int argc, char** argv, int varc) :
@@ -214,4 +236,9 @@ SteamWorks::PulleyBack::Instance::~Instance()
 	{
 		d->m_pulleyback_close(m_handle);
 	}
+}
+
+bool SteamWorks::PulleyBack::Instance::is_valid() const
+{
+	return d->is_valid();
 }

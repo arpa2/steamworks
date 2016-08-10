@@ -43,7 +43,7 @@ class Loader
 friend class Instance;
 private:
 	class Private;
-	std::shared_ptr<Private> d;
+	std::shared_ptr<Private> d;  // Shared with instances
 
 public:
 	Loader(const std::string& name);
@@ -60,6 +60,8 @@ public:
 	 * See above, using a Parameters instance instead.
 	 */
 	Instance get_instance(PulleyScript::BackendParameters& parameters);
+
+	bool is_valid() const;
 } ;
 
 
@@ -67,7 +69,7 @@ class Instance
 {
 friend class Loader;
 private:
-	std::shared_ptr<Loader::Private> d;
+	std::shared_ptr<Loader::Private> d;  // Shared with loaders
 	void* m_handle;
 
 	Instance(std::shared_ptr<Loader::Private>& loader, int argc, char** argv, int varc);
@@ -87,6 +89,8 @@ public:
 	 * If the backend has failed to load, calling any of these
 	 * functions will return NULL or a suitable error value.
 	 */
+
+	bool is_valid() const;
 } ;
 
 }  // namespace PulleyBack

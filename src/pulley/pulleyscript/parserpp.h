@@ -13,6 +13,10 @@ Adriaan de Groot <groot@kde.org>
 #ifndef STEAMWORKS_PULLEYSCRIPT_PARSERPP_H
 #define STEAMWORKS_PULLEYSCRIPT_PARSERPP_H
 
+#include "driver.h"
+
+#include "backend.h"
+
 #include <forward_list>
 #include <memory>
 
@@ -32,6 +36,8 @@ namespace PulleyScript
 struct BackendParameters
 {
 	std::string name; // Only used for logging
+	drvnum_t driver;  // Parameters for which driver
+	std::unique_ptr<PulleyBack::Instance> instance;
 	int varc;
 	int argc;
 	char** argv;

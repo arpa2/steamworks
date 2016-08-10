@@ -35,8 +35,9 @@ set(PSLIB_SRC
   ${FLEX_fpulley_OUTPUTS})
 
 set(PSPPLIB_SRC
-  parserpp.cpp
+  backend.cpp
   bindingpp.cpp
+  parserpp.cpp
   )
 
 set(COMPILER_SRC

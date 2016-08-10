@@ -493,6 +493,10 @@ std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::Pul
 			std::vector<std::string> expressions;
 			decode_parameter_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, expressions);
 			backends.emplace_front(name, expressions);
+
+			const auto& b = backends.begin();
+			b->driver = drvidx;
+			b->instance.reset(new PulleyBack::Instance(PulleyBack::Loader(b->name).get_instance(*b)));
 		}
 	}
 	return backends;

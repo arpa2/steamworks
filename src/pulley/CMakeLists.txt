@@ -21,7 +21,6 @@ add_subdirectory(pulleyscript)
 add_subdirectory(pulleyback)
 
 set(PULLEY_SRC
-  backend.cpp
   main.cpp
   pulley.cpp
   )
@@ -43,8 +42,8 @@ target_link_libraries(pulley ${FLEX_LIBRARIES} ${SQLITE3_LIBRARIES})
 # directory.
 #
 # add_definitions(-DNO_SECURITY=1)
-add_executable(pulleyback_test backend.cpp pulleyback_test.cpp)
-target_link_libraries(pulleyback_test swcommon)
+add_executable(pulleyback_test pulleyback_test.cpp)
+target_link_libraries(pulleyback_test pspplib pslib swcommon)
 # We need to link this executable such that the plugins can get
 # at the write_logger() symbol from the executable -- otherwise
 # the plugin can't produce logging output.
