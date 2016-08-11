@@ -91,6 +91,7 @@ public:
 	 */
 
 	bool is_valid() const;
+	std::string name() const;
 } ;
 
 }  // namespace PulleyBack

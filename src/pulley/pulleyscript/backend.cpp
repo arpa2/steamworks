@@ -242,3 +242,8 @@ bool SteamWorks::PulleyBack::Instance::is_valid() const
 {
 	return d->is_valid();
 }
+
+std::string SteamWorks::PulleyBack::Instance::name() const
+{
+	return d->name();
+}
