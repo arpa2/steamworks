@@ -195,6 +195,7 @@ SteamWorks::PulleyBack::Loader::Loader(const std::string& name) :
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
 	log.debugStream() << "Loaded " << name << " valid? " << (d->is_valid() ? "yes" : "no");
 	log.debugStream() << "  .. open @" << (void *)d->m_pulleyback_open << " close @" << (void *)d->m_pulleyback_close;
+	log.debugStream() << "  .. add @" << (void *)d->m_pulleyback_add;
 }
 
 SteamWorks::PulleyBack::Loader::~Loader()
@@ -227,6 +228,8 @@ SteamWorks::PulleyBack::Instance::Instance(std::shared_ptr<Loader::Private>& par
 	if (d->is_valid())
 	{
 		m_handle = d->m_pulleyback_open(argc, argv, varc);
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
+		log.debugStream() << "Got instance handle @" << m_handle;
 	}
 }
 
@@ -240,10 +243,21 @@ SteamWorks::PulleyBack::Instance::~Instance()
 
 bool SteamWorks::PulleyBack::Instance::is_valid() const
 {
-	return d->is_valid();
+	return m_handle && d->is_valid();
 }
 
 std::string SteamWorks::PulleyBack::Instance::name() const
 {
 	return d->name();
+}
+
+int SteamWorks::PulleyBack::Instance::add(der_t* forkdata)
+{
+	if (d->is_valid())
+	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
+		log.debugStream() << "Calling into instance " << name() << " add@" << (void *)d->m_pulleyback_add << " handle@" << m_handle;
+		return d->m_pulleyback_add(m_handle, forkdata);
+	}
+	return 0;
 }

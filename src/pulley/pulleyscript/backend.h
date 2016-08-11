@@ -24,6 +24,8 @@ Adriaan de Groot <groot@kde.org>
 #include <vector>
 #include <memory>
 
+#include "../pulleyback.h"
+
 namespace SteamWorks
 {
 
@@ -92,6 +94,8 @@ public:
 
 	bool is_valid() const;
 	std::string name() const;
+
+	int add (der_t *forkdata);
 } ;
 
 }  // namespace PulleyBack
