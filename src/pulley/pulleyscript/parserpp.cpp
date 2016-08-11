@@ -479,6 +479,15 @@ static void ceebee(void *cbdata, int add_not_del, int numactpart, struct squeal_
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
 	log.debugStream() << "Callback called " << cbdata << ' ' << add_not_del << ' ' << numactpart;
+
+	auto instance = reinterpret_cast<SteamWorks::PulleyBack::Instance*>(cbdata);
+	log.debugStream() << "  .. name=" << instance->name() << " valid=" << instance->is_valid();
+
+	if (add_not_del)
+	{
+		// TODO: re-encode everything as DER instead of casting it
+		instance->add(nullptr);
+	}
 }
 
 std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::PulleyScript::Parser::Private::find_backends()
