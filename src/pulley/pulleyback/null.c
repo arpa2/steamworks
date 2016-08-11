@@ -25,7 +25,7 @@ void *pulleyback_open(int argc, char **argv, int varc)
 	write_logger(logger, "NULL backend opened.");
 	snprintf(ibuf, sizeof(ibuf), " .. %d args", argc);
 	write_logger(logger, ibuf);
-	snprintf(ibuf, sizeof(ibuf), " .. %d variables", varc);
+	// snprintf(ibuf, sizeof(ibuf), " .. %d variables", varc);
 
 	for (unsigned int i=0; i<argc; i++)
 	{
@@ -36,6 +36,8 @@ void *pulleyback_open(int argc, char **argv, int varc)
 	handle_t* handle = malloc(sizeof(handle_t));
 	if (handle == NULL)
 	{
+		snprintf(ibuf, sizeof(ibuf), "Could not allocate handle %d (#%d)", sizeof(handle_t), num_instances+1);
+		write_logger(logger, ibuf);
 		/* assume malloc() has set errno */
 		return NULL;
 	}
