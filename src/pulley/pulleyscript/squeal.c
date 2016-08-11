@@ -40,7 +40,13 @@
 
 #include <sqlite3.h>
 
+extern void write_logger(const char* logname, const char* message);
 
+static const char logger[] = "steamworks.pulleyscript.squeal";
+static char log_buffer[1024];
+
+#define DEBUG(...) { snprintf(log_buffer, sizeof(log_buffer), __VA_ARGS__); log_buffer[sizeof(log_buffer)-1]=0; write_logger(logger, log_buffer); }
+#define ERROR(...) DEBUG(__VA_ARGS__)
 
 /* TODO: Make the database directory a configurable entity.
  */
@@ -219,7 +225,7 @@ static void sqlbuf_write (struct sqlbuf *buf, const char *addend) {
 		siz2 = buf->siz + (buf->siz >> 2) + len;
 		buf2 = realloc (buf->buf, siz2);
 		if (buf2 == NULL) {
-			fprintf (stderr, "Out of memory while writing \"%s\" to squeal buffer\n", addend);
+			ERROR("Out of memory while writing \"%s\" to squeal buffer\n", addend);
 			exit (1);
 		}
 		memset(buf2 + buf->ofs, 0, siz2 - buf->ofs);
@@ -238,20 +244,20 @@ static int sqlbuf_run (struct sqlbuf *sql, sqlite3 *s3db) {
 	int retval = 0;
 	int sqlretval = 0;
 	sqlite3_stmt *s3in;
-	printf ("exec sql>\n%.*s\n", (int) sql->ofs, sql->buf);
+	DEBUG("exec sql>\n%.*s\n", (int) sql->ofs, sql->buf);
 	sqlretval = sqlite3_prepare (s3db, sql->buf, sql->ofs, &s3in, NULL);
 	if ((sqlretval != SQLITE_OK)) {
 		/* TODO: Report error in more detail */
-		printf ("SYNTAX ERROR in SQL %d\n", sqlretval);
+		DEBUG("SYNTAX ERROR in SQL %d\n", sqlretval);
 	}
 	sqlretval = sqlite3_step (s3in);
 	if ((sqlretval != SQLITE_OK) && (sqlretval != SQLITE_DONE)) {
 		/* TODO: Report error in more detail */
-		printf ("RUNTIME ERROR in SQL %d\n", sqlretval);
+		DEBUG("RUNTIME ERROR in SQL %d\n", sqlretval);
 	} else {
-		printf ("DONE\n");
+		DEBUG("DONE\n");
 	}
-	printf ("\n");
+	DEBUG("\n");
 	sqlite3_finalize (s3in);
 	sql->ofs = 0;
 	return retval;
@@ -367,7 +373,7 @@ static int s3ins_run_uuid(sqlite3 *s3db, sqlite3_stmt *s3in, const char *uuid,
 		sqlret = sqlite3_bind_text(s3in, idx, uuid, -1, SQLITE_STATIC);
 		if (sqlret != SQLITE_OK)
 		{
-			fprintf(stderr,"Binding :uuid yields %d %s\n", sqlret, sqlite3_errmsg(s3db));
+			ERROR("Binding :uuid yields %d %s\n", sqlret, sqlite3_errmsg(s3db));
 		}
 	}
 	//
@@ -381,7 +387,7 @@ static int s3ins_run_uuid(sqlite3 *s3db, sqlite3_stmt *s3in, const char *uuid,
 					SQLITE_STATIC);
 			if (sqlret != SQLITE_OK)
 			{
-				fprintf(stderr,"Binding %s yields %d %s\n", drvid, sqlret, sqlite3_errmsg(s3db));
+				ERROR("Binding %s yields %d %s\n", drvid, sqlret, sqlite3_errmsg(s3db));
 			}
 		}
 	}
@@ -415,7 +421,7 @@ static void squeal_driver_callback_demult (struct squeal *squeal,
 	if (s3rv == SQLITE_ROW) {
 		repeats = sqlite3_column_int (squeal->get_drv_all, 0);
 	} else {
-		fprintf(stderr, "  SQLERR %d %s\n", s3rv, sqlite3_errmsg(squeal->s3db));
+		ERROR("  SQLERR %d %s\n", s3rv, sqlite3_errmsg(squeal->s3db));
 	}
 
 	//
@@ -436,7 +442,7 @@ static void squeal_driver_callback_demult (struct squeal *squeal,
 			hash, drvback->cbnumparm, drvback->cbparm);
 	//
 	// Possibly invoke the callback on the backend driver
-	printf("  DEMULT rpt=%d drive=%d cbfun=%p cbdata=%p\n", repeats, drive, (void *)drvback->cbfun, drvback->cbdata);
+	DEBUG("  DEMULT rpt=%d drive=%d cbfun=%p cbdata=%p\n", repeats, drive, (void *)drvback->cbfun, drvback->cbdata);
 	if (drive && drvback->cbfun) {
 		drvback->cbfun (drvback->cbdata, add_not_del,
 				drvback->cbnumparm, drvback->cbparm);
@@ -461,7 +467,7 @@ static void squeal_produce_output (struct squeal *squeal, int add_not_del,
 	while (s3rv != SQLITE_DONE) {
 		if (s3rv != SQLITE_OK) {
 			//TODO// Report SQLite3 error
-			printf ("SQLite3 ERROR while producing output\n");
+			ERROR("SQLite3 ERROR while producing output\n");
 		}
 		assert (sqlite3_column_count (s3in) == drv->cbnumparm);
 		for (i=0; i < drv->cbnumparm; i++) {
@@ -488,8 +494,8 @@ static void _squeal_generator_fork (struct squeal *squeal,
 	int i;
 	assert (genfront->numrecvars == numrecvars);
 
-	printf("Generator fork @%p add?%d\n", (void *)genfront, add_not_del);
-	printf("  .. adding %d variables.", numrecvars);
+	DEBUG("Generator fork @%p add?%d\n", (void *)genfront, add_not_del);
+	DEBUG("  .. adding %d variables.", numrecvars);
 
 	//
 	// Produce the generator hash over the blobs holding the record variables
@@ -538,7 +544,7 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 
 		if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_DONE))
 		{
-			fprintf(stderr, "Can't insert fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
+			ERROR("Can't insert fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
 		}
 	}
 
@@ -551,11 +557,11 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 		while (sqlret != SQLITE_DONE) {
 			if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_ROW))
 			{
-				fprintf (stderr, "SQLite3 ERROR while producing output for uuid %s sql %d %s\n", entryUUID, sqlret, sqlite3_errmsg(squeal->s3db));
+				ERROR("SQLite3 ERROR while producing output for uuid %s sql %d %s\n", entryUUID, sqlret, sqlite3_errmsg(squeal->s3db));
 				break;
 			}
 
-			printf("Output row %d to driver %d\n", rowcount, driveridx);
+			DEBUG("Output row %d to driver %d\n", rowcount, driveridx);
 			for (columnidx=0; columnidx < sqlite3_column_count(statement); columnidx++) {
 				params[columnidx].data = (void *)sqlite3_column_blob(statement, columnidx);
 				params[columnidx].size = sqlite3_column_bytes(statement, columnidx);
@@ -574,7 +580,7 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 
 		if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_DONE))
 		{
-			fprintf(stderr, "Can't delete fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
+			ERROR("Can't delete fork SQL err %d %s\n", sqlret, sqlite3_errmsg(squeal->s3db));
 		}
 	}
 }
@@ -660,7 +666,7 @@ void squeal_produce_expression (struct sqlbuf *sql, struct vartab *vartab, bitse
 		}
 		break;
 	default:
-		fprintf (stderr, "Unknown operation code %d with %d operands\n", operator, operands);
+		ERROR("Unknown operation code %d with %d operands\n", operator, operands);
 		exit (1);
 	}
 }
@@ -767,12 +773,12 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 	//
 	// Based on the generated SQL string, prepare a statement
 	if (sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &retval, NULL) != SQLITE_OK) {
-		fprintf (stderr, "Failed to construct production rule for SQLite3 engine\n");
+		ERROR("Failed to construct production rule for SQLite3 engine\n");
 		retval = NULL;
 		goto cleanup;
 	}
 
-	printf ("prep sql>\n%.*s\n\n", (int) sql.ofs, sql.buf);
+	DEBUG("prep sql>\n%.*s\n\n", (int) sql.ofs, sql.buf);
 
 cleanup:
 	//
@@ -916,7 +922,7 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, st
 
 		if ((sqlretval = sqlite3_prepare(squeal->s3db, sql.buf, sql.ofs, &gen->opt_gen_del_record, NULL)) != SQLITE_OK)
 		{
-			printf("PREP ERROR delete in generator SQL %d\n", sqlretval);
+			ERROR("PREP ERROR delete in generator SQL %d\n", sqlretval);
 			goto fail;
 		}
 
@@ -935,7 +941,7 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, st
 		{
 			sqlite3_finalize(gen->opt_gen_del_record);
 			gen->opt_gen_del_record = NULL;
-			printf("PREP ERROR insert in generator SQL %d\n", sqlretval);
+			ERROR("PREP ERROR insert in generator SQL %d\n", sqlretval);
 			goto fail;
 		}
 
@@ -963,7 +969,7 @@ fail:
 
 int squeal_configure_driver(struct squeal* squeal, drvnum_t drv, squeal_driverfun_t cbfun, void* cbdata)
 {
-	printf("DRV configured %d %p %p\n", drv, (void *)cbfun, cbdata);
+	DEBUG("DRV configured %d %p %p\n", drv, (void *)cbfun, cbdata);
 	squeal->drivers[drv].cbdata = cbdata;
 	squeal->drivers[drv].cbfun = cbfun;
 	return 0;
@@ -987,7 +993,7 @@ int squeal_configure (struct squeal *squeal) {
 			    "       WHERE out_hash = :hash\n"
 			    "       UNION VALUES (0) )");
 	if ((sqlretval = sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->get_drv_all, NULL)) != SQLITE_OK) {
-		printf ("PREP ERROR select in SQL %d\n", sqlretval);
+		ERROR("PREP ERROR select in SQL %d\n", sqlretval);
 		retval = 1;
 		goto cleanup;
 	}
@@ -1001,7 +1007,7 @@ int squeal_configure (struct squeal *squeal) {
 			    "       WHERE out_hash = :hash\n"
 			    "       UNION VALUES (0) )");
 	if ((sqlretval = sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->inc_drv_all, NULL)) != SQLITE_OK) {
-		printf ("PREP ERROR insert in SQL %d\n", sqlretval);
+		ERROR("PREP ERROR insert in SQL %d\n", sqlretval);
 		retval = 1;
 		goto cleanup;
 	}
@@ -1012,7 +1018,7 @@ int squeal_configure (struct squeal *squeal) {
 				"SET out_repeat = out_repeat - 1\n"
 				"WHERE out_hash = :hash");
 	if ((sqlretval = sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->dec_drv_all, NULL)) != SQLITE_OK) {
-		printf ("PREP ERROR update in SQL %d\n", sqlretval);
+		ERROR("PREP ERROR update in SQL %d\n", sqlretval);
 		retval = 1;
 		goto cleanup;
 	}
@@ -1028,12 +1034,12 @@ cleanup:
 }
 
 void errorLogCallback(void *pArg, int iErrCode, const char *zMsg){
-	fprintf(stderr, "(%d) %s\n", iErrCode, zMsg);
+	ERROR("(%d) %s\n", iErrCode, zMsg);
 }
 
 void traceLogCallback(void *pData, const char *stmt)
 {
-	fprintf(stderr, "(%p) %s\n", pData, stmt);
+	DEBUG("(%p) %s\n", pData, stmt);
 }
 
 /* Open a SQLite3 engine for a given Pulley script.  The lexhash is used to name the
@@ -1089,7 +1095,7 @@ struct squeal *squeal_open_in_dbdir (hash_t lexhash, gennum_t numgens, drvnum_t 
 	//
 	// TODO: may want to add SQLITE_OPEN_URI flag to allow file: and similar URIs
 	int s3rv = sqlite3_open_v2 (dbname.buf, &s3db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL);
-	printf ("SQLite3 open (\"%s\", &s3db) returned %d, hoped for %d\n", dbname.buf, s3rv, SQLITE_OK);
+	DEBUG("SQLite3 open (\"%s\", &s3db) returned %d, hoped for %d\n", dbname.buf, s3rv, SQLITE_OK);
 	if (s3rv != SQLITE_OK) {
 		/* TODO: Report detailed error */
 		if (s3db != NULL) {

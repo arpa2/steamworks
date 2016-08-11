@@ -42,6 +42,7 @@ set(PSPPLIB_SRC
 
 set(COMPILER_SRC
   compiler.c
+  logger.c
   )
 
 set(SIMPLE_SRC
