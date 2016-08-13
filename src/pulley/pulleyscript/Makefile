@@ -1,7 +1,8 @@
 CC=gcc
 CFLAGS=-ggdb3 -DDEBUG -O0
 
-SRC=parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o
+# Not actually SRC, but OBJ
+SRC=parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o logger.o
 
 # Depending on your Linux distribution, the flex library (providing
 # yywrap(), among others) may be called libl or libfl (OpenSUSE).
@@ -13,10 +14,10 @@ all: pulleyscript compiler
 	@echo Build successful
 
 compiler: $(SRC) compiler.o
-	$(CC) $(CFLAGS) -o $@ parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o compiler.o $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $(SRC) compiler.o $(LIBS)
 
 pulleyscript: $(SRC)
-	$(CC) $(CFLAGS) -o $@ parser.o lexhash.o bitset.o variable.o condition.o generator.o driver.o resist.o squeal.o $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $(SRC) $(LIBS)
 
 anew: clean all
 
@@ -48,6 +49,9 @@ generator.o: generator.c generator.h generator_int.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 squeal.o: squeal.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+logger.o: logger.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 parser.c: pulley.lex pulley.yacc lexhash.h
