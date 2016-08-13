@@ -1,6 +1,8 @@
 #ifndef PULLEYSCRIPT_SQUEAL_H
 #define PULLEYSCRIPT_SQUEAL_H
 
+#include <sys/types.h>
+#include "types.h"
 
 #ifdef __cplusplus
 extern "C" {
