@@ -9,6 +9,7 @@ Adriaan de Groot <groot@kde.org>
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 struct squeal_blob {
 	void *data;
@@ -35,7 +36,7 @@ void *pulleyback_open(int argc, char **argv, int varc)
 
 	for (unsigned int i=0; i<argc; i++)
 	{
-		snprintf(ibuf, sizeof(ibuf), " arg %d=%s", i, argv[i]);
+		snprintf(ibuf, sizeof(ibuf), "  .. parm %d=%s", i, argv[i]);
 		write_logger(logger, ibuf);
 	}
 
@@ -84,7 +85,20 @@ int pulleyback_add(void *pbh, der_t *forkdata)
 	struct squeal_blob* p = (struct squeal_blob*)forkdata;
 	for (unsigned int i = 0; i < handle->varc; i++)
 	{
-		snprintf(ibuf, sizeof(ibuf), "  .. arg %d len %ld\n", i, p->size);
+		snprintf(ibuf, sizeof(ibuf), "  .. arg %d  len=%ld", i, p->size);
+		write_logger(logger, ibuf);
+		snprintf(ibuf, sizeof(ibuf), "  .. arg %d data=", i);
+		auto offset = strlen(ibuf);
+		size_t len = sizeof(ibuf) - offset - 1;
+		if (p->size < len)
+		{
+			len = p->size;
+		}
+		memcpy(ibuf+offset, p->data, len);
+		ibuf[offset+len] = 0;
+		write_logger(logger, ibuf);
+
+		p++;
 	}
 
 	return 1;
