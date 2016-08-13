@@ -509,8 +509,13 @@ std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::Pul
 			decode_parameter_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, expressions);
 			backends.emplace_front(name, expressions);
 
+			varnum_t* var_list = nullptr;
+			varnum_t var_count = 0;
+			drv_share_output_variable_table(m_prs.drvtab, drvidx, &var_list, &var_count);
+
 			const auto& b = backends.begin();
 			b->driver = drvidx;
+			b->varc = var_count;
 			b->instance.reset(new PulleyBack::Instance(PulleyBack::Loader(b->name).get_instance(*b)));
 			if (b->instance->is_valid())
 			{

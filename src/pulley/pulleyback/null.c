@@ -29,7 +29,7 @@ void *pulleyback_open(int argc, char **argv, int varc)
 	char ibuf[64];
 
 	write_logger(logger, "NULL backend opened.");
-	snprintf(ibuf, sizeof(ibuf), " .. %d args, expect %d vars later", argc, varc);
+	snprintf(ibuf, sizeof(ibuf), " .. %d parameters, expect %d vars later", argc, varc);
 	write_logger(logger, ibuf);
 	// snprintf(ibuf, sizeof(ibuf), " .. %d variables", varc);
 
