@@ -486,7 +486,7 @@ static void ceebee(void *cbdata, int add_not_del, int numactpart, struct squeal_
 	if (add_not_del)
 	{
 		// TODO: re-encode everything as DER instead of casting it
-		instance->add(nullptr);
+		instance->add((der_t *)actparm);
 	}
 }
 

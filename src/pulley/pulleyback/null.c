@@ -10,6 +10,12 @@ Adriaan de Groot <groot@kde.org>
 #include <stdlib.h>
 #include <stdio.h>
 
+struct squeal_blob {
+	void *data;
+	size_t size;
+};
+
+
 static const char logger[] = "steamworks.pulleyback.null";
 static int num_instances = 0;
 
@@ -23,7 +29,7 @@ void *pulleyback_open(int argc, char **argv, int varc)
 	char ibuf[64];
 
 	write_logger(logger, "NULL backend opened.");
-	snprintf(ibuf, sizeof(ibuf), " .. %d args", argc);
+	snprintf(ibuf, sizeof(ibuf), " .. %d args, expect %d vars later", argc, varc);
 	write_logger(logger, ibuf);
 	// snprintf(ibuf, sizeof(ibuf), " .. %d variables", varc);
 
@@ -36,7 +42,7 @@ void *pulleyback_open(int argc, char **argv, int varc)
 	handle_t* handle = malloc(sizeof(handle_t));
 	if (handle == NULL)
 	{
-		snprintf(ibuf, sizeof(ibuf), "Could not allocate handle %d (#%d)", sizeof(handle_t), num_instances+1);
+		snprintf(ibuf, sizeof(ibuf), "Could not allocate handle %ld (#%d)", sizeof(handle_t), num_instances+1);
 		write_logger(logger, ibuf);
 		/* assume malloc() has set errno */
 		return NULL;
@@ -74,6 +80,12 @@ int pulleyback_add(void *pbh, der_t *forkdata)
 	write_logger(logger, ibuf);
 	snprintf(ibuf, sizeof(ibuf), "  .. instance #%d add data @%p", handle->instancenumber, (void *)forkdata);
 	write_logger(logger, ibuf);
+
+	struct squeal_blob* p = (struct squeal_blob*)forkdata;
+	for (unsigned int i = 0; i < handle->varc; i++)
+	{
+		snprintf(ibuf, sizeof(ibuf), "  .. arg %d len %ld\n", i, p->size);
+	}
 
 	return 1;
 }
