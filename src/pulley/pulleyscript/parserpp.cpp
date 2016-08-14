@@ -475,6 +475,102 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find
 	return filterexps;
 }
 
+struct DERItem
+{
+	der_t ptr;
+
+	DERItem(struct squeal_blob* parm) :
+		ptr(nullptr)
+	{
+		uint8_t tag = 0x04; // Universal tag octet string
+		uint8_t len_len = 1;
+		size_t len = parm->size;
+		while (len>=128)
+		{
+			len = len >> 8;
+			len_len++;
+		}
+
+		ptr = (der_t)malloc(1 + len_len + parm->size);
+		if (ptr)
+		{
+			ptr[0] = tag;
+			if (len_len > 1)
+			{
+				ptr[1] = len_len | 0x80;
+				len = parm->size;
+				for (off_t i = len_len + 2; i >= 2; --i)
+				{
+					ptr[i] = len & 0xff;
+					len = len >> 8;
+				}
+			}
+			else
+			{
+				assert(parm->size < 128);
+				ptr[1] = parm->size & 0x7f;
+			}
+			memcpy(ptr + 1 + len_len, parm->data, parm->size);
+		}
+
+		auto& log = SteamWorks::Logging::getLogger("steamworks.der");
+		log.debugStream() << "Allocated DER @" << (void *)ptr << " tag=" << int(ptr[0]) << " len=" << int(ptr[1]);
+	}
+
+	DERItem() :
+		ptr(nullptr)
+	{
+	}
+
+	~DERItem()
+	{
+		if(ptr)
+		{
+			free(ptr);
+			ptr = nullptr;
+		}
+	}
+} ;
+
+struct DERArray
+{
+	int count;
+	der_t* ptr;
+	std::vector<DERItem> items;
+
+	DERArray(int numactpart, struct squeal_blob* actparm) :
+		count(numactpart),
+		ptr(numactpart > 0 ? (der_t*)calloc(numactpart, sizeof(der_t)) : nullptr)
+	{
+		if ((numactpart > 0) && (numactpart > items.capacity()))
+		{
+			items.reserve(numactpart);
+		}
+
+		if (ptr)
+		{
+			for(unsigned int i=0; i<numactpart; i++)
+			{
+				items.emplace_back(&actparm[i]);
+				ptr[i] = items[i].ptr;
+			}
+		}
+		else
+		{
+			free(ptr);
+			ptr = nullptr;
+			count = 0;
+		}
+	}
+
+	~DERArray()
+	{
+		free(ptr);
+		ptr = nullptr;
+		count = -1;
+	}
+} ;
+
 static void ceebee(void *cbdata, int add_not_del, int numactpart, struct squeal_blob* actparm)
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
@@ -485,8 +581,8 @@ static void ceebee(void *cbdata, int add_not_del, int numactpart, struct squeal_
 
 	if (add_not_del)
 	{
-		// TODO: re-encode everything as DER instead of casting it
-		instance->add((der_t *)actparm);
+		DERArray a(numactpart, actparm);
+		instance->add(a.ptr);
 	}
 }
 

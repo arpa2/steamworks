@@ -82,11 +82,12 @@ int pulleyback_add(void *pbh, der_t *forkdata)
 	snprintf(ibuf, sizeof(ibuf), "  .. instance #%d add data @%p", handle->instancenumber, (void *)forkdata);
 	write_logger(logger, ibuf);
 
-	struct squeal_blob* p = (struct squeal_blob*)forkdata;
+	der_t* p = forkdata;
 	for (unsigned int i = 0; i < handle->varc; i++)
 	{
-		snprintf(ibuf, sizeof(ibuf), "  .. arg %d  len=%ld", i, p->size);
+		snprintf(ibuf, sizeof(ibuf), "  .. arg %d  der@%p", i, *p);
 		write_logger(logger, ibuf);
+#if 0
 		snprintf(ibuf, sizeof(ibuf), "  .. arg %d data=", i);
 		auto offset = strlen(ibuf);
 		size_t len = sizeof(ibuf) - offset - 1;
@@ -97,7 +98,7 @@ int pulleyback_add(void *pbh, der_t *forkdata)
 		memcpy(ibuf+offset, p->data, len);
 		ibuf[offset+len] = 0;
 		write_logger(logger, ibuf);
-
+#endif
 		p++;
 	}
 
