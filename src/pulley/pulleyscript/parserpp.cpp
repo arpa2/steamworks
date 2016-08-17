@@ -579,10 +579,14 @@ static void ceebee(void *cbdata, int add_not_del, int numactpart, struct squeal_
 	auto instance = reinterpret_cast<SteamWorks::PulleyBack::Instance*>(cbdata);
 	log.debugStream() << "  .. name=" << instance->name() << " valid=" << instance->is_valid();
 
+	DERArray a(numactpart, actparm);
 	if (add_not_del)
 	{
-		DERArray a(numactpart, actparm);
 		instance->add(a.ptr);
+	}
+	else
+	{
+		instance->del(a.ptr);
 	}
 }
 

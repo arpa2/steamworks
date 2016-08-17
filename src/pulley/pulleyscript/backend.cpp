@@ -261,3 +261,14 @@ int SteamWorks::PulleyBack::Instance::add(der_t* forkdata)
 	}
 	return 0;
 }
+
+int SteamWorks::PulleyBack::Instance::del(der_t* forkdata)
+{
+	if (d->is_valid())
+	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
+		log.debugStream() << "Calling into instance " << name() << " del@" << (void *)d->m_pulleyback_del << " handle@" << m_handle;
+		return d->m_pulleyback_del(m_handle, forkdata);
+	}
+	return 0;
+}

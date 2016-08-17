@@ -95,7 +95,8 @@ public:
 	bool is_valid() const;
 	std::string name() const;
 
-	int add (der_t *forkdata);
+	int add(der_t* forkdata);
+	int del(der_t* forkdata);
 } ;
 
 }  // namespace PulleyBack
