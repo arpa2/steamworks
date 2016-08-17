@@ -97,6 +97,8 @@ public:
 
 	int add(der_t* forkdata);
 	int del(der_t* forkdata);
+	int commit();
+	void rollback();
 } ;
 
 }  // namespace PulleyBack

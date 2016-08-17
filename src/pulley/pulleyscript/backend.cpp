@@ -272,3 +272,25 @@ int SteamWorks::PulleyBack::Instance::del(der_t* forkdata)
 	}
 	return 0;
 }
+
+int SteamWorks::PulleyBack::Instance::commit()
+{
+	if (d->is_valid())
+	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
+		log.debugStream() << "Calling into instance " << name() << " commit@" << (void *)d->m_pulleyback_commit << " handle@" << m_handle;
+		return d->m_pulleyback_commit(m_handle);
+	}
+	return 0;
+
+}
+
+void SteamWorks::PulleyBack::Instance::rollback()
+{
+	if (d->is_valid())
+	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
+		log.debugStream() << "Calling into instance " << name() << " rollback@" << (void *)d->m_pulleyback_rollback << " handle@" << m_handle;
+		d->m_pulleyback_rollback(m_handle);
+	}
+}
