@@ -17,6 +17,8 @@ find_package(SQLite3 REQUIRED)
 
 include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../common ../3rdparty)
 
+add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
+
 add_subdirectory(pulleyscript)
 add_subdirectory(pulleyback)
 
@@ -25,7 +27,6 @@ set(PULLEY_SRC
   pulley.cpp
   )
 
-add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
 add_executable(pulley ${PULLEY_SRC})
 target_link_libraries(pulley ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES})
 target_link_libraries(pulley swldap swcommon pspplib pslib)
