@@ -31,3 +31,7 @@ build: check-cmake
 
 install: build
 	( cd build ; $(MAKE) install PREFIX=$PREFIX )
+
+clean:
+	rm -rf build
+
