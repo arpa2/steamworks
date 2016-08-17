@@ -1,13 +1,15 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <fstream>
 #include <string>
 
 #include "parserpp.h"
 
 #include <logger.h>
 
-static const char progname[] = "PulleyScript";
+static const char progname[] = "PulleySimple";
 static const char version[] = "v0.1";
 static const char copyright[] = "Copyright (C) 2014-2016 InternetWide.org and the ARPA2.net project";
 
@@ -21,7 +23,7 @@ static void version_usage()
 {
 	printf(R"(
 Usage:
-    pulley [-L libdir] scriptfile [...]
+    simple [-L libdir] scriptfile datafile
 \n\n)");
 }
 
@@ -29,12 +31,12 @@ static void version_help()
 {
 	version_info();
 	printf(R"(
-Use the Pulley to output configuration received from other
-SteamWorks components to a local configuration though the
-backends available on the system.
+Parse a PulleyScript file and feed the resulting pulley one data file,
+which is a JSON representation of an LDAP object. Calls the backend
+plugins specified by the script to process the change represented by
+the JSON file.
 
-Backend plug-ins will be loaded from <libdir>. The PulleyScript
-scripts are read once, at start-up.
+Backend plug-ins will be loaded from <libdir>.
 
 )");
 	version_usage();
@@ -46,7 +48,7 @@ int main(int argc, char **argv)
 	SteamWorks::Logging::Manager logManager("pulleyscript.properties", SteamWorks::Logging::DEBUG);
 	SteamWorks::Logging::getRoot().debugStream() << "SteamWorks " << progname << ' ' << copyright;
 
-	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleysimple");
 
 	const struct option longopts[] =
 	{
@@ -101,15 +103,13 @@ int main(int argc, char **argv)
 		version_usage();
 		return 1;
 	}
-	while (optind < argc)
+	if (optind != argc - 2)
 	{
-		prsret = prs.read_file(argv[optind++]);
-		if (prsret)
-		{
-			//Error in parsing file
-			break;
-		}
+		version_usage();
+		return 1;
 	}
+
+	prsret = prs.read_file(argv[optind++]);
 	if (prsret)
 	{
 		// Couldn't parse file, or no files given.
@@ -136,16 +136,23 @@ int main(int argc, char **argv)
 	}
 
 	picojson::value v;
-	picojson::parse(v, R"({
-	"TlsPoolTrustAnchor": "o=Verishot primary root,ou=Trust Contestors,dc=test,dc=example,dc=com",
-	"TlsPoolValidationExpression": "1",
-	"TlsPoolSupportedRole": "server"
-})"
-	);
-	log.debugStream() << "JSON object is object? " << (v.is<picojson::object>() ? "yes" : "no");
+	const char *json_filename = argv[optind++];
+	std::ifstream input(json_filename);
+	picojson::parse(v, input);
 
-	const picojson::value::object& obj = v.get<picojson::object>();
-	prs.add_entry("1234", obj);
+	if (v.is<picojson::object>())
+	{
+		log.debugStream() << "JSON object read from " << json_filename;
+
+		const picojson::value::object& obj = v.get<picojson::object>();
+		prs.add_entry("1234", obj);
+	}
+	else
+	{
+		log.errorStream() << "Could not read JSON from " << json_filename;
+		return 1;
+	}
+
 	return 0;
 }
 

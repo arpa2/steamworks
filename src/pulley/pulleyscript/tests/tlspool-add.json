@@ -1,0 +1,5 @@
+{
+"TlsPoolTrustAnchor": "o=Verishot primary root,ou=Trust Contestors,dc=test,dc=example,dc=com",
+"TlsPoolValidationExpression": "1",
+"TlsPoolSupportedRole": "server"
+}
