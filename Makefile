@@ -38,3 +38,15 @@ install: build
 clean:
 	rm -rf build
 
+test:	install test-loader test-script
+
+# Test that loading null plugin works, and bogus doesn't.
+test-loader:
+	./build/pulley/pulleyback_test null
+	if ./build/pulley/pulleyback_test bogus  ; then false ; else true ; fi
+
+# Try loading a script and passing data to it.
+test-script:
+	./build/pulley/pulleyscript/simple \
+		src/pulley/pulleyscript/tests/tlspool-issuers.ply \
+		src/pulley/pulleyscript/tests/tlspool-add.json
