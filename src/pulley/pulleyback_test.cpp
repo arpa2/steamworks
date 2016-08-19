@@ -30,7 +30,14 @@ int main(int argc, char **argv)
 		backends.emplace_back(new SteamWorks::PulleyBack::Loader(argv[c]));
 		auto& plugin = backends.back();
 		{
-		auto b(plugin->get_instance(1, argv, 0));
+			auto b(plugin->get_instance(1, argv, 0));
+			if (!b.is_valid())
+			{
+				log.errorStream() << "Could not load plugin " << argv[c];
+				return 1;
+			}
 		}
 	}
+
+	return 0;
 }
