@@ -72,6 +72,46 @@ void pulleyback_close(void *pbh)
 	free(pbh);
 }
 
+void dump_der(int argc, der_t der)
+{
+	char ibuf[64];
+
+	if (!der)
+	{
+		snprintf(ibuf, sizeof(ibuf), "  .. arg %d data=NULL", argc);
+		write_logger(logger, ibuf);
+		return;
+	}
+
+	if (der[0] != 0x04)
+	{
+		snprintf(ibuf, sizeof(ibuf), "  .. arg %d data=TAR(%02x)", argc, (int)(der[0]));
+		write_logger(logger, ibuf);
+		return;
+	}
+
+	
+	size_t len = 0;
+	if (der[1] < 0x28)
+	{
+		len = der[1];
+		der += 2; // 0=tag 1=short len
+	}
+	else
+	{
+		len = 0x28;  // length > 128
+		uint8_t len_len = der[1] & 0x7f;
+		der += 2 + len_len;
+	}
+
+	snprintf(ibuf, sizeof(ibuf), "  .. arg %d data=", argc);
+	int offset = strlen(ibuf);
+	len = len > sizeof(ibuf) - offset  ? sizeof(ibuf) - offset - 1 : len;
+	memcpy(ibuf+offset, der, len);
+	ibuf[offset+len] = 0;
+	write_logger(logger, ibuf);
+}
+
 int pulleyback_add(void *pbh, der_t *forkdata)
 {
 	char ibuf[64];
@@ -87,18 +127,7 @@ int pulleyback_add(void *pbh, der_t *forkdata)
 	{
 		snprintf(ibuf, sizeof(ibuf), "  .. arg %d  der@%p", i, *p);
 		write_logger(logger, ibuf);
-#if 0
-		snprintf(ibuf, sizeof(ibuf), "  .. arg %d data=", i);
-		auto offset = strlen(ibuf);
-		size_t len = sizeof(ibuf) - offset - 1;
-		if (p->size < len)
-		{
-			len = p->size;
-		}
-		memcpy(ibuf+offset, p->data, len);
-		ibuf[offset+len] = 0;
-		write_logger(logger, ibuf);
-#endif
+		dump_der(i, *p);
 		p++;
 	}
 
