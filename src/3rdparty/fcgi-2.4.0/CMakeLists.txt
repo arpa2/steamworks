@@ -11,7 +11,6 @@ cmake_minimum_required(VERSION 2.8.11)
 
 include_directories(include .)
 
-add_definitions(-D_POSIX_C_SOURCE=1)
 
 set(LIBFCGI_SRC
   libfcgi/fcgiapp.c
@@ -21,6 +20,8 @@ set(LIBFCGI_SRC
   # libfcgi/os_win32.c
   )
 add_library(fcgi STATIC ${LIBFCGI_SRC})
+set_source_files_properties(libfcgi/os_unix.c PROPERTIES 
+  COMPILE_FLAGS -D_POSIX_C_SOURCE=1)
 
 set(CGI_FCGI_SRC
   cgi-fcgi/cgi-fcgi.c
