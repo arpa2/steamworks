@@ -38,11 +38,7 @@
 #include "driver.h"
 #include "parser.h"
 
-#ifdef QSORT_IS_GLIBC
-#define QSORT_R(base, nmemb, size, thunk, func) qsort_r(base, nmemb, size, func, thunk)
-#else
-#define QSORT_R qsort_r
-#endif
+#include "qsort_fix.h"
 
 enum legtype {
 	LT_GENERATOR,
@@ -168,11 +164,11 @@ void path_add_multi (struct path *plr, enum legtype ltp,
  * path_pre_sort(), then we add elements (presumably of the same type), and
  * finally we sort them with path_run_sort().
  */
-typedef int (*path_cmp_fun) (void *context, const void *left_leg, const void *right_leg);
 static void path_pre_sort (struct path *plr) {
 	plr->legs_sorted = plr->legs_count;
 }
-static void path_run_sort (struct path *plr, void *context, path_cmp_fun cmp) {
+
+static void path_run_sort (struct path *plr, void *context, qsort_cmp_fun_t cmp) {
 	QSORT_R(&plr->legs [plr->legs_sorted],
 		plr->legs_count - plr->legs_sorted,
 		sizeof (struct leg),
@@ -196,6 +192,7 @@ static int path_cmp_by_genweight (struct gentab *context, struct leg *left_leg, 
 	}
 }
 
+QSORT_CMP_FUN_DECL(gen_cmp_weight)
 
 /* Schedule a "Path of Least Resistence" for the given needs.  Output in plr.
  *
@@ -281,7 +278,7 @@ void path_schedule (struct path *plr,
 	while (bitset_iterator_next_one (&g, NULL)) {
 		path_add (plr, LT_GENERATOR, bitset_iterator_bitnum (&g));
 	}
-	path_run_sort (plr, gentab_from_type (bitset_type (gens_needed)), gen_cmp_weight);
+	path_run_sort (plr, gentab_from_type (bitset_type (gens_needed)), _qsort_gen_cmp_weight);
 	bitset_empty (gens_needed);
 	//
 	// Cleanup temporary structures

@@ -38,11 +38,7 @@
 #include "condition.h"
 #include "parser.h"
 
-#ifdef QSORT_IS_GLIBC
-#define QSORT_R(base, nmemb, size, thunk, func) qsort_r(base, nmemb, size, func, thunk)
-#else
-#define QSORT_R qsort_r
-#endif
+#include "qsort_fix.h"
 
 /* The condition table holding all conditions (in an array, so direct access
  * is ill-advised).
@@ -601,6 +597,7 @@ bool DEPRECATED_cnd_estimate_total_cost (struct condition *cc,
 #endif
 
 
+QSORT_CMP_FUN_DECL(gen_cmp_weight);
 
 /* Make an estimate of the total cost of determining the given condition
  * with the given set of still-needed variables.  Return true on success,
@@ -662,7 +659,7 @@ bool cnd_estimate_total_cost (struct cndtab *cctab, cndnum_t cndnum,
 			*soln_generator_count,
 			sizeof (struct generator *),
 			gentab,
-			gen_cmp_weight);
+			_qsort_gen_cmp_weight);
 	//
 	// From the sorted soln_generators list, subtract generated variables
 	// from varsneeded until all are done.  Cut off the output list at
