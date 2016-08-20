@@ -38,6 +38,11 @@
 #include "driver.h"
 #include "parser.h"
 
+#ifdef QSORT_IS_GLIBC
+#define QSORT_R(base, nmemb, size, thunk, func) qsort_r(base, nmemb, size, func, thunk)
+#else
+#define QSORT_R qsort_r
+#endif
 
 enum legtype {
 	LT_GENERATOR,
@@ -168,7 +173,7 @@ static void path_pre_sort (struct path *plr) {
 	plr->legs_sorted = plr->legs_count;
 }
 static void path_run_sort (struct path *plr, void *context, path_cmp_fun cmp) {
-	qsort_r (&plr->legs [plr->legs_sorted],
+	QSORT_R(&plr->legs [plr->legs_sorted],
 		plr->legs_count - plr->legs_sorted,
 		sizeof (struct leg),
 		context,

@@ -15,6 +15,8 @@ find_package(SQLite3 REQUIRED)
 find_package(BISON 3 REQUIRED)
 find_package(FLEX REQUIRED)
 
+find_package(QSort)
+
 # The Bison / Flex bits are a bit particular;
 # there's a parser.h in the source-dir that
 # needs to be included, and the outputs go
@@ -76,6 +78,9 @@ endif()
 include_directories(${SQLITE3_INCLUDE_DIRS} ${FLEX_INCLUDE_DIRS})
 add_library(pslib STATIC ${PSLIB_SRC})
 target_compile_definitions(pslib PUBLIC -D_GNU_SOURCE=1)
+if(QSORT_IS_GLIBC)
+  target_compile_definitions(pslib PUBLIC -DQSORT_IS_GLIBC=1)
+endif()
 
 add_library(pspplib STATIC ${PSPPLIB_SRC})
 

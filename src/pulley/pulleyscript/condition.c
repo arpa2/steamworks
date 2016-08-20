@@ -38,6 +38,11 @@
 #include "condition.h"
 #include "parser.h"
 
+#ifdef QSORT_IS_GLIBC
+#define QSORT_R(base, nmemb, size, thunk, func) qsort_r(base, nmemb, size, func, thunk)
+#else
+#define QSORT_R qsort_r
+#endif
 
 /* The condition table holding all conditions (in an array, so direct access
  * is ill-advised).
@@ -653,10 +658,10 @@ bool cnd_estimate_total_cost (struct cndtab *cctab, cndnum_t cndnum,
 	// This is a sort for optimisation purposes; if it returns an error,
 	// then the cause is normally memory shortage, in which case the
 	// lost efficiency here is less vital than other things going awry.
-	qsort_r (soln_generators,
+	QSORT_R(soln_generators,
 			*soln_generator_count,
 			sizeof (struct generator *),
-			(void *)gentab,
+			gentab,
 			gen_cmp_weight);
 	//
 	// From the sorted soln_generators list, subtract generated variables

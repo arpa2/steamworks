@@ -28,7 +28,7 @@ Adriaan de Groot <groot@kde.org>
 
 int compar_linux(const void *p1, const void *p2, void *arg)
 {
-  return *((int *)p2) - 1;
+  return -(*((int *)p1) - 1);
 }
 
 int compar_freebsd(void *thunk, const void *p1, const void *p2)
@@ -47,4 +47,5 @@ int main(int argc, char **argv)
   qsort_r(arr, 3, sizeof(int), compar_linux, compar_freebsd);
   
   printf ("%d%d%d\n", arr[0], arr[1], arr[2]);
+  return arr[0] == 2 ? 0 /* linux */ : 1 /* freebsd */;
 }
