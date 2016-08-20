@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 2.8.11)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../cmake)
 
 project(steamworks)
-
+include(CheckFunctionExists)
 include(MacroEnsureOutOfSourceBuild)
 MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
   "Do not build Steamworks in the source directory.")
@@ -25,6 +25,11 @@ if(NOT LOG4CPP_FOUND)
   set(LOG4CPP_LIBRARIES "")
   set(LOG4CPP_INCLUDE_DIRS "")
   set(LOG4CPP_FOUND TRUE)
+endif()
+
+check_function_exists(dlfunc HAVE_FUN_DLFUNC)
+if(HAVE_FUN_DLFUNC)
+  add_definitions(-DHAVE_DLFUNC)
 endif()
 
 add_subdirectory(common)
