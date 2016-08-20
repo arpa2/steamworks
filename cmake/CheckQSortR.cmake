@@ -9,20 +9,21 @@
 # and sets it to false if not (e.g. FreeBSD).
 #
 try_run(
-  QSORT_IS_GLIBC
+  _check_qsort_result
   QSORT_COMPILE
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_LIST_DIR}/check_qsort_r.c
-  RUN_OUTPUT_VARIABLE QSORT_OUTPUT
   )
 if(NOT QSORT_COMPILE)
   message(FATAL "Could not compile test program for qsort_r()")
 endif()
-# QSORT_IS_GLIBC is the exit-code from the program, which is 0
+# _check_qsort_result is the exit-code from the program, which is 0
 # when GLibC parameter-order is used.
-if(NOT QSORT_IS_GLIBC)
-  message("   qsort_r() has GLibC parameter order (func, thunk) ${QSORT_OUTPUT}")
+if(NOT _check_qsort_result)
+  message("   qsort_r() has GLibC parameter order (func, thunk)")
+  set(QSORT_IS_GLIBC 1)
 else()
-  message("   qsort_r() has FreeBSD parameter order (thunk, func) ${QSORT_OUTPUT}")
+  message("   qsort_r() has FreeBSD parameter order (thunk, func)")
+  set(QSORT_IS_GLIBC 0)
 endif()
 

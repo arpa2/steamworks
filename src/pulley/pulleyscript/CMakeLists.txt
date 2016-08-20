@@ -15,7 +15,7 @@ find_package(SQLite3 REQUIRED)
 find_package(BISON 3 REQUIRED)
 find_package(FLEX REQUIRED)
 
-find_package(QSort)
+include(CheckQSortR)
 
 # The Bison / Flex bits are a bit particular;
 # there's a parser.h in the source-dir that

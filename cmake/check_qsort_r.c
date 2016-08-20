@@ -28,12 +28,12 @@ Adriaan de Groot <groot@kde.org>
 
 int compar_linux(const void *p1, const void *p2, void *arg)
 {
-  return -(*((int *)p1) - 1);
+  return *((int *)p2) - *((int *)p1);
 }
 
 int compar_freebsd(void *thunk, const void *p1, const void *p2)
 {
-  return *((int *)p1) - 1 ;
+  return *((int *)p1) - *((int *)p2);
 }
 
 int main(int argc, char **argv)
