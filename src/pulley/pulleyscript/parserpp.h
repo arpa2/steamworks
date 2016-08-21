@@ -137,7 +137,16 @@ public:
 	void remove_entry(const std::string& uuid);
 	void add_entry(const std::string& uuid, const picojson::object& data);
 
+	/**
+	 * Transaction support. This is not mandatory -- if you do
+	 * not call these functions, remove_entry() and add_entry()
+	 * will perform implicit transactions around each addition or
+	 * removal. If you call begin() then you must call commit()
+	 * at some point.
+	 */
+	void begin();
 	void commit();
+	// TODO: cleaner with a RAII Transaction
 } ;
 
 }  // namespace PulleyScript
