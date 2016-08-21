@@ -1044,6 +1044,26 @@ void traceLogCallback(void *pData, const char *stmt)
 	DEBUG("(%p) %s\n", pData, stmt);
 }
 
+/**
+ * Reset @p buf and write dbdir in it; ensure that it ends
+ * with a / and is NUL terminated (which is not what you'd usually
+ * get with sqlbuf).
+ */
+void _copy_dbdir(struct sqlbuf* buf, const char *dbdir)
+{
+	buf->ofs = 0;
+	sqlbuf_write(buf, dbdir);
+	if (buf->buf[buf->ofs-1] == '/')
+	{
+		sqlbuf_write(buf, "0");
+	}
+	else
+	{
+		sqlbuf_write(buf, "/0");
+	}
+	buf->buf[--(buf->ofs)] = 0;  /* NUL terminated */
+}
+
 /* Open a SQLite3 engine for a given Pulley script.  The lexhash is used to name the
  * database in the configured database directory.  The database is created if it does
  * not exist yet.  The database directory is also created if it does not exist yet;
@@ -1080,11 +1100,8 @@ struct squeal *squeal_open_in_dbdir (hash_t lexhash, gennum_t numgens, drvnum_t 
 	//
 	// Construct the filename of the database, possibly create the directory
 	if (dbdir) {
-		sqlbuf_write (&dbname, dbdir);
-		sqlbuf_write (&dbname, "0");
-		dbname.buf [dbname.ofs-1] = '\0';	// Setup  trailing NUL for use with C
+		_copy_dbdir(&dbname, dbdir);
 		mkdir (dbname.buf, 01777);		// Best effort.  Mode u+rwx, g+rx, o+
-		dbname.ofs--;				// Forget trailing NUL for use with C
 		sqlbuf_lexhash2name (&dbname, "pulley_", lexhash);
 		sqlbuf_write (&dbname, ".sqlite30");
 		dbname.buf [dbname.ofs-1] = '\0';	// Setup  trailing NUL for use with C
@@ -1149,7 +1166,7 @@ void squeal_unlink_in_dbdir (hash_t lexhash, const char *dbdir) {
 	}
 	struct sqlbuf dbname;
 	sqlbuf_exchg (&dbname, BUF_GET);
-	sqlbuf_write (&dbname, dbdir);
+	_copy_dbdir(&dbname, dbdir);
 	sqlbuf_lexhash2name (&dbname, "pulley_", lexhash);
 	sqlbuf_write (&dbname, "0");
 	dbname.buf [dbname.ofs-1] = '\0';	// Modify for use as a C string
