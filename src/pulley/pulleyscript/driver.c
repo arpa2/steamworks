@@ -154,6 +154,8 @@ static void drv_cleanup (struct drvtab *tab, drvnum_t drvnum) {
 	bitset_destroy (drv->generators);
 	free(drv->outputs);
 	drv->outputs = NULL;
+	free(drv->module);
+	drv->module = NULL;
 }
 
 static void *drvtab_index (void *data, unsigned int index) {

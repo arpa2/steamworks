@@ -71,6 +71,12 @@ static void var_cleanup (struct vartab *tab, varnum_t varnum) {
 			bitset_destroy (var->shared_varpartition);
 		}
 	}
+	if (var->value.type == VARTP_BLOB)
+	{
+		free(var->value.typed_blob.str);
+		var->value.typed_blob.str = NULL;
+		var->value.typed_blob.len = 0;
+	}
 }
 
 void vartab_set_generator_type (struct vartab *tab, type_t *gentp) {
