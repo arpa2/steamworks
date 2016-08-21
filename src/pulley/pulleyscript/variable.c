@@ -60,6 +60,7 @@ static void var_cleanup (struct vartab *tab, varnum_t varnum) {
 	 */
 	struct variable *var = &tab->vars [varnum];
 	free (var->name);
+	bitset_destroy (var->generators);
 	bitset_destroy (var->conditions);
 	bitset_destroy (var->driversout);
 	if (var->partition == varnum) {

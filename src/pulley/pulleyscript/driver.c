@@ -149,6 +149,11 @@ static void drv_cleanup (struct drvtab *tab, drvnum_t drvnum) {
 	bitset_destroy (drv->relevant_vars);
 	bitset_destroy (drv->explicit_guards);
 	bitset_destroy (drv->implicit_guards);
+	bitset_destroy (drv->all_guards);
+	bitset_destroy (drv->conditions);
+	bitset_destroy (drv->generators);
+	free(drv->outputs);
+	drv->outputs = NULL;
 }
 
 static void *drvtab_index (void *data, unsigned int index) {
