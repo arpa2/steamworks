@@ -909,11 +909,11 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, st
 	int sqlretval;
 	char paramstr[20];
 
+	struct sqlbuf sql;
 	for (gennum=0; gennum < squeal->numgens; gennum++)
 	{
 		struct s3ins_generator* gen = &(squeal->gens[gennum]);
 
-		struct sqlbuf sql;
 		sqlbuf_exchg (&sql, BUF_GET);
 
 		sqlbuf_write (&sql, "DELETE FROM ");
@@ -960,9 +960,11 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, st
 		}
 	}
 
+	sqlbuf_exchg (&sql, BUF_PUT);
 	return 0;
 
 fail:
+	sqlbuf_exchg (&sql, BUF_PUT);
 	// TODO: cleanup already-prepared statements up to gennum-1
 	return 1;
 }
