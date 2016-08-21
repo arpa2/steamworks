@@ -99,7 +99,16 @@ public:
 	Private(const std::string& name) :
 		m_name(name),
 		m_valid(false),
-		m_handle(nullptr)
+		m_handle(nullptr),
+		m_pulleyback_open(nullptr),
+		m_pulleyback_close(nullptr),
+		m_pulleyback_add(nullptr),
+		m_pulleyback_del(nullptr),
+		m_pulleyback_reset(nullptr),
+		m_pulleyback_prepare(nullptr),
+		m_pulleyback_commit(nullptr),
+		m_pulleyback_rollback(nullptr),
+		m_pulleyback_collaborate(nullptr)
 	{
 		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
 		log.debugStream() << "Trying to load backend '" << name << '\'';
