@@ -49,6 +49,8 @@ void vartab_destroy (struct vartab *tab) {
 	for (i=0; i<tab->count_vars; i++) {
 		var_cleanup (tab, i);
 	}
+	free(tab->vars);
+	tab->vars = NULL;
 	free (tab);
 }
 

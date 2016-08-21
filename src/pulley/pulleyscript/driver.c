@@ -67,6 +67,8 @@ void drvtab_destroy (struct drvtab *tab) {
 	for (i=0; i<tab->count_drvs; i++) {
 		drv_cleanup (tab, i);
 	}
+	free(tab->drvs);
+	tab->drvs = NULL;
 	free (tab);
 }
 
