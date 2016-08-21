@@ -1125,6 +1125,10 @@ struct squeal *squeal_open (hash_t lexhash, gennum_t numgens, drvnum_t numdrvs) 
 void squeal_close (struct squeal *squeal) {
 	sqlite3_close (squeal->s3db);
 	free (squeal->drivers);
+	for (unsigned int i=0; i<squeal->numgens; i++)
+	{
+		free(squeal->gens[i].driveout);
+	}
 	free (squeal);
 }
 
