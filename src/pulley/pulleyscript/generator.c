@@ -59,6 +59,8 @@ void gentab_destroy (struct gentab *tab) {
 	for (i=0; i<tab->allocated_gens; i++) {
 		gen_cleanup (&tab->gens [i]);
 	}
+	free(tab->gens);
+	tab->gens = NULL;
 	free (tab);
 }
 
