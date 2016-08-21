@@ -213,12 +213,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	prs.find_subscriptions();
-	auto l = prs.find_backends();
-	log.debugStream() << "Parser found backends:";
-	for (const auto& be : l)
-	{
-		log.debugStream() << "  .. " << be;
-	}
+	prs.find_backends();
 
 	picojson::value v;
 	const char *json_filename = argv[optind++];

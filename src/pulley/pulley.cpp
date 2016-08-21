@@ -334,12 +334,7 @@ int PulleyDispatcher::do_script(const VerbDispatcher::Values values, VerbDispatc
 			d->add_follower(base, filter, response);
 		}
 
-		auto backendlist = d->m_parser->find_backends();
-		log.debugStream() << "Pulleyscript backends:";
-		for (const auto& b : backendlist)
-		{
-			log.debugStream() << " .. " << b;
-		}
+		d->m_parser->find_backends();
 	}
 	else
 	{

@@ -97,6 +97,7 @@ public:
 
 	int add(der_t* forkdata);
 	int del(der_t* forkdata);
+	int prepare();
 	int commit();
 	void rollback();
 } ;

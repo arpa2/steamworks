@@ -125,16 +125,19 @@ public:
 
 
 	/**
-	 * Return a list of BackendParameters objects, one for
-	 * each output line.
+	 * Find BackendParameters objects, one for each output line.
+	 * This is stored internally, and should be done before
+	 * adding or removing entries.
 	 */
-	std::forward_list<BackendParameters> find_backends();
+	void find_backends();
 
 	/**
 	 * Remove a UUID from the middle-end.
 	 */
 	void remove_entry(const std::string& uuid);
 	void add_entry(const std::string& uuid, const picojson::object& data);
+
+	void commit();
 } ;
 
 }  // namespace PulleyScript

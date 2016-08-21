@@ -74,9 +74,10 @@ private:
 	bool m_valid;
 	State m_state;
 
+	std::forward_list< SteamWorks::PulleyScript::BackendParameters > m_backends;
+
 	// Helper in find_subscriptions()
 	std::vector<varnum_t> variables_for_generator(gennum_t g);
-
 
 public:
 	Private() : m_valid(false), m_state(Parser::State::Initial)
@@ -317,17 +318,45 @@ public:
 
 	// Extract filter-expressions
 	std::forward_list< std::string > find_subscriptions();
-	std::forward_list< SteamWorks::PulleyScript::BackendParameters > find_backends();
+	void find_backends();
 
 	// Remove an entry from the middle-end (post-SQL)
 	void remove_entry(const std::string& uuid);
 	void add_entry(const std::string& uuid, const picojson::object& data);
+	void commit();
 
 	const generator_variablenames_t& variable_names(gennum_t generator)
 	{
 		return m_variables_per_generator.at(generator);
 	}
+
 } ;
+
+struct TransactionBoundary
+{
+	static unsigned int instance_count;
+
+	unsigned int m_instance_number;
+	SteamWorks::PulleyScript::Parser *m_parent;
+
+	TransactionBoundary(SteamWorks::PulleyScript::Parser* parent) :
+		m_instance_number(instance_count++),
+		m_parent(parent)
+	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript.transaction");
+		log.debugStream() << "Created transaction:" << m_instance_number;
+	}
+
+	~TransactionBoundary()
+	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript.transaction");
+		log.debugStream() << "Committing transaction:" << m_instance_number;
+
+		m_parent->commit();
+	}
+} ;
+
+unsigned int TransactionBoundary::instance_count = 0;
 
 SteamWorks::PulleyScript::Parser::Parser() :
 	d(new Private)
@@ -395,9 +424,9 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::find_subscrip
 	return d->find_subscriptions();
 }
 
-std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::PulleyScript::Parser::find_backends()
+void SteamWorks::PulleyScript::Parser::find_backends()
 {
-	return d->find_backends();
+	d->find_backends();
 }
 
 std::vector<varnum_t> SteamWorks::PulleyScript::Parser::Private::variables_for_generator(gennum_t g)
@@ -592,12 +621,12 @@ static void ceebee(void *cbdata, int add_not_del, int numactpart, struct squeal_
 	}
 }
 
-std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::PulleyScript::Parser::Private::find_backends()
+void SteamWorks::PulleyScript::Parser::Private::find_backends()
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
 	log.debugStream() << "Finding backend outputs:";
 
-	std::forward_list<BackendParameters> backends;
+	m_backends.clear();
 	drvnum_t count = drvtab_count(m_prs.drvtab);
 	for (drvnum_t drvidx=0; drvidx < count; drvidx++)
 	{
@@ -609,13 +638,13 @@ std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::Pul
 			struct var_value* value = var_share_value(m_prs.vartab, binding);
 			std::vector<std::string> expressions;
 			decode_parameter_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, expressions);
-			backends.emplace_front(name, expressions);
+			m_backends.emplace_front(name, expressions);
 
 			varnum_t* var_list = nullptr;
 			varnum_t var_count = 0;
 			drv_share_output_variable_table(m_prs.drvtab, drvidx, &var_list, &var_count);
 
-			const auto& b = backends.begin();
+			const auto& b = m_backends.begin();
 			b->driver = drvidx;
 			b->varc = var_count;
 			b->instance.reset(new PulleyBack::Instance(PulleyBack::Loader(b->name).get_instance(*b)));
@@ -625,7 +654,6 @@ std::forward_list< SteamWorks::PulleyScript::BackendParameters > SteamWorks::Pul
 			}
 		}
 	}
-	return backends;
 }
 
 void SteamWorks::PulleyScript::Parser::remove_entry(const std::string& uuid)
@@ -637,6 +665,7 @@ void SteamWorks::PulleyScript::Parser::remove_entry(const std::string& uuid)
 		return;
 	}
 
+	auto transaction = std::make_shared<TransactionBoundary>(this);
 	d->remove_entry(uuid);
 }
 
@@ -649,7 +678,13 @@ void SteamWorks::PulleyScript::Parser::add_entry(const std::string& uuid, const 
 		return;
 	}
 
+	auto transaction = std::make_shared<TransactionBoundary>(this);
 	d->add_entry(uuid, data);
+}
+
+void SteamWorks::PulleyScript::Parser::commit()
+{
+	d->commit();
 }
 
 void SteamWorks::PulleyScript::Parser::Private::remove_entry(const std::string& uuid)
@@ -707,6 +742,42 @@ void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uui
 		}
 	}
 }
+
+void SteamWorks::PulleyScript::Parser::Private::commit()
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
+	log.debugStream() << "Committing transaction.";
+
+	for (const auto& backend : m_backends)
+	{
+		int prep = backend.instance->prepare();
+		log.debugStream() << "  .. backend " << backend.name << " prepare " << prep;
+		if (prep == 0)
+		{
+			// Failure, clear up everything.
+			goto fail;
+		}
+	}
+
+	for (const auto& backend : m_backends)
+	{
+		int comm = backend.instance->commit();
+		log.debugStream() << "  .. backend " << backend.name << " commit " << comm;
+		if (comm == 0)
+		{
+			goto fail;
+		}
+	}
+
+	return;
+
+fail:
+	for (const auto& backend : m_backends)
+	{
+		backend.instance->rollback();
+	}
+}
+
 
 SteamWorks::PulleyScript::BackendParameters::BackendParameters(std::string n, const std::vector<std::string>& expressions) :
 	name(n),

@@ -286,6 +286,25 @@ int SteamWorks::PulleyBack::Instance::del(der_t* forkdata)
 	return 0;
 }
 
+int SteamWorks::PulleyBack::Instance::prepare()
+{
+	if (d->is_valid())
+	{
+		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyback");
+		if (!d->m_pulleyback_prepare)
+		{
+			log.debugStream() << "Calling into instance " << name() << " prepare is not supported.";
+			return -1;  // Not supported
+		}
+		else
+		{
+			log.debugStream() << "Calling into instance " << name() << " prepare@" << (void *)d->m_pulleyback_prepare << " handle@" << m_handle;
+			return d->m_pulleyback_prepare(m_handle);
+		}
+	}
+	return 0;  // Failed
+}
+
 int SteamWorks::PulleyBack::Instance::commit()
 {
 	if (d->is_valid())
