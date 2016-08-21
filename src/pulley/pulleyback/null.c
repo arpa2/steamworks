@@ -85,28 +85,28 @@ void dump_der(int argc, der_t der)
 
 	if (der[0] != 0x04)
 	{
-		snprintf(ibuf, sizeof(ibuf), "  .. arg %d data=TAR(%02x)", argc, (int)(der[0]));
+		snprintf(ibuf, sizeof(ibuf), "  .. arg %d data=TAG(%02x)", argc, (int)(der[0]));
 		write_logger(logger, ibuf);
 		return;
 	}
 
-	
+
 	size_t len = 0;
-	if (der[1] < 0x28)
+	if (der[1] < 0x80)
 	{
 		len = der[1];
 		der += 2; // 0=tag 1=short len
 	}
 	else
 	{
-		len = 0x28;  // length > 128
+		len = 0x80;  // length > 128, cut down later, and der[1] is the length of the length
 		uint8_t len_len = der[1] & 0x7f;
 		der += 2 + len_len;
 	}
 
 	snprintf(ibuf, sizeof(ibuf), "  .. arg %d data=", argc);
 	int offset = strlen(ibuf);
-	len = len > sizeof(ibuf) - offset  ? sizeof(ibuf) - offset - 1 : len;
+	len = len >= sizeof(ibuf) - offset  ? sizeof(ibuf) - offset - 1 : len;
 	memcpy(ibuf+offset, der, len);
 	ibuf[offset+len] = 0;
 	write_logger(logger, ibuf);
