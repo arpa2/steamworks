@@ -43,6 +43,91 @@ Backend plug-ins will be loaded from <libdir>.
 }
 
 
+static inline std::string _get_parameter(const picojson::value& values, const char* key)
+{
+	auto v = values.get(key);
+	if (v.is<picojson::null>())
+	{
+		return std::string();
+	}
+	return v.to_str();
+}
+
+
+void process_values(SteamWorks::PulleyScript::Parser& prs, const picojson::object& v)
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleysimple");
+
+	if (v.count("values") == 0)
+	{
+		log.errorStream() << "No 'values' element in JSON.";
+		return;
+	}
+
+	if (!v.at("values").is<picojson::array>())
+	{
+		log.errorStream() << "Element 'values' is not an array.";
+		return;
+	}
+
+	bool add_not_delete;
+	{
+		std::string verb;
+		if (v.count("verb") > 0)
+		{
+			const auto& verb_val = v.at("verb");
+			if (verb_val.is<std::string>())
+			{
+				verb = verb_val.to_str();
+			}
+		}
+		if (verb == "add")
+		{
+			add_not_delete = true;
+		}
+		else if (verb == "del")
+		{
+			add_not_delete = false;
+		}
+		else
+		{
+			log.errorStream() << "Verb '" << verb << "' is not recognized (use add or del).";
+			return;
+		}
+	}
+
+	const auto& values = v.at("values").get<picojson::array>();
+	unsigned int index = 0;
+	unsigned int count = 0;
+	for (const auto& v : values)
+	{
+		index++;
+		if (!v.is<picojson::object>())
+		{
+			log.warnStream() << "values[" << index-1 << "] is not an object.";
+			continue;
+		}
+
+		std::string uuid = _get_parameter(v, "uuid");
+		if (uuid.empty())
+		{
+			log.warnStream() << "values[" << index-1 << "] has no UUID.";
+			continue;
+		}
+
+		if (add_not_delete)
+		{
+			prs.add_entry(uuid, v.get<picojson::object>());
+		}
+		else
+		{
+			prs.remove_entry(uuid);
+		}
+		count++;
+	}
+	log.debugStream() << "Processed " << count << " values.";
+}
+
 int main(int argc, char **argv)
 {
 	SteamWorks::Logging::Manager logManager("pulleyscript.properties", SteamWorks::Logging::DEBUG);
@@ -143,9 +228,7 @@ int main(int argc, char **argv)
 	if (v.is<picojson::object>())
 	{
 		log.debugStream() << "JSON object read from " << json_filename;
-
-		const picojson::value::object& obj = v.get<picojson::object>();
-		prs.add_entry("1234", obj);
+		process_values(prs, v.get<picojson::object>());
 	}
 	else
 	{

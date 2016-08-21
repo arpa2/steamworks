@@ -1,5 +1,11 @@
 {
-"TlsPoolTrustAnchor": "o=Verishot primary root,ou=Trust Contestors,dc=test,dc=example,dc=com",
-"TlsPoolValidationExpression": "1",
-"TlsPoolSupportedRole": "server"
+"verb": "add",
+"values": [
+	{
+	"uuid": "27638fe2-6791-11e6-bec1-001e2a3f778d",
+	"TlsPoolTrustAnchor": "o=Verishot primary root,ou=Trust Contestors,dc=test,dc=example,dc=com",
+	"TlsPoolValidationExpression": "1",
+	"TlsPoolSupportedRole": "server"
+	}
+]
 }
