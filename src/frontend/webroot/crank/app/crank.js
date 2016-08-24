@@ -29,7 +29,6 @@ app.config(['$locationProvider', '$routeProvider',
         }).
         when('/issuers/add', {
           template: '<crank-issuer-add></crank-issuer-add>'
-        }).
-        otherwise('/issuers');
+        });
     }
   ]);
