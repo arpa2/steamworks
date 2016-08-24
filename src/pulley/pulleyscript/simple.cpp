@@ -96,7 +96,7 @@ void process_values(SteamWorks::PulleyScript::Parser& prs, const picojson::objec
 		}
 	}
 
-	prs.begin();
+	auto transaction = prs.begin();
 
 	const auto& values = v.at("values").get<picojson::array>();
 	unsigned int index = 0;
@@ -128,8 +128,6 @@ void process_values(SteamWorks::PulleyScript::Parser& prs, const picojson::objec
 		count++;
 	}
 	log.debugStream() << "Processed " << count << " values.";
-
-	prs.commit();
 }
 
 int main(int argc, char **argv)

@@ -27,6 +27,7 @@ namespace SteamWorks
 
 namespace PulleyScript
 {
+class BackendTransaction;
 
 /**
  * Parameters to pass to a backend instance. This is basically a
@@ -76,6 +77,7 @@ std::ostringstream& operator <<(std::ostringstream&, const BackendParameters&);
  */
 class Parser
 {
+friend class BackendTransaction;
 private:
 	class Private;
 	std::unique_ptr<Private> d;
@@ -141,12 +143,41 @@ public:
 	 * Transaction support. This is not mandatory -- if you do
 	 * not call these functions, remove_entry() and add_entry()
 	 * will perform implicit transactions around each addition or
-	 * removal. If you call begin() then you must call commit()
-	 * at some point.
+	 * removal. If you call begin() then you start a transaction
+	 * that lasts as long as the returned BackendTransaction is
+	 * alive; there is no explicit commit. Keeping the transaction
+	 * longer than the underlying Parser is a Bad Idea (tm).
+	 *
+	 * There is no support for nested transactions: everyone shares
+	 * one BackendTransaction until everyone is done with it.
+	 *
+	 * Sample use:
+	 *   {
+	 *     auto transaction = parser.begin();
+	 *     parser.add_entry(uuid, data);
+	 *     parser.remove_entry(other_uuid);
+	 *   }
+	 * The block scope destroys the transaction at the end of the
+	 * block and the changes are committed (or rolled back) together.
+	 *
+	 * You can't tell if the transaction completed without error.
+	 * (TODO: return error state somehow -- e.g. exception).
 	 */
-	void begin();
-	void commit();
-	// TODO: cleaner with a RAII Transaction
+	std::shared_ptr<BackendTransaction> begin();
+} ;
+
+class BackendTransaction
+{
+friend class Parser;
+private:
+	static unsigned int instance_count;
+
+	unsigned int m_instance_number;
+	Parser::Private *m_parent;
+
+public:
+	BackendTransaction(SteamWorks::PulleyScript::Parser::Private* parent);
+	~BackendTransaction();
 } ;
 
 }  // namespace PulleyScript

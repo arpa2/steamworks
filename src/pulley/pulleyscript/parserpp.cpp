@@ -71,7 +71,6 @@ private:
 	using generator_variablenames_t = std::vector<std::string>;
 	std::vector<generator_variablenames_t> m_variables_per_generator;
 
-	bool m_in_transaction;
 	bool m_valid;
 	State m_state;
 
@@ -81,7 +80,7 @@ private:
 	std::vector<varnum_t> variables_for_generator(gennum_t g);
 
 public:
-	Private() : m_in_transaction(false), m_valid(false), m_state(Parser::State::Initial)
+	Private() : m_valid(false), m_state(Parser::State::Initial)
 	{
 		if (pulley_parser_init(&m_prs))
 		{
@@ -104,7 +103,6 @@ public:
 	const struct parser* parser() const { return &m_prs; }
 
 	bool is_valid() const { return m_valid; }
-	bool in_transaction() const { return m_in_transaction; }
 
 	Parser::State state() const { return m_state; }
 
@@ -326,9 +324,16 @@ public:
 	void remove_entry(const std::string& uuid);
 	void add_entry(const std::string& uuid, const picojson::object& data);
 
-	void begin()
+	std::weak_ptr<SteamWorks::PulleyScript::BackendTransaction> m_transaction;
+	std::shared_ptr<SteamWorks::PulleyScript::BackendTransaction> begin()
 	{
-		m_in_transaction = true;
+		auto p = m_transaction.lock();
+		if (!p)
+		{
+			p = std::make_shared<SteamWorks::PulleyScript::BackendTransaction>(this);
+			m_transaction = p;
+		}
+		return p;
 	}
 	void commit();
 
@@ -339,31 +344,23 @@ public:
 
 } ;
 
-struct TransactionBoundary
+SteamWorks::PulleyScript::BackendTransaction::BackendTransaction(SteamWorks::PulleyScript::Parser::Private* parent) :
+	m_instance_number(instance_count++),
+	m_parent(parent)
 {
-	static unsigned int instance_count;
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript.transaction");
+	log.debugStream() << "Created transaction:" << m_instance_number;
+}
 
-	unsigned int m_instance_number;
-	SteamWorks::PulleyScript::Parser *m_parent;
+SteamWorks::PulleyScript::BackendTransaction::~BackendTransaction()
+{
+	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript.transaction");
+	log.debugStream() << "Committing transaction:" << m_instance_number;
 
-	TransactionBoundary(SteamWorks::PulleyScript::Parser* parent) :
-		m_instance_number(instance_count++),
-		m_parent(parent)
-	{
-		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript.transaction");
-		log.debugStream() << "Created transaction:" << m_instance_number;
-	}
+	m_parent->commit();
+}
 
-	~TransactionBoundary()
-	{
-		auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript.transaction");
-		log.debugStream() << "Committing transaction:" << m_instance_number;
-
-		m_parent->commit();
-	}
-} ;
-
-unsigned int TransactionBoundary::instance_count = 0;
+unsigned int SteamWorks::PulleyScript::BackendTransaction::instance_count = 0;
 
 SteamWorks::PulleyScript::Parser::Parser() :
 	d(new Private)
@@ -672,11 +669,7 @@ void SteamWorks::PulleyScript::Parser::remove_entry(const std::string& uuid)
 		return;
 	}
 
-	std::shared_ptr<TransactionBoundary> transaction;
-	if (!d->in_transaction())
-	{
-		transaction = std::make_shared<TransactionBoundary>(this);
-	}
+	auto transaction = d->begin();
 	d->remove_entry(uuid);
 }
 
@@ -689,22 +682,13 @@ void SteamWorks::PulleyScript::Parser::add_entry(const std::string& uuid, const 
 		return;
 	}
 
-	std::shared_ptr<TransactionBoundary> transaction;
-	if (!d->in_transaction())
-	{
-		transaction = std::make_shared<TransactionBoundary>(this);
-	}
+	auto transaction = d->begin();
 	d->add_entry(uuid, data);
 }
 
-void SteamWorks::PulleyScript::Parser::begin()
+std::shared_ptr< SteamWorks::PulleyScript::BackendTransaction > SteamWorks::PulleyScript::Parser::begin()
 {
-	d->begin();
-}
-
-void SteamWorks::PulleyScript::Parser::commit()
-{
-	d->commit();
+	return d->begin();
 }
 
 void SteamWorks::PulleyScript::Parser::Private::remove_entry(const std::string& uuid)
@@ -765,8 +749,6 @@ void SteamWorks::PulleyScript::Parser::Private::add_entry(const std::string& uui
 
 void SteamWorks::PulleyScript::Parser::Private::commit()
 {
-	m_in_transaction = false;
-
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulleyscript");
 	log.debugStream() << "Committing transaction.";
 
