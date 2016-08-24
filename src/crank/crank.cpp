@@ -100,6 +100,9 @@ int CrankDispatcher::do_serverstatus(const VerbDispatcher::Values values, VerbDi
 {
 	switch(m_state)
 	{
+		case disconnected:
+			_serverstatus(response, m_state, "disconnected", "The Crank is not connected to a server.");
+			break;
 		case stopped:
 			_serverstatus(response, m_state, "stopped", "The Crank has stopped and is disconnected from the server.");
 			break;
