@@ -23,6 +23,9 @@ stop:
 serverinfo:
 	-cat json-serverinfo | $(CMD)
 
+serverstatus:
+	-cat json-serverstatus | $(CMD)
+
 search:
 	-cat json-search | $(CMD)
 

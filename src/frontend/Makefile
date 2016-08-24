@@ -15,7 +15,7 @@ setup-nginx-crank:
 	nginx -c  `pwd`/steamworks-crank.conf 
 
 setup-fcgi-crank:
-	( cd ../crank/examples ; $(MAKE) CGI_SOCKET_DIR=$(CGI_SOCKET_DIR) start auth )
+	( cd ../crank/examples ; $(MAKE) CGI_SOCKET_DIR=$(CGI_SOCKET_DIR) serverstatus )
 
 setup-app-common:
 	cp -R webroot/common/* $(CGI_SOCKET_DIR)
