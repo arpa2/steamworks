@@ -32,6 +32,11 @@ target_link_libraries(pulley ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${F
 target_link_libraries(pulley swldap swcommon pspplib pslib)
 target_link_libraries(pulley ${FLEX_LIBRARIES} ${SQLITE3_LIBRARIES})
 
+###
+#
+# pulleyback_test is purely a developer tool, allowing load-testing
+# of a given pulley backend. It is not installed.
+#
 # Adding -DNO_SECURITY will allow the pulleyback_test to load a library
 # from any given path, not just paths inside the PREFIX/share/steamworks/pulleyback/
 # directory.
@@ -46,4 +51,7 @@ set_target_properties(pulleyback_test PROPERTIES LINK_FLAGS -rdynamic)
 
 install(TARGETS pulley
   RUNTIME DESTINATION bin
+  )
+install(FILES pulleyback.h
+  DESTINATION include/steamworks/
   )
