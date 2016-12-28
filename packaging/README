@@ -1,0 +1,9 @@
+This directory holds packaging (meta)data for various target platforms.
+Each subdirectory contains whatever files are needed to package up
+the SteamWorks software on the given platform; these will typically
+be duplicated into a platform's packaging system or repository
+(e.g. the FreeBSD directory gets duplicated into the official
+ports tree as security/steamworks).
+
+    FreeBSD/              FreeBSD 10-R and later, ports system
+
