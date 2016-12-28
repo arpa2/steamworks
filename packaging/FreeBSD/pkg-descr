@@ -1,0 +1,5 @@
+Components of the SteamWorks system, which distributes configuration
+information over LDAP with SyncRepl. This is the preferred configuration
+mechanism for TLSPool.
+
+WWW: http://steamworks.arpa2.net/

@@ -1,0 +1,4 @@
+bin/crank
+bin/pulley
+bin/shaft
+%%DATADIR%%/pulleyback/pulleyback_null.so
