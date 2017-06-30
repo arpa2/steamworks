@@ -3,9 +3,20 @@
 #
 # See the LICENSE file for details.
 #
-# Top-level bogus makefile for the Steamworks project. The real
-# build-system is CMake. This makefile just arranges for an out-
-# of-source build in a new subdirectory.
+# This Makefile is just a stub: it invokes CMake, which in turn
+# generates Makefiles, and then uses those to make the project. 
+#
+# Useful Make parameters at this level are:
+#	PREFIX=/usr/local
+#	PULLEY_SQUEAL_DIR=/var/db/pulley/
+#	PULLEY_BACKEND_DIR=/usr/local/share/steamworks/pulleyback/
+#
+# For anything else, do this:
+#
+#	make configure                 # Basic configure
+#	( cd build ; ccmake )          # CMake GUI for build configuration
+#	( cd build ; make install )    # Build and install
+#
 #
 PREFIX ?= /usr/local
 PULLEY_SQUEAL_DIR ?= /var/db/pulley/
@@ -19,34 +30,34 @@ CMAKE_ARGS = -DCMAKE_INSTALL_PREFIX:PATH=$(PREFIX)
 CMAKE_ARGS += -DPULLEY_SQUEAL_DIR=$(PULLEY_SQUEAL_DIR)
 CMAKE_ARGS += -DPULLEY_BACKEND_DIR=$(PULLEY_BACKEND_DIR)
 
-all: build
+all: compile
 
-check-build:
-	test -d build/ || mkdir build
-	test -d build
+build-dir:
+	@mkdir -p build
 
-check-cmake: check-build
-	test -f build/Makefile || ( cd build ; cmake $(CMAKE_ARGS) ../src )
-	test -f build/Makefile
+configure: _configure build-dir build/CMakeCache.txt
 
-build: check-cmake
-	( cd build ; $(MAKE) )
+_configure:
+	@rm -f build/CMakeCache.txt
 
-install: build
-	( cd build ; $(MAKE) install PREFIX=$PREFIX )
+build/CMakeCache.txt:
+	( cd build && cmake .. -DCMAKE_INSTALL_PREFIX=$(PREFIX) )
+
+compile: build-dir build/CMakeCache.txt
+	( cd build && $(MAKE) )
+	
+install: build-dir
+	( cd build && $(MAKE) install )
+	
+test: build-dir
+	( cd build && $(MAKE) test )
+	
+uninstall: build-dir
+	( cd build && $(MAKE) uninstall )
 
 clean:
-	rm -rf build
+	rm -rf build/
 
-test:	install test-loader test-script
-
-# Test that loading null plugin works, and bogus doesn't.
-test-loader:
-	./build/pulley/pulleyback_test null
-	if ./build/pulley/pulleyback_test bogus  ; then false ; else true ; fi
-
-# Try loading a script and passing data to it.
-test-script:
-	./build/pulley/pulleyscript/simple \
-		src/pulley/pulleyscript/tests/tlspool-issuers.ply \
-		src/pulley/pulleyscript/tests/tlspool-add.json
+package: compile
+	( cd build && $(MAKE) package )
+	
