@@ -1,11 +1,11 @@
 CMakeCache.txt
 CMakeFiles
-Makefile
 cmake_install.cmake
 build
+steamworks.kdev4
+.kdev4
 docs/html
 docs/man
-.kdev4
 src/src.kdev4
 *.o
 **/examples/*.log
