@@ -16,6 +16,8 @@ if(NOT LOG4CPP_FOUND)
   set(LOG4CPP_FOUND TRUE)
 endif()
 
+find_package(OpenLDAP REQUIRED)
+
 add_subdirectory(common)
 add_subdirectory(crank)
 add_subdirectory(shaft)

@@ -3,13 +3,6 @@
 #
 # Adriaan de Groot <groot@kde.org>
 
-cmake_minimum_required(VERSION 2.8.11)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../../cmake)
-
-find_package(Log4cpp)
-find_package(FCGI REQUIRED)
-find_package(OpenLDAP REQUIRED)
-
 include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../3rdparty)
 
 set(SWLDAP_SRC

@@ -3,15 +3,6 @@
 #
 # Adriaan de Groot <groot@kde.org>
 
-cmake_minimum_required(VERSION 2.8.11)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../../cmake)
-
-project(pulley)
-
-find_package(Log4cpp)
-find_package(FCGI REQUIRED)
-find_package(OpenLDAP REQUIRED)
-
 find_package(FLEX REQUIRED)  # Required by pulleyscript
 find_package(SQLite3 REQUIRED)
 
