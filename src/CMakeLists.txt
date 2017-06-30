@@ -3,18 +3,6 @@
 #
 # Adriaan de Groot <groot@kde.org>
 
-cmake_minimum_required(VERSION 2.8.11)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../cmake)
-
-project(steamworks)
-
-include(MacroEnsureOutOfSourceBuild)
-include(CheckCXX11Flags)
-include(CheckC99Flags)
-
-MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
-  "Do not build Steamworks in the source directory.")
-
 message("   Using bundled libfcgi ...")
 add_subdirectory(3rdparty/fcgi-2.4.0)
 find_package(FCGI)
