@@ -22,6 +22,8 @@ set(LIBFCGI_SRC
 add_library(fcgi STATIC ${LIBFCGI_SRC})
 set_source_files_properties(libfcgi/os_unix.c PROPERTIES 
   COMPILE_FLAGS -D_POSIX_C_SOURCE=1)
+set_source_files_properties(libfcgi/os_unix.c PROPERTIES 
+  COMPILE_FLAGS -DHAVE_SOCKLEN=1)
 
 set(CGI_FCGI_SRC
   cgi-fcgi/cgi-fcgi.c
