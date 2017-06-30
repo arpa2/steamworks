@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+includedir=${prefix}/include/steamworks
+libdir=${prefix}/lib
+
+Name: steamworks
+Description: ARPA2 Steamworks
+Version: @Steamworks_VERSION@
+URL: https://github.com/arpa2/steamworks
+Cflags: -I${includedir}
+Libs: -L${libdir}

@@ -10,12 +10,37 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 project(steamworks)
 
+include(MacroAddUninstallTarget)
+include(MacroCreateConfigFiles)
 include(MacroEnsureOutOfSourceBuild)
+include(MacroGitVersionInfo)
+
 include(CheckCXX11Flags)
 include(CheckC99Flags)
 
-MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+macro_ensure_out_of_source_build(
   "Do not build Steamworks in the source directory.")
 
-add_subdirectory(src)
+get_version_from_git(Steamworks 0.0.0)
 
+enable_testing()
+add_subdirectory(src)
+add_uninstall_target()
+
+#
+# PACKAGING
+#
+
+set(CPACK_PACKAGE_NAME "Steamworks")
+set(CPACK_PACKAGE_VERSION ${Steamworks_VERSION})
+set(CPACK_PACKAGE_VENDOR "ARPA2.net")
+set(CPACK_PACKAGE_CONTACT "Adriaan de Groot <groot@kde.org>")
+set(CPACK_FREEBSD_PACKAGE_LICENSE "BSD-2-Clause")
+
+include(PackAllPossible)
+include(CPack)
+
+create_config_files(Steamworks)
