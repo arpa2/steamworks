@@ -1,0 +1,5 @@
+dn: cn=Veritralala (Lent),ou=In ARPA2 we Trust,dc=test,dc=example,dc=com
+changetype: modify
+replace: tlsPoolCredentialType
+tlsPoolCredentialType: x509
+
