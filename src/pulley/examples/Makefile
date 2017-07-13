@@ -1,6 +1,6 @@
 SERVER_NAME = bogus.bionicmutton.org
 CONTENT_LENGTH = 18  # Irrelevant with JSON-parsing
-BIN_DIR = ../../../build/pulley
+BIN_DIR = ../../../build/src/pulley
 BIN_NAME = pulley
 CGI_SOCKET_DIR?= /tmp/steamworks
 CGI_SOCKET = $(CGI_SOCKET_DIR)/pulley

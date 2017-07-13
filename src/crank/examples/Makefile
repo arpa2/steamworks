@@ -1,6 +1,6 @@
 SERVER_NAME = bogus.bionicmutton.org
 CONTENT_LENGTH = 18  # Irrelevant with JSON-parsing
-BIN_DIR = ../../../build/crank
+BIN_DIR = ../../../build/src/crank
 BIN_NAME = crank
 CGI_SOCKET_DIR?= /tmp/steamworks
 CGI_SOCKET = $(CGI_SOCKET_DIR)/crank
