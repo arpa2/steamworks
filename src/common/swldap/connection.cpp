@@ -120,7 +120,7 @@ public:
 			}
 		}
 
-		if (true)
+		if (uri.compare(0, 5, "ldaps") == 0)
 		{
 			int tls_require_cert = LDAP_OPT_X_TLS_NEVER;
 			r = ldap_set_option(ldaphandle, LDAP_OPT_X_TLS_REQUIRE_CERT, &tls_require_cert);
@@ -129,17 +129,17 @@ public:
 				log.warnStream() << "Could not ignore TLS certificate. Error " << r << ", " << ldap_err2string(r);
 			}
 			// But carry on ..
-		}
 
-		// TODO: checking that this works is tricky
-		r = ldap_start_tls_s(ldaphandle, &serverctl, &clientctl);
-		if (r)
-		{
-			log.errorStream() << "Could not start TLS. Error " << r << ", " << ldap_err2string(r);
-		}
-		if (r<0)
-		{
-			return;
+			// TODO: checking that this works is tricky
+			r = ldap_start_tls_s(ldaphandle, &serverctl, &clientctl);
+			if (r)
+			{
+				log.errorStream() << "Could not start TLS. Error " << r << ", " << ldap_err2string(r);
+			}
+			if (r<0)
+			{
+				return;
+			}
 		}
 
 		if (!m_user.empty())
