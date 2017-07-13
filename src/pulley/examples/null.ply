@@ -1,5 +1,5 @@
 
-ObjectClass: "person" + cn: name + sn: surname <- world
+ObjectClass="person", CN=name, SN=surname <- world
 
 name, surname -> null (config="dummy")
 surname -> null (config="dummy2",count=12)
