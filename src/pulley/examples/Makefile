@@ -17,6 +17,9 @@ start:
 script:
 	-cat json-script | $(CMD)
 
+script0:
+	-cat json-script0 | $(CMD)
+
 stop:
 	-cat json-stop | $(CMD)
 
