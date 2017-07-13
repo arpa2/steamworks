@@ -22,6 +22,7 @@ add_executable(pulley ${PULLEY_SRC})
 target_link_libraries(pulley ${OpenLDAP_LIBRARIES} ${OpenLDAP_BER_LIBRARIES} ${FCGI_LIBRARIES} ${LOG4CPP_LIBRARIES})
 target_link_libraries(pulley swldap swcommon pspplib pslib)
 target_link_libraries(pulley ${FLEX_LIBRARIES} ${SQLITE3_LIBRARIES})
+set_target_properties(pulley PROPERTIES LINK_FLAGS -rdynamic)
 
 ###
 #
