@@ -9,6 +9,10 @@ you will need to install the following packages:
      - libldap-dev
      - flex bison
      - libsqlite3-dev
+- Ubuntu & Derivatives
+   - Packages (use apt-get install)
+     - All the Debian packages, above
+     - liblog4cpp5-dev
  - OpenSUSE (incomplete)
    - Packages (use zypper install)
      - gcc-c++
