@@ -24,7 +24,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 macro_ensure_out_of_source_build(
   "Do not build Steamworks in the source directory.")
 
-get_version_from_git(Steamworks 0.0.0)
+get_version_from_git(Steamworks 0.92.0)
 
 enable_testing()
 add_subdirectory(src)
