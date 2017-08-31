@@ -6,18 +6,19 @@
 # Adriaan de Groot <groot@kde.org>
 
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
-project(steamworks)
+find_package(ARPA2CM REQUIRED)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ARPA2CM_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+
+project(steamworks C CXX)
 
 include(MacroAddUninstallTarget)
 include(MacroCreateConfigFiles)
 include(MacroEnsureOutOfSourceBuild)
 include(MacroGitVersionInfo)
 
-include(CheckCXX11Flags)
-include(CheckC99Flags)
-
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
