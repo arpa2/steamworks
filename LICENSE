@@ -1,4 +1,5 @@
 Copyright (c) 2014-2016 InternetWide.org and the ARPA2.net project
+Copyright (c) 2018 Adriaan de Groot <groot@kde.org>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,7 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-== For additional licensing information of third-party code
-== contained in the SteamWorks repository, see the LICENSE.*
-== files in LICENSE.dir/
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# For additional licensing information of third-party code
+# contained in the Steamworks repository, see the files in LICENSES/
