@@ -13,11 +13,11 @@ Adriaan de Groot <groot@kde.org>
 class VerbDispatcher
 {
 public:
-	using Values = picojson::value&;
-	using Object = picojson::value::object&;
+	using Values = picojson::value;
+	using Object = picojson::value::object;
 
 
-	virtual int exec(const std::string& verb, const Values values, Object response) = 0;
+	virtual int exec(const std::string& verb, const Values& values, Object& response) = 0;
 
 	/**
 	 * If this dispatcher has anything to poll (regardless of

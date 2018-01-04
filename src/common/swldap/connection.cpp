@@ -229,7 +229,7 @@ static bool _do_connect(SteamWorks::LDAP::ConnectionUPtr& connection, const std:
 	return true;
 }
 
-bool SteamWorks::LDAP::do_connect(SteamWorks::LDAP::ConnectionUPtr& connection, SteamWorks::JSON::Values values, SteamWorks::JSON::Object response, SteamWorks::Logging::Logger& log)
+bool SteamWorks::LDAP::do_connect(SteamWorks::LDAP::ConnectionUPtr& connection, const SteamWorks::JSON::Values& values,  SteamWorks::JSON::Object& response, SteamWorks::Logging::Logger& log)
 {
 	std::string uri = values.get("uri").to_string();
 	std::string user = values.get("user").to_string();
@@ -238,7 +238,7 @@ bool SteamWorks::LDAP::do_connect(SteamWorks::LDAP::ConnectionUPtr& connection, 
 	return _do_connect(connection, uri, user, password, response, log);
 }
 
-bool SteamWorks::LDAP::do_connect(SteamWorks::LDAP::ConnectionUPtr& connection, const std::string& uri, SteamWorks::JSON::Object response, SteamWorks::Logging::Logger& log)
+bool SteamWorks::LDAP::do_connect(SteamWorks::LDAP::ConnectionUPtr& connection, const std::string& uri, SteamWorks::JSON::Object& response, SteamWorks::Logging::Logger& log)
 {
 	return _do_connect(connection, uri, std::string(), std::string(), response, log);
 }

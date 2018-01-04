@@ -48,7 +48,7 @@ ShaftDispatcher::ShaftDispatcher() :
 {
 }
 
-int ShaftDispatcher::exec(const std::string& verb, const Values values, Object response)
+int ShaftDispatcher::exec(const std::string& verb, const Values& values, Object& response)
 {
 	if (verb == "connect") return do_connect(values, response);
 	else if (verb == "stop") return do_stop(values);
@@ -57,7 +57,7 @@ int ShaftDispatcher::exec(const std::string& verb, const Values values, Object r
 	return -1;
 }
 
-int ShaftDispatcher::do_connect(const Values values, Object response)
+int ShaftDispatcher::do_connect(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.shaft");
 	std::string name = values.get("uri").to_str();
@@ -72,14 +72,14 @@ int ShaftDispatcher::do_connect(const Values values, Object response)
 	return 0;
 }
 
-int ShaftDispatcher::do_stop(const Values values)
+int ShaftDispatcher::do_stop(const Values& values)
 {
 	m_state = stopped;
 	d->connection.reset(nullptr);
 	return -1;
 }
 
-int ShaftDispatcher::do_serverinfo(const Values values, Object response)
+int ShaftDispatcher::do_serverinfo(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.shaft");
 
@@ -95,7 +95,7 @@ int ShaftDispatcher::do_serverinfo(const Values values, Object response)
 	return 0;
 }
 
-int ShaftDispatcher::do_upstream(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+int ShaftDispatcher::do_upstream(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.shaft");
 

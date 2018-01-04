@@ -24,17 +24,17 @@ private:
 public:
 	ShaftDispatcher();
 
-	virtual int exec(const std::string& verb, const Values values, Object response);
+	virtual int exec(const std::string& verb, const Values& values, Object& response) override;
 
 	State state() const { return m_state; }
 
 protected:
 	/** Connect to the downstream (e.g. destination) LDAP server.
 	 *  This is where the shaft is going to write to. */
-	int do_connect(const Values values, Object response);
-	int do_stop(const Values values);
-	int do_serverinfo(const Values values, Object response);
-	int do_upstream(const Values values, Object response);
+	int do_connect(const Values& values, Object& response);
+	int do_stop(const Values& values);
+	int do_serverinfo(const Values& values, Object& response);
+	int do_upstream(const Values& values, Object& response);
 } ;
 
 

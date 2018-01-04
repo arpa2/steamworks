@@ -72,7 +72,7 @@ public:
 	{
 	}
 
-	int add_follower(const std::string& base, const std::string& filter, Object response)
+	int add_follower(const std::string& base, const std::string& filter, Object& response)
 	{
 		m_following.emplace_front(new PulleySyncRepl(base, filter, m_parser));
 		m_following.front()->execute(*m_connection, &response);
@@ -96,7 +96,7 @@ public:
 		return 0;
 	}
 
-	void dump_followers(Object response)
+	void dump_followers(Object& response)
 	{
 		for(auto& f : m_following)
 		{
@@ -135,7 +135,7 @@ void PulleyDispatcher::poll()
 }
 
 
-int PulleyDispatcher::exec(const std::string& verb, const Values values, Object response)
+int PulleyDispatcher::exec(const std::string& verb, const Values& values, Object& response)
 {
 	if (verb == "connect") return do_connect(values, response);
 	else if (verb == "stop") return do_stop(values);
@@ -148,7 +148,7 @@ int PulleyDispatcher::exec(const std::string& verb, const Values values, Object 
 	return -1;
 }
 
-int PulleyDispatcher::do_connect(const Values values, Object response)
+int PulleyDispatcher::do_connect(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 	std::string name = values.get("uri").to_str();
@@ -163,14 +163,14 @@ int PulleyDispatcher::do_connect(const Values values, Object response)
 	return 0;
 }
 
-int PulleyDispatcher::do_stop(const Values values)
+int PulleyDispatcher::do_stop(const Values& values)
 {
 	m_state = stopped;
 	d->m_connection.reset(nullptr);
 	return -1;
 }
 
-int PulleyDispatcher::do_serverinfo(const Values values, Object response)
+int PulleyDispatcher::do_serverinfo(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 
@@ -186,7 +186,7 @@ int PulleyDispatcher::do_serverinfo(const Values values, Object response)
 	return 0;
 }
 
-static inline std::string _get_parameter(SteamWorks::JSON::Values values, const char* key)
+static inline std::string _get_parameter(const PulleyDispatcher::Values& values, const char* key)
 {
 	auto v = values.get(key);
 	if (v.is<picojson::null>())
@@ -196,7 +196,7 @@ static inline std::string _get_parameter(SteamWorks::JSON::Values values, const 
 	return v.to_str();
 }
 
-int PulleyDispatcher::do_follow(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+int PulleyDispatcher::do_follow(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 
@@ -223,7 +223,7 @@ int PulleyDispatcher::do_follow(const VerbDispatcher::Values values, VerbDispatc
 	return d->add_follower(base, filter, response);
 }
 
-int PulleyDispatcher::do_unfollow(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+int PulleyDispatcher::do_unfollow(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 
@@ -251,13 +251,13 @@ int PulleyDispatcher::do_unfollow(const VerbDispatcher::Values values, VerbDispa
 	return d->remove_follower(base, filter);
 }
 
-int PulleyDispatcher::do_dump_dit(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+int PulleyDispatcher::do_dump_dit(const Values& values, Object& response)
 {
 	d->dump_followers(response);
 	return 0;
 }
 
-int PulleyDispatcher::do_resync(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+int PulleyDispatcher::do_resync(const Values& values, Object& response)
 {
 	d->resync_followers();
 	return 0;
@@ -287,7 +287,7 @@ int PulleyDispatcher::do_script(const char* filename)
 	return 0;
 }
 
-int PulleyDispatcher::do_script(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+int PulleyDispatcher::do_script(const Values& values, Object& response)
 {
 	auto& log = SteamWorks::Logging::getLogger("steamworks.pulley");
 

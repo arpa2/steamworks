@@ -24,7 +24,7 @@ private:
 public:
 	PulleyDispatcher();
 
-	int exec(const std::string& verb, const Values values, Object response) override;
+	int exec(const std::string& verb, const Values& values, Object& response) override;
 	void poll() override;
 
 	State state() const { return m_state; }
@@ -38,25 +38,25 @@ public:
 protected:
 	/** Connect to the upstream (e.g. source) LDAP server.
 	 *  This is where the pulley gets its information. */
-	int do_connect(const Values values, Object response);
-	int do_stop(const Values values);
-	int do_serverinfo(const Values values, Object response);
+	int do_connect(const Values& values, Object& response);
+	int do_stop(const Values& values);
+	int do_serverinfo(const Values& values, Object& response);
 
 	/** Start following a (subtree-) DIT. This starts up SyncRepl
 	 *  for that DIT. */
-	int do_follow(const Values values, Object response);
+	int do_follow(const Values& values, Object& response);
 	/** Stop following a previously followed DIT. This terminates
 	 *  SyncRepl for that DIT. */
-	int do_unfollow(const Values values, Object response);
+	int do_unfollow(const Values& values, Object& response);
 
 	/** Debugging method, dump the tree of stored DIT entries. */
-	int do_dump_dit(const VerbDispatcher::Values values, VerbDispatcher::Object response);
+	int do_dump_dit(const Values& values, Object& response);
 
 	/** Drop all stored state, and restart LDAP SyncRepl. */
-	int do_resync(const Values values, Object response);
+	int do_resync(const Values& values, Object& response);
 
 	/** Load a PulleyScript script. */
-	int do_script(const Values values, Object response);
+	int do_script(const Values& values, Object& response);
 } ;
 
 

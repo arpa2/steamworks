@@ -36,7 +36,7 @@ CrankDispatcher::CrankDispatcher() :
 {
 }
 
-int CrankDispatcher::exec(const std::string& verb, const Values values, Object response)
+int CrankDispatcher::exec(const std::string& verb, const Values& values, Object& response)
 {
 	if (verb == "connect") return do_connect(values, response);
 	else if (verb == "stop") return do_stop(values);
@@ -56,7 +56,7 @@ int CrankDispatcher::exec(const std::string& verb, const Values values, Object r
 	}
 }
 
-int CrankDispatcher::do_connect(const Values values, Object response)
+int CrankDispatcher::do_connect(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 	if (SteamWorks::LDAP::do_connect(d->connection, values, response, log))
@@ -67,14 +67,14 @@ int CrankDispatcher::do_connect(const Values values, Object response)
 	return 0;
 }
 
-int CrankDispatcher::do_stop(const Values values)
+int CrankDispatcher::do_stop(const Values& values)
 {
 	m_state = stopped;
 	d->connection.reset(nullptr);
 	return -1;
 }
 
-void _serverstatus(VerbDispatcher::Object response, int status, const char* statusname, const char* message)
+void _serverstatus(VerbDispatcher::Object& response, int status, const char* statusname, const char* message)
 {
 	picojson::value v(statusname);
 	response.emplace("status", v);
@@ -96,7 +96,7 @@ void _serverstatus(VerbDispatcher::Object response, int status, const char* stat
 	response.emplace("_status", v);
 }
 
-int CrankDispatcher::do_serverstatus(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+int CrankDispatcher::do_serverstatus(const Values& values, Object& response)
 {
 	switch(m_state)
 	{
@@ -115,7 +115,7 @@ int CrankDispatcher::do_serverstatus(const VerbDispatcher::Values values, VerbDi
 	return 0;
 }
 
-int CrankDispatcher::do_search(const Values values, Object response)
+int CrankDispatcher::do_search(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
@@ -137,7 +137,7 @@ int CrankDispatcher::do_search(const Values values, Object response)
 	return 0;
 }
 
-int CrankDispatcher::do_typeinfo(const Values values, Object response)
+int CrankDispatcher::do_typeinfo(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
@@ -154,7 +154,7 @@ int CrankDispatcher::do_typeinfo(const Values values, Object response)
 
 
 
-int CrankDispatcher::do_update(const Values values, Object response)
+int CrankDispatcher::do_update(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
@@ -189,7 +189,7 @@ int CrankDispatcher::do_update(const Values values, Object response)
 	return 0;
 }
 
-int CrankDispatcher::do_delete(const Values values, Object response)
+int CrankDispatcher::do_delete(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
@@ -215,7 +215,7 @@ int CrankDispatcher::do_delete(const Values values, Object response)
 	return 0;
 }
 
-int CrankDispatcher::do_add(const VerbDispatcher::Values values, VerbDispatcher::Object response)
+int CrankDispatcher::do_add(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 
@@ -254,7 +254,7 @@ int CrankDispatcher::do_add(const VerbDispatcher::Values values, VerbDispatcher:
 
 
 
-int CrankDispatcher::do_serverinfo(const Values values, Object response)
+int CrankDispatcher::do_serverinfo(const Values& values, Object& response)
 {
 	SteamWorks::Logging::Logger& log = SteamWorks::Logging::getLogger("steamworks.crank");
 

@@ -14,8 +14,8 @@ namespace SteamWorks
 {
 namespace JSON
 {
-typedef picojson::value& Values;
-typedef picojson::value::object& Object;
+using Values = picojson::value;
+using Object = picojson::value::object;
 
 /**
 	* Produce a simple JSON output with the status code and message.

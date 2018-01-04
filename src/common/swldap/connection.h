@@ -77,12 +77,12 @@ using ConnectionUPtr = std::unique_ptr<SteamWorks::LDAP::Connection>;
  * The @p connection is reset regardless; if connection fails,
  * returns false and a response-code and -explanation in @p response.
  */
-bool do_connect(ConnectionUPtr& connection, const std::string& uri, JSON::Object response, Logging::Logger& log);
+bool do_connect(ConnectionUPtr& connection, const std::string& uri, JSON::Object& response, Logging::Logger& log);
 /**
  * As above, but take connection information from the @p values,
  * which may contain keys "uri", "user" and "password".
  */
-bool do_connect(ConnectionUPtr& connection, JSON::Values values, JSON::Object response, Logging::Logger& log);
+bool do_connect(ConnectionUPtr& connection, const JSON::Values& values, JSON::Object& response, Logging::Logger& log);
 
 /**
  * Base class for actions that are created (once) and executed (possibly more than once)
