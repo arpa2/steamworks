@@ -80,3 +80,16 @@ broken:
 #
 build:
 	( cd ../../../build && $(MAKE) )
+
+# Run a bunch of steps in sequence, and will bail out
+# if the test sequence doesn't yield expected results.
+test-sequence:
+	-$(MAKE) start && sleep 1
+	-$(MAKE) auth && sleep 1
+	$(MAKE) serverinfo | grep 1.3.6.1.4.1.4203.1.9.1.1
+	$(MAKE) serverstatus | grep '"connected"'
+	$(MAKE) update0 search
+	$(MAKE) update0 search | grep '"Network Attached'
+	$(MAKE) update1 search | grep '"File Server'
+
+
