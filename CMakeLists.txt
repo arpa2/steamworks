@@ -27,8 +27,6 @@ macro_ensure_out_of_source_build(
   "Do not build Steamworks in the source directory.")
 get_version_from_git(Steamworks 0.92.0)
 
-find_package(Quick-DER REQUIRED)
-
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
