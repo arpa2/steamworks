@@ -2,8 +2,11 @@
 # All rights reserved. See file LICENSE for exact terms (2-clause BSD license).
 #
 # Adriaan de Groot <groot@kde.org>
-
-include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../3rdparty)
+include_directories(
+  ${FCGI_INCLUDE_DIRS} 
+  ${OpenLDAP_INCLUDE_DIR} 
+  ${LOG4CPP_INCLUDE_DIRS} 
+  ../3rdparty)
 
 set(SWLDAP_SRC
   swldap/connection.cpp

@@ -6,7 +6,12 @@
 find_package(FLEX REQUIRED)  # Required by pulleyscript
 find_package(SQLite3 REQUIRED)
 
-include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../common ../3rdparty)
+include_directories(
+  ${FCGI_INCLUDE_DIRS} 
+  ${OpenLDAP_INCLUDE_DIR} 
+  ${LOG4CPP_INCLUDE_DIRS} 
+  ../common 
+  ../3rdparty)
 
 add_definitions(-DPREFIX="${CMAKE_INSTALL_PREFIX}")
 

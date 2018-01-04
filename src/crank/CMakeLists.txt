@@ -3,7 +3,12 @@
 #
 # Adriaan de Groot <groot@kde.org>
 
-include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../common ../3rdparty)
+include_directories(
+  ${FCGI_INCLUDE_DIRS} 
+  ${OpenLDAP_INCLUDE_DIR} 
+  ${LOG4CPP_INCLUDE_DIRS} 
+  ../common 
+  ../3rdparty)
 
 set(CRANK_SRC
   main.cpp

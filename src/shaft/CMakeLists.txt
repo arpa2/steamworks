@@ -7,7 +7,12 @@ find_package(Log4cpp)
 find_package(FCGI REQUIRED)
 find_package(OpenLDAP REQUIRED)
 
-include_directories(${FCGI_INCLUDE_DIRS} ${LOG4CPP_INCLUDE_DIRS} ../common ../3rdparty)
+include_directories(
+  ${FCGI_INCLUDE_DIRS} 
+  ${OpenLDAP_INCLUDE_DIR} 
+  ${LOG4CPP_INCLUDE_DIRS} 
+  ../common 
+  ../3rdparty)
 
 set(SHAFT_SRC
   main.cpp
