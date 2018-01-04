@@ -13,8 +13,8 @@ Adriaan de Groot <groot@kde.org>
 class VerbDispatcher
 {
 public:
-	typedef picojson::value& Values;
-	typedef picojson::value::object& Object;
+	using Values = picojson::value&;
+	using Object = picojson::value::object&;
 
 
 	virtual int exec(const std::string& verb, const Values values, Object response) = 0;
