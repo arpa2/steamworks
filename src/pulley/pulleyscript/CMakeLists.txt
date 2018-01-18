@@ -101,3 +101,13 @@ target_link_libraries(compiler pslib ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES})
 add_executable(simple ${SIMPLE_SRC})
 target_link_libraries(simple pspplib pslib swcommon ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES} ${LOG4CPP_LIBRARIES})
 set_target_properties(simple PROPERTIES LINK_FLAGS -rdynamic)
+
+# Try to compile all of the sample scripts
+file(GLOB scriptfiles LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} tests/*.ply)
+foreach(script ${scriptfiles})
+    add_test(
+        NAME compile-${script}
+        COMMAND compiler ${script}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+endforeach()
