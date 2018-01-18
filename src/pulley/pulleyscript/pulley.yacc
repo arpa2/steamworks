@@ -25,7 +25,7 @@
 
 %{
 
-// int yylex (YYSTYPE *yylval_param, yyscan_t yyscanner);
+int yylex (YYSTYPE *yylval_param, yyscan_t yyscanner);
 void yyerror (struct parser *,char *);
 #define YYLEX_PARAM &yylval, prs->lexer
 
