@@ -9,6 +9,10 @@
 
 #include <logger.h>
 
+#ifdef ALLOW_INSECURE_DB
+extern const char *squeal_use_dbdir;
+#endif
+
 static const char progname[] = "PulleySimple";
 static const char version[] = "v0.1";
 static const char copyright[] = "Copyright (C) 2014-2016 InternetWide.org and the ARPA2.net project";
@@ -23,8 +27,12 @@ static void version_usage()
 {
 	printf(R"(
 Usage:
-    simple [-L libdir] scriptfile datafile
-\n\n)");
+    simple [options] scriptfile datafile
+\n)");
+	printf("  -L libdir    Unused\n");
+#ifdef ALLOW_INSECURE_DB
+	printf("  -S sqldir    Sets directory to write SQL database\n");
+#endif
 }
 
 static void version_help()
@@ -142,6 +150,9 @@ int main(int argc, char **argv)
 		{"version",   no_argument,        0, 'v'},
 		{"help",      no_argument,        0, 'h'},
 		{"libdir",    required_argument,  0, 'L'},
+#ifdef ALLOW_INSECURE_DB
+		{"sqldir",    required_argument,  0, 'S'},
+#endif
 		{0,0,0,0},
 	};
 
@@ -150,9 +161,14 @@ int main(int argc, char **argv)
 	int index;
 	int iarg = 0;
 
+	static const char shortopts[] = "L:vh"
+#ifdef ALLOW_INSECURE_DB
+		"S:"
+#endif
+	;
 	while (iarg != -1)
 	{
-		iarg = getopt_long(argc, argv, "L:vh", longopts, &index);
+		iarg = getopt_long(argc, argv, shortopts, longopts, &index);
 
 		switch (iarg)
 		{
@@ -167,6 +183,11 @@ int main(int argc, char **argv)
 		case 'L':
 			log.debugStream() << "-L" << optarg;
 			break;
+#ifdef ALLOW_INSECURE_DB
+		case 'S':
+			squeal_use_dbdir = optarg;
+			break;
+#endif
 		case '?':
 			carry_on = false;
 			break;

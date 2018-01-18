@@ -16,6 +16,7 @@
  */
 
 
+#include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -29,6 +30,21 @@
 #include "condition.h"
 #include "driver.h"
 #include "squeal.h"
+
+#ifdef ALLOW_INSECURE_DB
+extern const char *squeal_use_dbdir;
+#endif
+
+
+static void version_usage()
+{
+	printf(
+"Usage:\n"
+"    compiler [options] scriptfile [scriptfile...]\n\n");
+#ifdef ALLOW_INSECURE_DB
+	printf("  -S sqldir    Sets directory to write SQL database\n");
+#endif
+}
 
 
 void print_status (struct parser *prs, char *status) {
@@ -45,7 +61,7 @@ int collect_input (struct parser *prs, int argc, char *argv []) {
 	int i;
 
 	if (argc <= 1) {
-		fprintf (stderr, "Usage: %s filenames...\n", argv [0]);
+		version_usage();
 		return 1;
 	}
 
@@ -311,7 +327,64 @@ int main (int argc, char *argv []) {
 
 	pulley_parser_init (&prs);
 
-	prsret = collect_input (&prs, argc, argv);
+	const struct option longopts[] =
+	{
+		{"help",      no_argument,        0, 'h'},
+#ifdef ALLOW_INSECURE_DB
+	{"sqldir",    required_argument,  0, 'S'},
+#endif
+		{0,0,0,0},
+	};
+
+	bool carry_on = true;
+	int index;
+	int iarg = 0;
+
+	static const char shortopts[] = "h"
+#ifdef ALLOW_INSECURE_DB
+		"S:"
+#endif
+	;
+	while (iarg != -1)
+	{
+		iarg = getopt_long(argc, argv, shortopts, longopts, &index);
+
+		switch (iarg)
+		{
+		case 'h':
+			version_usage();
+			carry_on = false;
+			break;
+#ifdef ALLOW_INSECURE_DB
+	case 'S':
+		squeal_use_dbdir = optarg;
+		break;
+#endif
+		case '?':
+			carry_on = false;
+			break;
+		case -1:
+			// End of options, detected next time around
+			break;
+		default:
+			abort();
+		}
+	}
+	if (!carry_on)
+	{
+		// Either --help or --version or an option error
+		return 1;
+	}
+	if (!(optind < argc))
+	{
+		version_usage();
+		return 1;
+	}
+
+	/* Skip the optind arguments that have been eaten, but go back
+	 * one to pretend there's an argv[0] there.
+	 */
+	prsret = collect_input (&prs, argc - optind + 1, argv + optind - 1);
 
 	print_status (&prs, "after parsing");
 

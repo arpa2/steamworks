@@ -33,6 +33,15 @@ if(HAVE_FUN_DLFUNC)
   add_definitions(-DHAVE_DLFUNC)
 endif()
 
+include_directories(${SQLITE3_INCLUDE_DIRS} ${FLEX_INCLUDE_DIRS})
+
+### SOURCES
+#
+# The sources for the different targets. Note that pslib_o
+# is a CMake object-library, and that squeal.c is compiled
+# separately for the static library and for the two testing
+# executables, with different options.
+#
 set(PSLIB_SRC
   bitset.c
   condition.c
@@ -40,9 +49,14 @@ set(PSLIB_SRC
   generator.c
   lexhash.c
   resist.c
-  squeal.c
   variable.c
   ${FLEX_fpulley_OUTPUTS})
+
+add_library(pslib_o OBJECT ${PSLIB_SRC})
+target_compile_definitions(pslib_o PUBLIC -D_GNU_SOURCE=1)
+if(QSORT_IS_GLIBC)
+  target_compile_definitions(pslib_o PUBLIC -DQSORT_IS_GLIBC=1)
+endif()
 
 set(PSPPLIB_SRC
   backend.cpp
@@ -74,13 +88,7 @@ if(NOT "${PULLEY_BACKEND_DIR}" STREQUAL "")
   add_definitions(-DPULLEY_BACKEND_DIR="${PULLEY_BACKEND_DIR}")
 endif()
 
-
-include_directories(${SQLITE3_INCLUDE_DIRS} ${FLEX_INCLUDE_DIRS})
-add_library(pslib STATIC ${PSLIB_SRC})
-target_compile_definitions(pslib PUBLIC -D_GNU_SOURCE=1)
-if(QSORT_IS_GLIBC)
-  target_compile_definitions(pslib PUBLIC -DQSORT_IS_GLIBC=1)
-endif()
+add_library(pslib STATIC $<TARGET_OBJECTS:pslib_o>  squeal.c)
 
 add_library(pspplib STATIC ${PSPPLIB_SRC})
 
@@ -95,11 +103,13 @@ if(NOT HAVE_FUN_DLCLOSE)
   endif()
 endif()
 
-add_executable(compiler ${COMPILER_SRC})
-target_link_libraries(compiler pslib ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES})
+add_executable(compiler $<TARGET_OBJECTS:pslib_o> squeal.c ${COMPILER_SRC})
+target_compile_definitions(compiler PUBLIC -DALLOW_INSECURE_DB)
+target_link_libraries(compiler ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES})
 
-add_executable(simple ${SIMPLE_SRC})
-target_link_libraries(simple pspplib pslib swcommon ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES} ${LOG4CPP_LIBRARIES})
+add_executable(simple $<TARGET_OBJECTS:pslib_o> squeal.c ${SIMPLE_SRC})
+target_compile_definitions(simple PUBLIC -DALLOW_INSECURE_DB)
+target_link_libraries(simple pspplib swcommon ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES} ${LOG4CPP_LIBRARIES})
 set_target_properties(simple PROPERTIES LINK_FLAGS -rdynamic)
 
 # Try to compile all of the sample scripts
@@ -107,7 +117,7 @@ file(GLOB scriptfiles LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR
 foreach(script ${scriptfiles})
     add_test(
         NAME compile-${script}
-        COMMAND compiler ${script}
+        COMMAND compiler -S ${CMAKE_CURRENT_BINARY_DIR} ${script}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
 endforeach()
