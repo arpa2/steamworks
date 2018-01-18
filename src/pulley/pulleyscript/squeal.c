@@ -51,9 +51,15 @@ static char log_buffer[1024];
 /* TODO: Make the database directory a configurable entity.
  */
 #ifdef PULLEY_SQUEAL_DIR
-static const char default_dbdir[] = PULLEY_SQUEAL_DIR;
+static const char _default_dbdir[] = PULLEY_SQUEAL_DIR;
 #else
-static const char default_dbdir[] = "/var/db/pulley/";
+static const char _default_dbdir[] = "/var/db/pulley/";
+#endif
+
+#ifdef ALLOW_INSECURE_DB
+const char *squeal_use_dbdir = _default_dbdir;
+#else
+static const char const *squeal_use_dbdir = _default_dbdir;
 #endif
 
 /* Definitions for FNV-1a hashing */
@@ -79,7 +85,7 @@ typedef fnv1a_t s3key_t;
  * there already / still are other instances.  Callbacks only add output to
  * the driver upon first repeat of a new hash value, and they only delete
  * output from the driver upon last repeat of a hash value removal.  Use
- * the generic SQLite3 statements from "struct squeaal" to fetch and modify
+ * the generic SQLite3 statements from "struct squeal" to fetch and modify
  * the repeat counter for a given output hash.  (The output hash starts from
  * the prehash, and repeatedly adds a 4-byte length in network byte order
  * plus that number of blob bytes, until all output variables are hashed.)
@@ -1136,7 +1142,7 @@ struct squeal *squeal_open_in_dbdir (hash_t lexhash, gennum_t numgens, drvnum_t 
 }
 
 struct squeal *squeal_open (hash_t lexhash, gennum_t numgens, drvnum_t numdrvs) {
-	return squeal_open_in_dbdir(lexhash, numgens, numdrvs, default_dbdir);
+	return squeal_open_in_dbdir(lexhash, numgens, numdrvs, squeal_use_dbdir);
 }
 
 /* Close a SQLite3 engine using the handle that was returned by squeal_open().
@@ -1175,7 +1181,7 @@ void squeal_unlink_in_dbdir (hash_t lexhash, const char *dbdir) {
 }
 
 void squeal_unlink (hash_t lexhash) {
-	squeal_unlink_in_dbdir(lexhash, default_dbdir);
+	squeal_unlink_in_dbdir(lexhash, squeal_use_dbdir);
 }
 
 
