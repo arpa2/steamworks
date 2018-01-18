@@ -259,6 +259,12 @@ int generate_squeal (struct parser *prs) {
 	int TODO_produce_outputs (struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum);
 	struct squeal *s3db;
 
+	/* No drivers -> empty script -> nothing to generate, but it's not
+	 * a failure.
+	 */
+	if (!drvtab_count (prs->drvtab))
+		return 0;
+
 	s3db = squeal_open(prs->scanhash, gentab_count (prs->gentab), drvtab_count (prs->drvtab));
 	assert (s3db != NULL);
 	gennum_t g, gentabcnt = gentab_count (prs->gentab);
