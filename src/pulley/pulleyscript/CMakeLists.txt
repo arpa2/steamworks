@@ -117,7 +117,7 @@ file(GLOB scriptfiles LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR
 foreach(script ${scriptfiles})
     add_test(
         NAME compile-${script}
-        COMMAND compiler -S ${CMAKE_CURRENT_BINARY_DIR} ${script}
+        COMMAND compiler -S ${CMAKE_CURRENT_BINARY_DIR}/ ${script}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         )
 endforeach()
