@@ -1086,6 +1086,8 @@ struct squeal *squeal_open_in_dbdir (hash_t lexhash, gennum_t numgens, drvnum_t 
 	struct squeal *retval = NULL, *work = NULL;
 	sqlite3 *s3db = NULL;
 	struct sqlbuf dbname;
+
+	DEBUG("squeal_open with %d gen %d drv in '%s'", numgens, numdrvs, dbdir);
 	//
 	// Allocate the memory structures for the squeal backend
 	work = calloc (1, sizeof (struct squeal)
