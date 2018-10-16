@@ -5,7 +5,7 @@
 
 # This is the CMake-ified version of the pulleyscript Makefile
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../../../cmake)
 
 include(CheckFunctionExists)

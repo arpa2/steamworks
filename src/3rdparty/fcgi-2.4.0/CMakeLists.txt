@@ -7,7 +7,7 @@
 # it basically ignores everything except current Linux systems
 # (on FreeBSD, use system package).
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
 include_directories(include .)
 
