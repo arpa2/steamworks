@@ -6,7 +6,7 @@
 
 -   Every condition c\_i reduces by an estimated factor f\_i
 
--   Every generator g\_j produces estimated new records r\_j
+-   Every generator g\_j produces estimated new tuples r\_j
 
 -   Let D\_i be the set of generators with variables overlapping c\_i
 
