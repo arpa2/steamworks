@@ -110,13 +110,13 @@ struct s3ins_driver {
 /* When a generator forks a tuple, this should be forward to the apropriate
  * drivers.  Each of the "s3ins_gen2drv" structures holds a link to shared data
  * for each driver, as well as a routine to produce output from a generator's
- * forked tuple.
+ * forked record.
  *
  * The arguments to this output routine are tuple variables from the generator
  * that hosts this structure.  The routine incorporates any co-generators as
  * needed (or none, it may simply quote the variables if that applies) and
  * while doing so it also applies any conditions of interest.  The output is
- * supposed to be iterated and deliverd through callbacks, along with an
+ * supposed to be iterated and delivered through callbacks, along with an
  * indication whether the output should be added or removed.  Note that drivers
  * also have a mechanism to deal with multiplicity.
  */
@@ -128,7 +128,7 @@ struct s3ins_gen2drv {
 /* The "s3ins_generator" structure holds information for a generator.
  *
  * numrecvars is the number of variable names (or the number of variables)
- * expected in a forked tuple; 0 would be unexpected, since a generator
+ * expected in a forked record; 0 would be unexpected, since a generator
  * without variables is useless. The names of the variables are placed
  * sequentially into the char buffer recvars, NUL-separated (currently
  * not implemented).
@@ -144,7 +144,7 @@ struct s3ins_gen2drv {
  * array. The driveout array may be indexed from 0 to numdriveout-1.
  */
 struct s3ins_generator {
-	int numrecvars;			  // Number of variable names in forked tuple
+	int numrecvars;			  // Number of variable names in forked record
 	char *recvars;			  // "gen_xxx", "x", "y", ..., "" (NUL splits)
 		//TODO// Perhaps use ?001 and ?002 instead of ?x and ?y to simplify
 		//TODO// With ?001 varnames, could we get in trouble after reloading?
@@ -191,13 +191,13 @@ struct sqlbuf {
 /********** RUNTIME SUPPORT UTILITIES **********/
 
 
-/* Exchange write buffer: get(1) or set (0) the provided structure with an
+/* Exchange write buffer: BUF_GET or BUF_SET the provided structure with an
  * internally held sqlbuf structure.  This facilitates reuse.
  */
 static void sqlbuf_exchg (struct sqlbuf *wbuf, bool get_not_set) {
 	static struct sqlbuf held = { NULL, 0, 0 };
 	char *tofree;
-	if (get_not_set) {
+	if (get_not_set == BUF_GET) {
 		// get the internal buffer and wipe the internal one
 		*wbuf = held;
 		held.buf = NULL;
@@ -272,6 +272,7 @@ static int sqlbuf_run (struct sqlbuf *sql, sqlite3 *s3db) {
 
 /* Derive a table name based on a prefix and a "lexhash" over a construct and
  * send it out through sqlbuf_write().
+ * (The hash is not processed portably, as it uses local byte order.)
  */
 static void sqlbuf_lexhash2name (struct sqlbuf *sql, char *prefix, hash_t lexhash) {
 	char hexstr [3];
@@ -303,10 +304,16 @@ void fnv1a_add_bytes (fnv1a_t *hash, const uint8_t *data, size_t len) {
 	*hash = h;
 }
 
+/* Scramble an FNV-1a hash by inserting the binary value of a lexhash.
+ * (The hash is not processed portably, as they use local byte order.)
+ */
 void s3key_add_lexhash (s3key_t *hash, hash_t lexhash) {
 	fnv1a_add_bytes (hash, (uint8_t *) &lexhash, sizeof (lexhash));
 }
 
+/* Add a blob to an FNV-1a hash.  Prefix a 4-byte length, so as to
+ * avoid data fields to clash before being smashed to trash by the hash.
+ */
 void s3key_add_blob (s3key_t *hash, struct squeal_blob *blob) {
 	uint32_t size2 = htonl (blob->size);
 	fnv1a_add_bytes (hash, (uint8_t *) &size2, 4);
@@ -322,7 +329,7 @@ void s3key_add_blob (s3key_t *hash, struct squeal_blob *blob) {
 /* Invoke a prepared SQL statement after filling out the hash for ?hash and the
  * other parameters for ?000, ?001 and so on.  The value returned is the value
  * from sqlite3_step() on the parameterised statement.  If multiple actions on
- * the statement are desired, then invoked sqlite3_step() and/or sqlite3_reset()
+ * the statement are desired, then invoke sqlite3_step() and/or sqlite3_reset()
  * in addition after this call.  When this routine is called again, it sets up
  * the prepared statement with new parameters.
  */
@@ -331,6 +338,7 @@ static int s3ins_run (sqlite3 *s3db, sqlite3_stmt *s3in, s3key_t hash,
 	char drvid [20];
 	int i;
 	int idx;
+	int sqlret;
 	assert (s3in != NULL);
 	assert (numparm <= SQLITE_LIMIT_VARIABLE_NUMBER);
 	//
@@ -349,9 +357,12 @@ static int s3ins_run (sqlite3 *s3db, sqlite3_stmt *s3in, s3key_t hash,
 		snprintf (drvid, sizeof (drvid)-1, "?%03d", idx);
 		idx = sqlite3_bind_parameter_index (s3in, drvid);
 		if (idx != 0) {
-			sqlite3_bind_blob64 (s3in, idx,
+			sqlret = sqlite3_bind_blob64 (s3in, idx,
 					parm [i].data, parm [i].size,
 					SQLITE_STATIC);
+			if (sqlret != SQLITE_OK) {
+				ERROR ("Binding :hash yields %d %s\n", sqlret, sqlite3_errmsg (s3db));
+			}
 		}
 	}
 	//
@@ -359,8 +370,11 @@ static int s3ins_run (sqlite3 *s3db, sqlite3_stmt *s3in, s3key_t hash,
 	return sqlite3_step (s3in);
 }
 
+/* Similar to s3ins_run() but using a textual UUID instead of FNV-1a hash.
+ */
 static int s3ins_run_uuid(sqlite3 *s3db, sqlite3_stmt *s3in, const char *uuid,
 			int numparm, struct squeal_blob *parm) {
+	//TODO// This code is never referenced
 	char drvid [20];
 	int i;
 	int idx;
@@ -403,7 +417,7 @@ static int s3ins_run_uuid(sqlite3 *s3db, sqlite3_stmt *s3in, const char *uuid,
 }
 
 /* Consider passing a series of blobs to a driver as output, either add or delete.
- * Avoid this when multiplicity dictates; that is, already added or not ready for
+ * Avoid this when multiplicity forbids; that is, already added or not ready for
  * deletion yet, due to other existing instances.  Only when there are no other
  * instances, do we actually perform the callback.
  */
@@ -458,9 +472,9 @@ static void squeal_driver_callback_demult (struct squeal *squeal,
 
 /* Generators iterate over drivers, and produce output in each.  This function does
  * the latter -- it runs an output production routine, into which the generator's
- * forked tuple is supplied, and from which a set of tuples is drawn that can
+ * forked record is supplied, and from which a set of tuples is drawn that can
  * each be supplied separately as output tuples.  So we iterate over the output
- * tuples produced, and hand over each produced to the driver backend.
+ * tuples produced, and hand over each produced one to the driver backend.
  */
 static void squeal_produce_output (struct squeal *squeal, int add_not_del,
 				struct s3ins_gen2drv *gen2drv, s3key_t genhash,
@@ -516,7 +530,7 @@ static void _squeal_generator_fork (struct squeal *squeal,
 			genhash, numrecvars, recvars);
 	}
 	//
-	// Iterate over generators, producing output for each in turn
+	// Iterate over the generator's drivers, producing output for each in turn
 	for (d=0; d < genfront->numdriveout; d++) {
 		// Produce a set output variable tuples and present each to the driver
 		squeal_produce_output (squeal, add_not_del,
@@ -531,7 +545,6 @@ static void _squeal_generator_fork (struct squeal *squeal,
 	}
 }
 
-
 void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_del, int numrecvars, struct squeal_blob *recvars)
 {
 	_squeal_generator_fork(squeal, &(squeal->gens[gennum]), add_not_del, numrecvars, recvars);
@@ -539,6 +552,7 @@ void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_d
 
 static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID, int add_not_del, int numrecvars, struct squeal_blob *recvars)
 {
+	//TODO// This code is never referenced
 	int sqlret;
 	unsigned int driveridx, columnidx;
 	struct s3ins_generator* genfront = &(squeal->gens[gennum]);
@@ -593,13 +607,16 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 
 void squeal_insert_fork(struct squeal* squeal, gennum_t gennum, const char* entryUUID, int numrecvars, struct squeal_blob* recvars)
 {
+	//TODO// This code is never referenced
 	_squeal_fork(squeal, gennum, entryUUID, PULLEY_TUPLE_ADD, numrecvars, recvars);
 }
 
 void squeal_delete_forks(struct squeal *squeal, gennum_t gennum, const char *entryUUID)
 {
+	//TODO// This code is never referenced
 	_squeal_fork(squeal, gennum, entryUUID, PULLEY_TUPLE_DEL, 0, NULL);
 }
+
 
 /********** BACKEND STRUCTURE CREATION **********/
 
@@ -711,19 +728,21 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 	cndtab = cndtab_from_type (drvtab_share_cndtype (drvtab));
 	gentab = gentab_from_type (drvtab_share_gentype (drvtab));
 	params = gen_share_variables (gentab, gennum);
+
 	//
 	// First, construct "SELECT v0,v1,v2" -- the driver's output but not guards
 	//TODO: Use driver parameter names: "SELECT v0 AS p0,v1 AS p1, v2 AS p2"
 	drv_share_output_variable_table (drvtab, drvnum, &outarray, &outcount);
-
+	// There should always be at least one output variable:
+	assert (outcount > 0);
+	//
 	// In passing, allocate space for the output parameters now we know
-	// how many they'll be.
+	// how many there will be.
 	squeal->drivers[drvnum].cbparm = calloc(outcount, sizeof(struct squeal_blob));
 	squeal->drivers[drvnum].cbnumparm = outcount;
 	squeal->drivers[drvnum].drvall_prehash = drv_get_hash(drvtab, drvnum);
-
-	/* There should always be at least one output variable */
-	assert (outcount > 0);
+	//
+	// Having collected data, produce the "SELECT ..." string
 	comma = "SELECT ";
 	for (i=0; i<outcount; i++) {
 		sqlbuf_write (&sql, comma);
@@ -737,6 +756,7 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 		}
 		comma = ",";
 	}
+
 	//
 	// Second, construct "FROM g0,g1,g2" -- the tables with co-generators
 	itbits = drv_share_generators (drvtab, drvnum);
@@ -745,10 +765,8 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 	// Without any co-generators, there will be no FROM clause in this SQL query
 	assert (!bitset_isempty (itbits));
 	comma = "\nFROM   ";
-
 	sqlbuf_write(&sql, comma);
 	sqlbuf_lexhash2name (&sql, "gen_", gen_get_hash(gentab, gennum));
-
 	bitset_iterator_init (&it, itbits);
 	while (bitset_iterator_next_one (&it, NULL)) {
 		cogen = bitset_iterator_bitnum (&it);
@@ -765,6 +783,7 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 			comma = " NATURAL JOIN\n       ";
 		}
 	}
+
 	//
 	// Third, iterate over varpartitions and find their associated conditions
 	itbits = drv_share_conditions (drvtab, drvnum); /* 0 conditions is acceptable */
@@ -776,6 +795,7 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 		cnd_share_expression (cndtab, bitset_iterator_bitnum (&it), &exp, &explen);
 		squeal_produce_expression (&sql, vartab, params, exp, explen);
 	}
+
 	//
 	// Based on the generated SQL string, prepare a statement
 	if (sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &retval, NULL) != SQLITE_OK) {
@@ -783,7 +803,6 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 		retval = NULL;
 		goto cleanup;
 	}
-
 	DEBUG("prep sql>\n%.*s\n\n", (int) sql.ofs, sql.buf);
 
 cleanup:
@@ -982,8 +1001,6 @@ int squeal_configure_driver(struct squeal* squeal, drvnum_t drv, squeal_driverfu
 	squeal->drivers[drv].cbfun = cbfun;
 	return 0;
 }
-
-
 
 int squeal_configure (struct squeal *squeal) {
 	struct sqlbuf sql;
@@ -1190,8 +1207,8 @@ void squeal_unlink (hash_t lexhash) {
 /* TODO: TEST CODE FOLLOWS */
 
 
-int TODO_produce_outputs (struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum) {
-	squeal_produce_outputs (NULL, drvtab, gennum, drvnum);
+int TODO_produce_outputs (struct squeal *squeal, struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum) {
+	squeal_produce_outputs (squeal, drvtab, gennum, drvnum);
 	return 0;
 }
 
