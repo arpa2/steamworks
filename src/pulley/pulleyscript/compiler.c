@@ -256,7 +256,7 @@ int generate_paths (struct parser *prs) {
  * SQLite3 to implement concepts like co-generator iteration.
  */
 int generate_squeal (struct parser *prs) {
-	int TODO_produce_outputs (struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum);
+	int TODO_produce_outputs (struct squeal *squeal, struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum);
 	struct squeal *s3db;
 
 	/* No drivers -> empty script -> nothing to generate, but it's not
@@ -279,7 +279,7 @@ int generate_squeal (struct parser *prs) {
 		while (bitset_iterator_next_one (&di, NULL)) {
 			d = bitset_iterator_bitnum (&di);
 			printf ("Generating for generator %d, driver %d\n", g, d);
-			assert (TODO_produce_outputs (prs->drvtab, g, d) == 0);
+			assert (TODO_produce_outputs (s3db, prs->drvtab, g, d) == 0);
 		}
 	}
 	squeal_close (s3db);
