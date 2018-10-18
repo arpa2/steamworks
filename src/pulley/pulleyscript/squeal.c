@@ -96,7 +96,7 @@ typedef fnv1a_t s3key_t;
  * from the prepared SQLite3 statements in "s3ins_gen2drv" structures.
  *
  * The callback function requires one additional flag, namely add_not_del which
- * is set to PULLEY_RECORD_ADD or PULLEY_RECORD_DEL to indicate how the
+ * is set to PULLEY_TUPLE_ADD or PULLEY_TUPLE_DEL to indicate how the
  * output variables are to be processed.
  */
 struct s3ins_driver {
@@ -107,12 +107,12 @@ struct s3ins_driver {
 	struct squeal_blob *cbparm;	// Array for callback blob variables
 };
 
-/* When a generator forks a record, this should be forward to the apropriate
+/* When a generator forks a tuple, this should be forward to the apropriate
  * drivers.  Each of the "s3ins_gen2drv" structures holds a link to shared data
  * for each driver, as well as a routine to produce output from a generator's
- * forked record.
+ * forked tuple.
  *
- * The arguments to this output routine are record variables from the generator
+ * The arguments to this output routine are tuple variables from the generator
  * that hosts this structure.  The routine incorporates any co-generators as
  * needed (or none, it may simply quote the variables if that applies) and
  * while doing so it also applies any conditions of interest.  The output is
@@ -128,30 +128,30 @@ struct s3ins_gen2drv {
 /* The "s3ins_generator" structure holds information for a generator.
  *
  * numrecvars is the number of variable names (or the number of variables)
- * expected in a forked record; 0 would be unexpected, since a generator
+ * expected in a forked tuple; 0 would be unexpected, since a generator
  * without variables is useless. The names of the variables are placed
  * sequentially into the char buffer recvars, NUL-separated (currently
  * not implemented).
  *
- * Prepared statements opt_gen_add_record and opt_gen_del_record are (if
+ * Prepared statements opt_gen_add_tuple and opt_gen_del_tuple are (if
  * not NULL) used to store variable (tuples) in the database, before
  * forking those variables.
  *
- * For co-generators, the opt_gen_{add,del}_record statements are used
+ * For co-generators, the opt_gen_{add,del}_tuple statements are used
  * to provide variable (tuples) to the co-generators.
  *
- * numdriveout is the number of output-driver records in the driveout
+ * numdriveout is the number of output-driver tuples in the driveout
  * array. The driveout array may be indexed from 0 to numdriveout-1.
  */
 struct s3ins_generator {
-	int numrecvars;			  // Number of variable names in forked record
+	int numrecvars;			  // Number of variable names in forked tuple
 	char *recvars;			  // "gen_xxx", "x", "y", ..., "" (NUL splits)
 		//TODO// Perhaps use ?001 and ?002 instead of ?x and ?y to simplify
 		//TODO// With ?001 varnames, could we get in trouble after reloading?
-	sqlite3_stmt *opt_gen_add_record; // Supply ?hash + gen variables: ?x, ?y,...
-	sqlite3_stmt *opt_gen_del_record; // Supply ?hash + gen variables: ?x, ?y,...
-	int numdriveout;		  // Number of driveout[] records
-	struct s3ins_gen2drv* driveout;// Driver instructions for this generator
+	sqlite3_stmt *opt_gen_add_tuple;  // Supply ?hash + gen variables: ?x, ?y,...
+	sqlite3_stmt *opt_gen_del_tuple;  // Supply ?hash + gen variables: ?x, ?y,...
+	int numdriveout;		  // Number of driveout[] tuples
+	struct s3ins_gen2drv* driveout;   // Driver instructions for this generator
 };
 
 /* The "squeal" structure holds the overall information for a SQLite3 engine instance.
@@ -165,12 +165,12 @@ struct s3ins_generator {
 struct squeal {
 	sqlite3 *s3db;			// link to SQLite3 engine
 	/* TODO: Uplink to LDAP */
-	int numdrivers;			// Number of drivers[] records
+	int numdrivers;			// Number of drivers[] tuples
 	struct s3ins_driver *drivers;	// Array holding shared descriptions per driver
 	sqlite3_stmt *get_drv_all;	// ?hash
 	sqlite3_stmt *inc_drv_all;	// ?hash
 	sqlite3_stmt *dec_drv_all;	// ?hash
-	int numgens;			// Number of gens[] records
+	int numgens;			// Number of gens[] tuples
 	struct s3ins_generator gens [1];// Array of generator descriptions
 };
 
@@ -434,7 +434,7 @@ static void squeal_driver_callback_demult (struct squeal *squeal,
 	// See if the current number hints at not making the callback
 	if (repeats < 0) {
 		drive = 0;
-	} else if (add_not_del == PULLEY_RECORD_ADD) {
+	} else if (add_not_del == PULLEY_TUPLE_ADD) {
 		drive = (repeats == 0);
 	} else {
 		drive = (repeats == 1);
@@ -442,7 +442,7 @@ static void squeal_driver_callback_demult (struct squeal *squeal,
 	//
 	// Invoke either the increment or decrement procedure
 	s3ins_run (squeal->s3db,
-			(add_not_del == PULLEY_RECORD_ADD)
+			(add_not_del == PULLEY_TUPLE_ADD)
 				? squeal->inc_drv_all
 				: squeal->dec_drv_all,
 			hash, drvback->cbnumparm, drvback->cbparm);
@@ -458,7 +458,7 @@ static void squeal_driver_callback_demult (struct squeal *squeal,
 
 /* Generators iterate over drivers, and produce output in each.  This function does
  * the latter -- it runs an output production routine, into which the generator's
- * forked record is supplied, and from which a set of tuples is drawn that can
+ * forked tuple is supplied, and from which a set of tuples is drawn that can
  * each be supplied separately as output tuples.  So we iterate over the output
  * tuples produced, and hand over each produced to the driver backend.
  */
@@ -486,11 +486,11 @@ static void squeal_produce_output (struct squeal *squeal, int add_not_del,
 }
 
 
-/* Process a new record fork in a generator.  This either reflects add or delete of
- * a record.  The generator will iterate over all the drivers that are interested,
+/* Process a new tuple fork in a generator.  This either reflects add or delete of
+ * a tuple.  The generator will iterate over all the drivers that are interested,
  * and run the respective output generator on each.  In addition, if the generator
  * is/has co-generator, which means that it has the optional routines for adding
- * and removing the record to its own gen_xxx table, it will invoke the respective
+ * and removing the tuple to its own gen_xxx table, it will invoke the respective
  * routine to be of use for its future role as a co-generator.
  */
 static void _squeal_generator_fork (struct squeal *squeal,
@@ -504,15 +504,15 @@ static void _squeal_generator_fork (struct squeal *squeal,
 	DEBUG("  .. adding %d variables.", numrecvars);
 
 	//
-	// Produce the generator hash over the blobs holding the record variables
+	// Produce the generator hash over the blobs holding the tuple variables
 	s3key_t genhash = S3KEY_INIT;
 	for (i=0; i < numrecvars; i++) {
 		s3key_add_blob (&genhash, &recvars [i]);
 	}
 	//
-	// If the record should be deleted, do that before producing output variables
-	if ((add_not_del == PULLEY_RECORD_DEL) && (genfront->opt_gen_del_record != NULL)) {
-		s3ins_run (squeal->s3db, genfront->opt_gen_del_record,
+	// If the tuple should be deleted, do that before producing output variables
+	if ((add_not_del == PULLEY_TUPLE_DEL) && (genfront->opt_gen_del_tuple != NULL)) {
+		s3ins_run (squeal->s3db, genfront->opt_gen_del_tuple,
 			genhash, numrecvars, recvars);
 	}
 	//
@@ -524,9 +524,9 @@ static void _squeal_generator_fork (struct squeal *squeal,
 				numrecvars, recvars);
 	}
 	//
-	// If the record should be added, do that after producing output variables
-	if ((add_not_del == PULLEY_RECORD_ADD) && (genfront->opt_gen_add_record != NULL)) {
-		s3ins_run (squeal->s3db, genfront->opt_gen_add_record,
+	// If the tuple should be added, do that after producing output variables
+	if ((add_not_del == PULLEY_TUPLE_ADD) && (genfront->opt_gen_add_tuple != NULL)) {
+		s3ins_run (squeal->s3db, genfront->opt_gen_add_tuple,
 			genhash, numrecvars, recvars);
 	}
 }
@@ -546,7 +546,7 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 	if (add_not_del)
 	{
 		assert (genfront->numrecvars == numrecvars);
-		sqlret = s3ins_run_uuid(squeal->s3db, genfront->opt_gen_add_record, entryUUID, numrecvars, recvars);
+		sqlret = s3ins_run_uuid(squeal->s3db, genfront->opt_gen_add_tuple, entryUUID, numrecvars, recvars);
 
 		if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_DONE))
 		{
@@ -582,7 +582,7 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 
 	if (!add_not_del)
 	{
-		int sqlret = s3ins_run_uuid(squeal->s3db, genfront->opt_gen_del_record, entryUUID, 0, NULL);
+		int sqlret = s3ins_run_uuid(squeal->s3db, genfront->opt_gen_del_tuple, entryUUID, 0, NULL);
 
 		if ((sqlret != SQLITE_OK) && (sqlret != SQLITE_DONE))
 		{
@@ -593,12 +593,12 @@ static void _squeal_fork(struct squeal *squeal, gennum_t gennum, const char *ent
 
 void squeal_insert_fork(struct squeal* squeal, gennum_t gennum, const char* entryUUID, int numrecvars, struct squeal_blob* recvars)
 {
-	_squeal_fork(squeal, gennum, entryUUID, PULLEY_RECORD_ADD, numrecvars, recvars);
+	_squeal_fork(squeal, gennum, entryUUID, PULLEY_TUPLE_ADD, numrecvars, recvars);
 }
 
 void squeal_delete_forks(struct squeal *squeal, gennum_t gennum, const char *entryUUID)
 {
-	_squeal_fork(squeal, gennum, entryUUID, PULLEY_RECORD_DEL, 0, NULL);
+	_squeal_fork(squeal, gennum, entryUUID, PULLEY_TUPLE_DEL, 0, NULL);
 }
 
 /********** BACKEND STRUCTURE CREATION **********/
@@ -678,11 +678,11 @@ void squeal_produce_expression (struct sqlbuf *sql, struct vartab *vartab, bitse
 }
 
 /* Construct an SQL query that produces output for driver d when generator g
- * forks a record.  Note that addition or removal is not an issue yet; the
+ * forks a tuple.  Note that addition or removal is not an issue yet; the
  * desired output from the query is a list of additional variables.  Return
  * the prepared statement for this SQL query.
  * TODO: Mockup code to produce expressions for driver output generation
- * TODO: Create generator's opt_gen_add_record / opt_gen_del_record code too
+ * TODO: Create generator's opt_gen_add_tuple / opt_gen_del_tuple code too
  */
 static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum) {
 	sqlite3_stmt *retval = NULL;
@@ -857,7 +857,7 @@ int squeal_have_tables (struct squeal *squeal, struct gentab *gentab, bool may_r
 		itbits = gen_share_variables (gentab, g);
 		varcount = 0;
 #if 0
-// In light of the considerations about the resync logic, store all generator records
+// In light of the considerations about the resync logic, store all generator tuples
 // even when they are directly transformed into driver output and never used as/with
 // co-generators.
 		if (!gen_get_cogeneration (gentab, g)) {
@@ -926,7 +926,7 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, st
 		sqlbuf_lexhash2name(&sql, "gen_", gen_get_hash(gentab, gennum));
 		sqlbuf_write(&sql, " WHERE entryUUID = :uuid");
 
-		if ((sqlretval = sqlite3_prepare(squeal->s3db, sql.buf, sql.ofs, &gen->opt_gen_del_record, NULL)) != SQLITE_OK)
+		if ((sqlretval = sqlite3_prepare(squeal->s3db, sql.buf, sql.ofs, &gen->opt_gen_del_tuple, NULL)) != SQLITE_OK)
 		{
 			ERROR("PREP ERROR delete in generator SQL %d\n", sqlretval);
 			goto fail;
@@ -943,10 +943,10 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, st
 		}
 		sqlbuf_write(&sql, ")");
 
-		if ((sqlretval = sqlite3_prepare(squeal->s3db, sql.buf, sql.ofs, &gen->opt_gen_add_record, NULL)) != SQLITE_OK)
+		if ((sqlretval = sqlite3_prepare(squeal->s3db, sql.buf, sql.ofs, &gen->opt_gen_add_tuple, NULL)) != SQLITE_OK)
 		{
-			sqlite3_finalize(gen->opt_gen_del_record);
-			gen->opt_gen_del_record = NULL;
+			sqlite3_finalize(gen->opt_gen_del_tuple);
+			gen->opt_gen_del_tuple = NULL;
 			ERROR("PREP ERROR insert in generator SQL %d\n", sqlretval);
 			goto fail;
 		}

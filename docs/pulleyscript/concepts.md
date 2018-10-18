@@ -21,7 +21,7 @@ The Pulley script language consists primarily of:
 -   *Records*, the set of variables that a generator adds or removes by
     “forking”
 
--   *Conditions*, the constraints on variables as they occur in records
+-   *Conditions*, the constraints on variables as they occur in tuples
 
 -   *Partitions*, the transitive closure of variables mentioned in conditions
 
@@ -33,15 +33,15 @@ The Pulley script language consists primarily of:
 
 A few secondary concepts are also of interest:
 
--   *Guards*, to ensure the presence of variables in records, partitions or
+-   *Guards*, to ensure the presence of variables in tuples, partitions or
     outputs
 
     -   *Implicit Guards* are derived by the compiler
 
-    -   *Explicit Guards* are added to the records, partitions, outputs defined
+    -   *Explicit Guards* are added to the tuples, partitions, outputs defined
         by a rule
 
--   *Weight*, to set the weight or record multiplier for generator, condition or
+-   *Weight*, to set the weight or tuple multiplier for generator, condition or
     driver
 
 Connecting dots
@@ -75,10 +75,10 @@ semantics, it is vitally important how these are connected.
 -   One or more generators work together to provide the values needed in
     conditions; they orthogonally produce these pieces of information and when a
     new generator produces output there may be a need to iterate over previously
-    generated results from other generators.  The records of such collaborating
+    generated results from other generators.  The tuples of such collaborating
     generators must be the smallest set to produce at least the partition of a
     condition.  
-    TODO: This suggests the requirement to store records, rather than output?
+    TODO: This suggests the requirement to store tuples, rather than output?
     though output may itself be iterable? and incorporate guards? but what if
     one generator is productive while another is still empty? but this is quite
     a burden on drivers and not necessarily a win; it also explodes the
@@ -103,17 +103,17 @@ future iteration, and a manner to keep track of guards that imply multiplicity
 of output variables.  The model is so close to the SQL model that we can barely
 expect to improve on existing implementations.
 
-The most concentrated storage form for the reproduction of generated records is
-direct storage of these records in tables that represent the generator.  Their
+The most concentrated storage form for the reproduction of generated tuples is
+direct storage of these tuples in tables that represent the generator.  Their
 combination through a cartesian product, removal of combinations through
 conditions and eventual production of output for drivers is precisely what SQL
-is designed to do.  Plus, the insertion or removal of a record can be
+is designed to do.  Plus, the insertion or removal of a tuple can be
 incorporated into the two-phase commit transaction that applies to backends.
 
 A driver may or may register with support for multiplicity.  To support it, a
 driver must be able to accept as many removals as additions, each annotated with
 guards to form unique combinations.  To facilitate drivers without multiplicity
-support, the database should either store the guards along with the records
+support, the database should either store the guards along with the tuples
 written, or at least count them.  A compact manner of doing this is to store a
 secure digest for the driver’s output variables, along with a counter.  This can
 be used to provide an output to the driver on the first entry and to retract an
@@ -122,7 +122,7 @@ taken into the 2-phase commit transaction.
 
 A database to support this scheme should:
 
--   Manage data as sets of records with cartesian product and selection
+-   Manage data as sets of tuples with cartesian product and selection
 
 -   Participate in 2-phase commit transactions
 
@@ -151,7 +151,7 @@ The SQLite3 database seems to be perfect, with its
 
 On brief encounter, one might wonder if Pulley adds anything, compared to SQL at
 all, but indeed it does — aside from subscribing for virtually-instant updates,
-any generated records are processed incrementally, and only things that actually
+any generated tuples are processed incrementally, and only things that actually
 change are passed on as driver output.  The increments are derived from the
 Pulley script language in an automatic manner, allowing multi-way pass-throughs
 without any effort of declaring (or programming) these flows separately.

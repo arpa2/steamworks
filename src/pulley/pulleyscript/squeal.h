@@ -25,8 +25,8 @@ struct squeal_blob {
 
 /* The squeal_driverfun_t defines the callback function expected by squeal from
  * any driver.  It will be invoked with an opaque cbdata value to be registered
- * by the driver, a parameter add_not_del set to either PULLEY_RECORD_ADD or
- * PULLEY_RECORD_DEL and both the number and values of the blobs holding the
+ * by the driver, a parameter add_not_del set to either PULLEY_TUPLE_ADD or
+ * PULLEY_TUPLE_DEL and both the number and values of the blobs holding the
  * actual parameters to the driver.
  */
 typedef void (*squeal_driverfun_t) (void *cbdata, int add_not_del,
@@ -34,8 +34,8 @@ typedef void (*squeal_driverfun_t) (void *cbdata, int add_not_del,
 
 /* Values for the add_not_del function parameters:
  */
-#define PULLEY_RECORD_ADD 1
-#define PULLEY_RECORD_DEL 0
+#define PULLEY_TUPLE_ADD 1
+#define PULLEY_TUPLE_DEL 0
 
 
 /* Open a SQLite3 engine for a given Pulley script.  The lexhash is used to name the
@@ -96,7 +96,7 @@ void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_d
 
 /**
  * Add one tuple of variables (a fork) to the database. This does not
- * generate any output (driver) records.
+ * generate any output (driver) tuples.
  */
 void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID, int numrecvars, struct squeal_blob *recvars);
 /**

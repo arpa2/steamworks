@@ -99,7 +99,7 @@ Making Queries
     and c2
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--   When the fork due to `g0` whose hash is `_a5b4c3d2` adds a new record with
+-   When the fork due to `g0` whose hash is `_a5b4c3d2` adds a new tuple with
     variables `v0` and `u0`, then the following insertion would be warranted:
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,7 +107,7 @@ Making Queries
     values (?hash,?v0,?u0)
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--   Alternatively, when the fork removes that record, the following query would
+-   Alternatively, when the fork removes that tuple, the following query would
     be the right thing to do:
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -129,14 +129,14 @@ Making Queries
     union values (0) )
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Then, if a record was added and the counter is absent we continue with
+    Then, if a tuple was added and the counter is absent we continue with
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     insert into drv_all
     values (?hash,1)
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Or, if a record was added and the counter was present, we continue with
+    Or, if a tuple was added and the counter was present, we continue with
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     update drv_all
@@ -155,7 +155,7 @@ Making Queries
            union values (0) );
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Or, if a record was removed we would also start retrieving the current
+    Or, if a tuple was removed we would also start retrieving the current
     counter,
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -173,7 +173,7 @@ Making Queries
     where out_hash = ?hash
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Or, if a record was removed and the counter is not `1` we continue with
+    Or, if a tuple was removed and the counter is not `1` we continue with
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     update drv_all
@@ -280,10 +280,10 @@ drivers.
 
 4.  Using the `oldgen_` tables, reconstruct all the hashes in `drv_all`.
 
-5.  Lookup `out_repeats` for each hash; when 1, delete the record and inform the
+5.  Lookup `out_repeats` for each hash; when 1, delete the tuple and inform the
     driver.
 
-6.  There should be no remaining records with `out_repeats` set to 1 in
+6.  There should be no remaining tuples with `out_repeats` set to 1 in
     `drv_all`.
 
 7.  Subtract 1 from all `out_repeats` in `drv_all`, not notifying drivers when 0
@@ -327,7 +327,7 @@ is valuable.
 -   It seems helpful to download non-co-gen `gen_` tables, and erase them after
     updating.
 
--   Output records cannot be derived from `drv_all` table.
+-   Output tuples cannot be derived from `drv_all` table.
 
 -   Reproducing output from `drv_all` is possible, combining `gen_` (including
     downloads).
@@ -336,7 +336,7 @@ A smart procedure may be helpful to migrate `drv_all` to the new database:
 
 1.  Copy `drv_all` from old to new, setting `out_repeats` to 1.
 
-2.  Reproduce all driver records from the `gen_` tables, including downloads, in
+2.  Reproduce all driver tuples from the `gen_` tables, including downloads, in
     add mode.
 
 3.  Invoke the driver about any new entries that this creates.
@@ -346,17 +346,17 @@ A smart procedure may be helpful to migrate `drv_all` to the new database:
 5.  When an output tuple is set to 1 in `drv_all`, remove it, notifying the
     driver in del mode.
 
-6.  There should be no remaining records with `out_repeats` set to 1 in
+6.  There should be no remaining tuples with `out_repeats` set to 1 in
     `drv_all`.
 
 7.  Subtract 1 from all remaining `out_repeats` in the `drv_all` table, not
     notifying drivers.
 
-Note that this procedure suggests downloading all records always, even when no
+Note that this procedure suggests downloading all tuples always, even when no
 co-generator role is played by a generator.  This might indeed be useful as a
 development mode, because it speeds up this script update process, but more
 importantly making it more reliable than downloading what happens to be the
-record set at that later time into the old database.
+tuple set at that later time into the old database.
 
 General Resync logic
 --------------------
@@ -370,12 +370,12 @@ could be:
     take-down
 
 3.  Add to `out_repeats` in `drv_all` by producing output with new generator
-    records
+    tuples
 
 4.  Decrement the `out_repeats` in `drv_all` by 1, which should not cause
     removals
 
 5.  Delete from `out_repeats` in `drv_all` by producing output with old
-    generator records
+    generator tuples
 
 6.  During the last step, when a counter hits 0, go through driver removal
