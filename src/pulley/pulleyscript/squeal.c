@@ -701,7 +701,7 @@ void squeal_produce_expression (struct sqlbuf *sql, struct vartab *vartab, bitse
  * TODO: Mockup code to produce expressions for driver output generation
  * TODO: Create generator's opt_gen_add_tuple / opt_gen_del_tuple code too
  */
-static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum) {
+sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum) {
 	sqlite3_stmt *retval = NULL;
 	struct sqlbuf sql;
 	char varid [20];
@@ -764,15 +764,12 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 	// We should have bits if there are co-generators
 	// Without any co-generators, there will be no FROM clause in this SQL query
 	assert (!bitset_isempty (itbits));
-	comma = "\nFROM   ";
-	sqlbuf_write(&sql, comma);
+	sqlbuf_write(&sql, "\nFROM   ");
 	sqlbuf_lexhash2name (&sql, "gen_", gen_get_hash(gentab, gennum));
 	bitset_iterator_init (&it, itbits);
 	while (bitset_iterator_next_one (&it, NULL)) {
 		cogen = bitset_iterator_bitnum (&it);
 		if (cogen != gennum) {
-			sqlbuf_write (&sql, comma);
-			sqlbuf_lexhash2name (&sql, "gen_", gen_get_hash (gentab, cogen));
 			//
 			// We use NATURAL JOIN, and leave it to the optimiser to find
 			// that no variable names are actually overlapping.  This may
@@ -780,7 +777,8 @@ static sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvta
 			// to occur in multiple generators, and their semantics would
 			// be a match, then we benefit from a NATURAL JOIN.  (Checked
 			// version 3.8.10.2, and indeed SQLite3 is clever enough.)
-			comma = " NATURAL JOIN\n       ";
+			sqlbuf_write (&sql, " NATURAL JOIN\n       ");
+			sqlbuf_lexhash2name (&sql, "gen_", gen_get_hash (gentab, cogen));
 		}
 	}
 
@@ -1201,14 +1199,5 @@ void squeal_unlink_in_dbdir (hash_t lexhash, const char *dbdir) {
 
 void squeal_unlink (hash_t lexhash) {
 	squeal_unlink_in_dbdir(lexhash, squeal_use_dbdir);
-}
-
-
-/* TODO: TEST CODE FOLLOWS */
-
-
-int TODO_produce_outputs (struct squeal *squeal, struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum) {
-	squeal_produce_outputs (squeal, drvtab, gennum, drvnum);
-	return 0;
 }
 
