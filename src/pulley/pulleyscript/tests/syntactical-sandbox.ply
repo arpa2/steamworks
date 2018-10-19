@@ -7,8 +7,8 @@
 (&(|)(|))
 (x=y)
 VacationActive;x;y;lang-de:"true" + VacationAddress:where + VacationTime: when, @vacationer, CN=who <- z
-#TODO# Lists in output declarations translate BRA and KET to varidx -1 and cause a crash
-#TODO# x,[7,p,12],z -> mapper (p="jamaarhallohee",y=7)
+#TODO# Lists in output declarations translate BRA and KET to varidx -1 (as specified) and cause a crash (which was not intended)
+#TODO# Syntax form disabled for now ## x,[7,p,12],z -> mapper (p="jamaarhallohee",y=7)
 x,7,p,12,z -> mapper (p="jamaarhallohee",y=7)
 x,p,z -> mapper (p="jamaarhallohee",y=7)
 # The following were added because all variables must be bound somewhere:

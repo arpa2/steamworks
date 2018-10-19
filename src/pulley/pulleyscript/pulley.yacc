@@ -479,11 +479,22 @@ drvout_vallist_s: value {
 	drv_output_variable (prs->drvtab, prs->newdrv, $1);
 	var_used_in_driverout (prs->vartab, $1, prs->newdrv);
 }
-drvout_vallist_s: BRA {
-	drv_output_list_begin (prs->drvtab, prs->newdrv);
-} drvout_vallist KET {
-	drv_output_list_end (prs->drvtab, prs->newdrv);
-}
+/*
+ * TODO: COMPLEX FUTURE ADDITION
+ *
+ * Not quite sure why we wanted this, and it is not documented :'-(
+ * but it probably was to send out a SEQUENCE of variables, and allow
+ * dynamic handling of such in the recipient.  Alas, for now this is
+ * not yet supported.  Ask for it and it will be considered, as it is
+ * possible and systems have a tendency to grow towards increased
+ * dynamicity -- in this case we actually have an idea how and where.
+ *
+	drvout_vallist_s: BRA {
+		drv_output_list_begin (prs->drvtab, prs->newdrv);
+	} drvout_vallist KET {
+		drv_output_list_end (prs->drvtab, prs->newdrv);
+	}
+ */
 drvout_vallist: drvout_vallist COMMA drvout_vallist
 drvout_vallist: value {
 	if (prs->newdrv == DRVNUM_BAD) {
