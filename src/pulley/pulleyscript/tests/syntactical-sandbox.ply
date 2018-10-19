@@ -4,6 +4,7 @@
 VacationActive;x;y;lang-de:"true" + VacationAddress:where + VacationTime: when, @vacationer, CN=who <- z
 x,[7,p,12],z -> mapper (p="jamaarhallohee",y=7)
 # The following were added because all variables must be bound somewhere:
-@p,@world <- z
+#CRASH_BUT_WHY# @p,@world <- z
+@p <- @world <- z
 #TODO# Why does the following parse correctly?!?
 p,world <- z
