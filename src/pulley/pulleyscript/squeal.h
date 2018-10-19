@@ -4,6 +4,8 @@
 #include <sys/types.h>
 #include "types.h"
 
+#include <sqlite3.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -99,10 +101,20 @@ void squeal_generator_fork(struct squeal *squeal, gennum_t gennum, int add_not_d
  * generate any output (driver) tuples.
  */
 void squeal_insert_fork(struct squeal *squeal, gennum_t gennum, const char *entryUUID, int numrecvars, struct squeal_blob *recvars);
+
 /**
  * Remove all the tuples (forks) for the given UUID.
  */
 void squeal_delete_forks(struct squeal *squeal, gennum_t gennum, const char *entryUUID);
+
+/* Construct an SQL query that produces output for driver d when generator g
+ * forks a tuple.  Note that addition or removal is not an issue yet; the
+ * desired output from the query is a list of additional variables.  Return
+ * the prepared statement for this SQL query.
+ * TODO: Mockup code to produce expressions for driver output generation
+ * TODO: Create generator's opt_gen_add_tuple / opt_gen_del_tuple code too
+ */
+sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvtab *drvtab, gennum_t gennum, drvnum_t drvnum);
 
 #ifdef __cplusplus
 }
