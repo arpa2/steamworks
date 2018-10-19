@@ -40,6 +40,9 @@
 
 #include <sqlite3.h>
 
+// Offset for ?003 and alike -- they start from 001, not 000
+#define PARAM_OFS 1
+
 extern void write_logger(const char* logname, const char* message);
 
 static const char logger[] = "steamworks.pulleyscript.squeal";
@@ -354,7 +357,7 @@ static int s3ins_run (sqlite3 *s3db, sqlite3_stmt *s3in, s3key_t hash,
 	//
 	// Setup the prepared statement with the output variable blobs
 	for (i=1; i < numparm; i++) {
-		snprintf (drvid, sizeof (drvid)-1, "?%03d", idx);
+		snprintf (drvid, sizeof (drvid)-1, "?%03d", PARAM_OFS + idx);
 		idx = sqlite3_bind_parameter_index (s3in, drvid);
 		if (idx != 0) {
 			sqlret = sqlite3_bind_blob64 (s3in, idx,
@@ -399,7 +402,7 @@ static int s3ins_run_uuid(sqlite3 *s3db, sqlite3_stmt *s3in, const char *uuid,
 	//
 	// Setup the prepared statement with the output variable blobs
 	for (i=0; i < numparm; i++) {
-		snprintf (drvid, sizeof (drvid)-1, "?%03d", i+2);
+		snprintf (drvid, sizeof (drvid)-1, "?%03d", PARAM_OFS + i+2);
 		idx = sqlite3_bind_parameter_index (s3in, drvid);
 		if (idx != 0) {
 			sqlret = sqlite3_bind_blob64 (s3in, idx,
@@ -664,8 +667,8 @@ void squeal_produce_expression (struct sqlbuf *sql, struct vartab *vartab, bitse
 	case CND_GE:
 		v2 = cnd_parse_variable (&subexp, &subexplen);
 		v1 = cnd_parse_variable (&subexp, &subexplen);
-		if (bitset_test (params, v1)) {
-			snprintf (varid, sizeof (varid)-1, "?%03d", v1);
+		if (!bitset_test (params, v1)) {
+			snprintf (varid, sizeof (varid)-1, "?%03d", PARAM_OFS + v1);
 			sqlbuf_write (sql, varid);
 		} else {
 			sqlbuf_write (sql, "var_");
@@ -679,9 +682,9 @@ void squeal_produce_expression (struct sqlbuf *sql, struct vartab *vartab, bitse
 			(operator == CND_LE)? " <= ":
 			(operator == CND_GE)? " >= ":
 			                      " ERROR ");
-		if (bitset_test (params, v2)) {
+		if (!bitset_test (params, v2)) {
 			/* No need to prefix var_ or anything, separate id space */
-			snprintf (varid, sizeof (varid)-1, "?%03d", v2);
+			snprintf (varid, sizeof (varid)-1, "?%03d", PARAM_OFS + v2);
 			sqlbuf_write (sql, varid);
 		} else {
 			sqlbuf_write (sql, "var_");
@@ -746,9 +749,9 @@ sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvtab *drvt
 	comma = "SELECT ";
 	for (i=0; i<outcount; i++) {
 		sqlbuf_write (&sql, comma);
-		if (0 && bitset_test (params, outarray [i])) {
+		if (!bitset_test (params, outarray [i])) {
 			/* No need to prefix var_ or anything, separate id space */
-			snprintf (varid, sizeof (varid)-1, "?%03d", outarray [i]);
+			snprintf (varid, sizeof (varid)-1, "?%03d", PARAM_OFS + outarray [i]);
 			sqlbuf_write (&sql, varid);
 		} else {
 			sqlbuf_write (&sql, "var_");
@@ -797,7 +800,9 @@ sqlite3_stmt *squeal_produce_outputs (struct squeal *squeal, struct drvtab *drvt
 	//
 	// Based on the generated SQL string, prepare a statement
 	if (sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &retval, NULL) != SQLITE_OK) {
-		ERROR("Failed to construct production rule for SQLite3 engine\n");
+		ERROR("Failed to construct production rule for SQLite3 engine: %s\n%.*s",
+						sqlite3_errmsg (squeal->s3db),
+						sql.ofs, sql.buf);
 		retval = NULL;
 		goto cleanup;
 	}
@@ -945,7 +950,7 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, st
 
 		if ((sqlretval = sqlite3_prepare(squeal->s3db, sql.buf, sql.ofs, &gen->opt_gen_del_tuple, NULL)) != SQLITE_OK)
 		{
-			ERROR("PREP ERROR delete in generator SQL %d\n", sqlretval);
+			ERROR("PREP ERROR delete in generator SQL %d: %s\n", sqlretval, sqlite3_errmsg (squeal->s3db));
 			goto fail;
 		}
 
@@ -955,16 +960,16 @@ int squeal_configure_generators(struct squeal* squeal, struct gentab* gentab, st
 		sqlbuf_write(&sql, " VALUES (:uuid");  // One parameter is always the entryUUID
 		for (varnum=0; varnum < gen->numrecvars; varnum++)
 		{
-			snprintf (paramstr, sizeof (paramstr)-1, ",?%03d", varnum+2);
+			snprintf (paramstr, sizeof (paramstr)-1, ",?%03d", PARAM_OFS + varnum+2);
 			sqlbuf_write(&sql, paramstr);
 		}
 		sqlbuf_write(&sql, ")");
 
 		if ((sqlretval = sqlite3_prepare(squeal->s3db, sql.buf, sql.ofs, &gen->opt_gen_add_tuple, NULL)) != SQLITE_OK)
 		{
+			ERROR("PREP ERROR insert in generator SQL %d: %s\n", sqlretval, sqlite3_errmsg (squeal->s3db));
 			sqlite3_finalize(gen->opt_gen_del_tuple);
 			gen->opt_gen_del_tuple = NULL;
-			ERROR("PREP ERROR insert in generator SQL %d\n", sqlretval);
 			goto fail;
 		}
 
@@ -1016,7 +1021,7 @@ int squeal_configure (struct squeal *squeal) {
 			    "       WHERE out_hash = :hash\n"
 			    "       UNION VALUES (0) )");
 	if ((sqlretval = sqlite3_prepare (squeal->s3db, sql.buf, sql.ofs, &squeal->get_drv_all, NULL)) != SQLITE_OK) {
-		ERROR("PREP ERROR select in SQL %d\n", sqlretval);
+		ERROR("PREP ERROR select in SQL %d: %s\n", sqlretval, sqlite3_errmsg (squeal->s3db));
 		retval = 1;
 		goto cleanup;
 	}

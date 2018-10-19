@@ -1,10 +1,20 @@
+#TODO# Constants like 7 (and, presumably, strings) translate to ?ddd
 (|(x=y)(p=7))
-#STRUCTURAL_INCONSISTENCY# (|)
+(|(x=y)(p=y))
+(|)
+(|(&))
+(&)
+(&(|)(|))
 (x=y)
 VacationActive;x;y;lang-de:"true" + VacationAddress:where + VacationTime: when, @vacationer, CN=who <- z
-x,[7,p,12],z -> mapper (p="jamaarhallohee",y=7)
+#TODO# Lists in output declarations translate BRA and KET to varidx -1 and cause a crash
+#TODO# x,[7,p,12],z -> mapper (p="jamaarhallohee",y=7)
+x,7,p,12,z -> mapper (p="jamaarhallohee",y=7)
+x,p,z -> mapper (p="jamaarhallohee",y=7)
 # The following were added because all variables must be bound somewhere:
-#CRASH_BUT_WHY# @p,@world <- z
-@p <- @world <- z
+@p,@world <- z
+@p <- z
+@world <- z
 #TODO# Why does the following parse correctly?!?
+@world <- @p <- z
 p,world <- z
