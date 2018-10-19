@@ -73,8 +73,8 @@ static void var_cleanup (struct vartab *tab, varnum_t varnum) {
 	}
 	if (var->value.type == VARTP_BLOB)
 	{
-		free(var->value.typed_blob.str);
-		var->value.typed_blob.str = NULL;
+		free(var->value.typed_blob.ptr);
+		var->value.typed_blob.ptr = NULL;
 		var->value.typed_blob.len = 0;
 	}
 }
@@ -369,7 +369,7 @@ void var_set_value (struct vartab *tab, varnum_t varnum, struct var_value *val) 
 		free (dst->typed_string);
 		break;
 	case VARTP_BLOB:
-		free (dst->typed_blob.str);
+		free (dst->typed_blob.ptr);
 		break;
 	case VARTP_ATTROPTS:
 		here = dst->typed_attropts;

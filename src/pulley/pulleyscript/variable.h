@@ -62,7 +62,7 @@ struct var_value {
 		float union_float;
 		char *union_string;
 		struct {
-			uint8_t *str;
+			uint8_t *ptr;
 			uint32_t len;
 		} union_blob;
 		struct list_attropt *union_attropts;
