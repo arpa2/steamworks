@@ -185,9 +185,9 @@ varnum_t _store_binding (struct parser *prs, char *bndname, struct var_value *va
 	varnum_t binding = var_have (prs->vartab, bndname, VARKIND_BINDING);
 	varval->type = VARTP_BLOB;
 	varval->typed_blob.len = sizeof (prs->action) - prs->action_sp;
-	varval->typed_blob.str = malloc (varval->typed_blob.len);
-	assert (varval->typed_blob.str != NULL);
-	memcpy (varval->typed_blob.str, &prs->action [prs->action_sp],
+	varval->typed_blob.ptr = malloc (varval->typed_blob.len);
+	assert (varval->typed_blob.ptr != NULL);
+	memcpy (varval->typed_blob.ptr, &prs->action [prs->action_sp],
 			varval->typed_blob.len);
 	var_set_value (prs->vartab, binding, varval);
 
@@ -210,7 +210,7 @@ void _flushO (struct parser *prs, hash_t linehash, gennum_t g) {
 	binding = _store_binding (prs, bndname, &varval);
 //DEBUG//
 printf ("Binding %s V%d G%d created: >>> ", bndname, binding, g);
-ptr = varval.typed_blob.str;
+ptr = varval.typed_blob.ptr;
 len = varval.typed_blob.len;
 while (len-- > 0) {
 	printf ("%02x ", *ptr++);

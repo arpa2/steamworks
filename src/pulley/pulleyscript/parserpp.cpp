@@ -244,7 +244,7 @@ public:
 			{
 				struct var_value* value = var_share_value(m_prs.vartab, binding);
 				std::vector<std::string> expressions;
-				decode_parameter_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, expressions);
+				decode_parameter_binding(m_prs.vartab, value->typed_blob.ptr, value->typed_blob.len, expressions);
 
 				for (auto s : expressions)
 				{
@@ -496,7 +496,7 @@ std::forward_list< std::string > SteamWorks::PulleyScript::Parser::Private::find
 		auto bound_varnums = variables_for_generator(i);  // Variables on the right-hand side of binding
 		m_variables_per_generator.emplace_back(bound_varnums.size());  // New vector of names
 
-		explain_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, filterexp, bound_varnums, m_variables_per_generator.back());
+		explain_binding(m_prs.vartab, value->typed_blob.ptr, value->typed_blob.len, filterexp, bound_varnums, m_variables_per_generator.back());
 	}
 
 	for (gennum_t g=0; g<count; g++) {
@@ -641,7 +641,7 @@ void SteamWorks::PulleyScript::Parser::Private::find_backends()
 		{
 			struct var_value* value = var_share_value(m_prs.vartab, binding);
 			std::vector<std::string> expressions;
-			decode_parameter_binding(m_prs.vartab, value->typed_blob.str, value->typed_blob.len, expressions);
+			decode_parameter_binding(m_prs.vartab, value->typed_blob.ptr, value->typed_blob.len, expressions);
 			m_backends.emplace_front(name, expressions);
 
 			varnum_t* var_list = nullptr;

@@ -221,28 +221,33 @@ static void sqlbuf_exchg (struct sqlbuf *wbuf, bool get_not_set) {
 	}
 }
 
-
-/* Given a (char **) for an output buffer, write text to it, possibly adding to
- * its size to make this possible.
+/* Given a (char **) for an output buffer, write a (ptr,len) blob to it,
+ * possibly adding to its size to make this possible.
  */
-static void sqlbuf_write (struct sqlbuf *buf, const char *addend) {
+static void sqlbuf_writeblob (struct sqlbuf *buf, const char *blob, int len) {
 	char *buf2;
 	int   siz2;
-	int len = strlen (addend);
 	assert (buf->ofs <= buf->siz);
 	if (buf->siz < buf->ofs + len) {
 		siz2 = buf->siz + (buf->siz >> 2) + len;
 		buf2 = realloc (buf->buf, siz2);
 		if (buf2 == NULL) {
-			ERROR("Out of memory while writing \"%s\" to squeal buffer\n", addend);
+			ERROR("Out of memory while writing %d bytes to squeal buffer\n", len);
 			exit (1);
 		}
 		memset(buf2 + buf->ofs, 0, siz2 - buf->ofs);
 		buf->buf = buf2;
 		buf->siz = siz2;
 	}
-	memcpy (buf->buf + buf->ofs, addend, len);
+	memcpy (buf->buf + buf->ofs, blob, len);
 	buf->ofs += len;
+}
+
+/* Given a (char **) for an output buffer, write text to it, possibly adding to
+ * its size to make this possible.
+ */
+static void sqlbuf_write (struct sqlbuf *buf, const char *addend) {
+	sqlbuf_writeblob (buf, addend, strlen (addend));
 }
 
 
@@ -624,6 +629,101 @@ void squeal_delete_forks(struct squeal *squeal, gennum_t gennum, const char *ent
 /********** BACKEND STRUCTURE CREATION **********/
 
 
+/* Produce the SQLite3 text form of an expression variable depending on its varkind:
+ *  - VARIABLE not in param are inserted in ?003 form
+ *  - VARIABLE in param such as x, y are inserted with a var_ prefix
+ *  - CONSTANT INTEGER and FLOAT are printed by C
+ *  - CONSTANT STRING is printed with single quotes; internal single quote is doubled
+ *  - CONSTANT BLOB is printed as X'(hexdump)'
+ *  - ATTRTYPE, PARAMETER, DRIVERNAME, BINDING should not occur in expressions
+ */
+void squeal_produce_expression_variable (struct sqlbuf *sql, struct vartab *vartab, bitset_t *params, varnum_t vn) {
+	varkind_t vk = var_get_kind (vartab, vn);
+	struct var_value *vv = var_share_value (vartab, vn);
+	char linebuf [90];
+	char varid [20];
+	int i;
+	char *ptr;
+	switch (vk) {
+	//
+	// Plain variables; may be parameters that are produced by the current generator or not
+	case VARKIND_VARIABLE:
+		if (!bitset_test (params, vn)) {
+			/* No need to prefix var_ or anything, separate id space */
+			snprintf (varid, sizeof (varid)-1, "?%03d", PARAM_OFS + vn);
+			sqlbuf_write (sql, varid);
+		} else {
+			sqlbuf_write (sql, "var_");
+			sqlbuf_write (sql, var_get_name (vartab, vn));
+		}
+		break;
+	//
+	// Constants; forms are INTEGER, FLOAT, STRING, BLOB
+	case VARKIND_CONSTANT:
+		switch (vv->type) {
+		case VARTP_INTEGER:
+			snprintf (linebuf, sizeof (linebuf)-1, "%d", vv->typed_integer);
+			sqlbuf_write (sql, linebuf);
+			break;
+		case VARTP_FLOAT:
+			snprintf (linebuf, sizeof (linebuf)-1, "%f", vv->typed_float);
+			sqlbuf_write (sql, linebuf);
+			break;
+		case VARTP_STRING:
+			// Format is 'How''s your mood today?'
+			// Input is NUL-terminated, and flex already
+			// took care of input quoting and escaping
+			sqlbuf_write (sql, vv->typed_string);
+			sqlbuf_write (sql, "'");
+			ptr = vv->typed_string;
+			while (1) {
+				i = 0;
+				while (ptr [i] && (ptr [i] != '\'')) {
+					i++;
+				}
+				sqlbuf_writeblob (sql, ptr, i);
+				if (ptr [i] == '\'') {
+					sqlbuf_write (sql, "''");
+					ptr += i + 1;
+				} else {
+					// ptr [i] == '\0'
+					break;
+				}
+			}
+			sqlbuf_write (sql, "'");
+			break;
+		case VARTP_BLOB:
+			// Format is X'0123456789abcdef'
+			sqlbuf_write (sql, "X'");
+			ptr = vv->typed_blob.ptr;
+			i   = vv->typed_blob.len;
+			while (i-- > 0) {
+				sprintf (linebuf, "%02X", *ptr++);
+				sqlbuf_write (sql, linebuf);
+			}
+			sqlbuf_write (sql, "'");
+			break;
+		default:
+			fprintf (stderr, "Unsupported variable type (%d)\n", vv->type);
+			exit (1);
+		}
+		break;
+	//
+	// Misplaced ATTRTYPE, PARAMETER, DRIVERNAME, BINDING
+	case VARKIND_ATTRTYPE:
+	case VARKIND_PARAMETER:
+	case VARKIND_DRIVERNAME:
+	case VARKIND_BINDING:
+		fprintf (stderr, "Unwanted variable kind in expression (%d)\n", vk);
+		exit (1);
+	//
+	// We should never run into unknown variable kinds
+	default:
+		fprintf (stderr, "Unknown variable kind (%d)\n", vk);
+		exit (1);
+	}
+}
+
 /* TODO: Mockup code to produce expressions for driver output generation
  */
 void squeal_produce_expression (struct sqlbuf *sql, struct vartab *vartab, bitset_t *params, int *exp, size_t explen) {
@@ -631,7 +731,6 @@ void squeal_produce_expression (struct sqlbuf *sql, struct vartab *vartab, bitse
 	int *subexp;
 	size_t subexplen;
 	varnum_t v1, v2;
-	char varid [20];
 	cnd_parse_operation (exp, explen, &operator, &operands, &subexp, &subexplen);
 	switch (operator) {
 	case CND_TRUE:
@@ -667,13 +766,7 @@ void squeal_produce_expression (struct sqlbuf *sql, struct vartab *vartab, bitse
 	case CND_GE:
 		v2 = cnd_parse_variable (&subexp, &subexplen);
 		v1 = cnd_parse_variable (&subexp, &subexplen);
-		if (!bitset_test (params, v1)) {
-			snprintf (varid, sizeof (varid)-1, "?%03d", PARAM_OFS + v1);
-			sqlbuf_write (sql, varid);
-		} else {
-			sqlbuf_write (sql, "var_");
-			sqlbuf_write (sql, var_get_name (vartab, v1));
-		}
+		squeal_produce_expression_variable (sql, vartab, params, v1);
 		sqlbuf_write (sql,
 			(operator == CND_EQ)? " = ":
 			(operator == CND_NE)? " <> ":
@@ -682,14 +775,7 @@ void squeal_produce_expression (struct sqlbuf *sql, struct vartab *vartab, bitse
 			(operator == CND_LE)? " <= ":
 			(operator == CND_GE)? " >= ":
 			                      " ERROR ");
-		if (!bitset_test (params, v2)) {
-			/* No need to prefix var_ or anything, separate id space */
-			snprintf (varid, sizeof (varid)-1, "?%03d", PARAM_OFS + v2);
-			sqlbuf_write (sql, varid);
-		} else {
-			sqlbuf_write (sql, "var_");
-			sqlbuf_write (sql, var_get_name (vartab, v2));
-		}
+		squeal_produce_expression_variable (sql, vartab, params, v2);
 		break;
 	default:
 		ERROR("Unknown operation code %d with %d operands\n", operator, operands);

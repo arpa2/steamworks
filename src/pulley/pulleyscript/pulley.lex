@@ -223,6 +223,7 @@ printf ("Funny semicolon in %s ignored\n", yytext);
 				if (*here == '\\') {
 					here++;
 					// Continue with the next, even a quote
+					//TODO// '\n' -> 'n' :-)
 				}
 				*copy++ = *here++;
 			}
@@ -241,7 +242,7 @@ printf ("Funny semicolon in %s ignored\n", yytext);
 				yy_fatal_error ("Out of memory replicating hexbyte string", prs);
 			}
 			val.type = VARTP_BLOB;
-			val.typed_blob.str = copy;
+			val.typed_blob.ptr = copy;
 			val.typed_blob.len = 0;
 			hex = 1;
 			while (*here) {
@@ -264,7 +265,7 @@ printf ("Funny semicolon in %s ignored\n", yytext);
 			}
 			yylval->varnum = var_have (prs->vartab, yytext, VARKIND_CONSTANT);
 			var_set_value (prs->vartab, yylval->varnum, &val);
-			hash_token_blob (hbuf, BLOB, val.typed_blob.str, val.typed_blob.len);
+			hash_token_blob (hbuf, BLOB, val.typed_blob.ptr, val.typed_blob.len);
 			return BLOB;
 		}
 
