@@ -67,15 +67,6 @@ if(NOT HAVE_FUN_DLFUNC)
   set(PSPPLIB_SRC ${PSPPLIB_SRC} dlfunc.c)
 endif()
 
-set(COMPILER_SRC
-  compiler.c
-  logger.c
-  )
-
-set(SIMPLE_SRC
-  simple.cpp
-  )
-
 # Adding -DPULLEY_SQUEAL_DIR will change where the Squeal databases are created.
 # Adding -DPULLEY_BACKEND_DIR will change where the Pulley backends are searched.
 #
@@ -104,13 +95,17 @@ if(NOT HAVE_FUN_DLCLOSE)
   endif()
 endif()
 
-add_executable(compiler $<TARGET_OBJECTS:pslib_o> squeal.c ${COMPILER_SRC})
+add_executable(compiler
+  compiler.c
+  logger.c
+  squeal.c
+  )
 target_compile_definitions(compiler PUBLIC -DALLOW_INSECURE_DB)
-target_link_libraries(compiler ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES})
+target_link_libraries(compiler pslib)
 
-add_executable(simple $<TARGET_OBJECTS:pslib_o> squeal.c ${SIMPLE_SRC})
+add_executable(simple simple.cpp squeal.c)
 target_compile_definitions(simple PUBLIC -DALLOW_INSECURE_DB)
-target_link_libraries(simple pspplib swcommon ${SQLITE3_LIBRARIES} ${FLEX_LIBRARIES} ${LOG4CPP_LIBRARIES})
+target_link_libraries(simple pslib pspplib swcommon ${LOG4CPP_LIBRARIES})
 set_target_properties(simple PROPERTIES LINK_FLAGS -rdynamic)
 
 # Try to compile all of the sample scripts
