@@ -2,16 +2,22 @@
 # All rights reserved. See file LICENSE for exact terms (2-clause BSD license).
 #
 # Adriaan de Groot <groot@kde.org>
+#
+# Copyright 2019, Adriaan de Groot <groot@kde.org>
 
 # This is the CMake-ified version of the pulleyscript Makefile
-
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../../../cmake)
 
 include(CheckFunctionExists)
 include(CheckSymbolExists)
 
-find_package(SQLite3 REQUIRED)
+find_package(SQLite3)
+set_package_properties (SQLite3 PROPERTIES
+    DESCRIPTION "SQLite database"
+    TYPE REQUIRED
+    URL "https://sqlite.org/index.html"
+    PURPOSE "In-memory database of tuples"
+)
+
 find_package(BISON 3)
 set_package_properties (BISON PROPERTIES
     DESCRIPTION "Bison parser generator"
@@ -20,7 +26,13 @@ set_package_properties (BISON PROPERTIES
     PURPOSE "Parsing pulleyscript statements"
 )
 
-find_package(FLEX REQUIRED)
+find_package(FLEX)
+set_package_properties (FLEX PROPERTIES
+    DESCRIPTION "FLEX lexical analyser"
+    TYPE REQUIRED
+    URL "https://www.gnu.org/software/flex/"
+    PURPOSE "Parsing pulleyscript statements"
+)
 
 include(CheckQSortR)
 
