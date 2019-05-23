@@ -28,7 +28,8 @@ static void version_usage()
 	printf(R"(
 Usage:
     simple [options] scriptfile datafile
-\n)");
+
+)");
 	printf("  -L libdir    Unused\n");
 #ifdef ALLOW_INSECURE_DB
 	printf("  -S sqldir    Sets directory to write SQL database\n");
