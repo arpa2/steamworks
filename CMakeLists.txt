@@ -65,3 +65,5 @@ include(PackAllPossible)
 include(CPack)
 
 create_config_files(Steamworks)
+
+feature_summary(FATAL_ON_MISSING_REQUIRED_PACKAGES WHAT ALL)

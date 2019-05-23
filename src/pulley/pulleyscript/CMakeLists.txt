@@ -12,7 +12,14 @@ include(CheckFunctionExists)
 include(CheckSymbolExists)
 
 find_package(SQLite3 REQUIRED)
-find_package(BISON 3 REQUIRED)
+find_package(BISON 3)
+set_package_properties (BISON PROPERTIES
+    DESCRIPTION "Bison parser generator"
+    TYPE REQUIRED
+    URL "https://www.gnu.org/software/bison/"
+    PURPOSE "Parsing pulleyscript statements"
+)
+
 find_package(FLEX REQUIRED)
 
 include(CheckQSortR)
@@ -23,10 +30,12 @@ include(CheckQSortR)
 # into the source-dir by default but are looked-for
 # in the binary-dir.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-bison_target(bpulley pulley.yacc ${CMAKE_CURRENT_BINARY_DIR}/pulley.tab.cacc
-  DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/pulley.tab.hahh)
-flex_target(fpulley pulley.lex ${CMAKE_CURRENT_BINARY_DIR}/parser.c)
-add_flex_bison_dependency(fpulley bpulley)
+if (BISON_FOUND)
+    bison_target(bpulley pulley.yacc ${CMAKE_CURRENT_BINARY_DIR}/pulley.tab.cacc
+    DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/pulley.tab.hahh)
+    flex_target(fpulley pulley.lex ${CMAKE_CURRENT_BINARY_DIR}/parser.c)
+    add_flex_bison_dependency(fpulley bpulley)
+endif()
 
 check_function_exists(dlfunc HAVE_FUN_DLFUNC)
 if(HAVE_FUN_DLFUNC)
