@@ -7,6 +7,8 @@
 #   License-Filename: LICENSE
 #
 # Adriaan de Groot <groot@kde.org>
+#
+# Copyright 2019, Adriaan de Groot <groot@kde.org>
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 

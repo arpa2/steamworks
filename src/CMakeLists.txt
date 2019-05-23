@@ -2,6 +2,8 @@
 # All rights reserved. See file LICENSE for exact terms (2-clause BSD license).
 #
 # Adriaan de Groot <groot@kde.org>
+#
+# Copyright 2019, Adriaan de Groot <groot@kde.org>
 
 message("   Using bundled libfcgi ...")
 add_subdirectory(3rdparty/fcgi-2.4.0)
