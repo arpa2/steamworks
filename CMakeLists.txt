@@ -9,6 +9,7 @@
 # Adriaan de Groot <groot@kde.org>
 #
 # Copyright 2019, Adriaan de Groot <groot@kde.org>
+message(FATAL_ERROR "This repository has moved to GitLab\n\nGet Steamworks from\n\thttps://gitlab.com/arpa2/steamworks/\n")
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
